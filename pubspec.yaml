@@ -1,0 +1,74 @@
+name: bouldering_app
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  go_router:
+  flutter_riverpod: ^2.6.0
+  flutter_svg: ^2.0.10+1
+  google_fonts: ^6.2.1
+  auto_route: ^6.3.0
+  intl: ^0.19.0
+  url_launcher: ^6.1.6
+  firebase_core: ^3.9.0
+  firebase_auth: ^5.3.4
+  cloud_functions: ^5.2.0
+  http: ^1.2.2
+  dartz: ^0.10.1
+  image_picker: ^1.1.2
+  googleapis: ^13.2.0
+  googleapis_auth: ^1.6.0
+  path: ^1.8.3
+  file_picker: ^6.1.1
+  google_maps_flutter: ^2.10.1
+  geolocator: ^11.0.0
+  permission_handler: ^11.0.0
+  crypto: ^3.0.6
+  flutter_dotenv: ^5.2.1
+  uuid: ^4.4.0
+  geolocator_android: ^4.5.5
+  cached_network_image: ^3.2.3
+  flutter_cache_manager: ^3.3.1
+  sqflite: ^2.3.2+1
+  path_provider: ^2.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  auto_route_generator: ^6.2.0
+  build_runner: ^2.3.3
+  flutter_launcher_icons: ^0.13.1
+  flutter_flavorizr: ^2.1.3
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon.png"
+
+flutter:
+  assets:
+    - lib/view/assets/app_main_icon.svg
+    - lib/view/assets/rock_selected.svg
+    - lib/view/assets/rock_unselected.svg
+    - lib/view/assets/map_image.png
+    - lib/view/assets/date_range.svg
+    - lib/view/assets/home_gim_icon.svg
+    - lib/view/assets/test_user_icon.png
+    - lib/view/assets/gym_facilitation.png
+    - assets/keys/firebase_admin_dev.json
+    - assets/keys/gcs_storage_dev.json
+    - assets/keys/gcs_storage_prod.json
+    - assets/
+  uses-material-design: true
+
+dependency_overrides:
+  geolocator_android: 4.5.5

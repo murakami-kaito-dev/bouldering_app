@@ -1,0 +1,158 @@
+// Database models type definitions
+
+export interface User {
+  user_id: string;
+  user_name: string;
+  user_icon_url?: string;
+  email: string;
+  home_gym_id?: number;
+  user_introduce?: string;
+  favorite_gym?: string;
+  gender: number; // 0: unselected, 1: male, 2: female
+  boul_start_date?: Date;
+  birthday?: Date;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Tweet {
+  tweet_id: number;
+  user_id: string;
+  gym_id: number;
+  tweet_contents: string;
+  visited_date: Date;
+  tweeted_date: Date;
+  liked_counts: number;
+  movie_url?: string;
+}
+
+export interface TweetMedia {
+  tweet_id: number;
+  media_url: string;
+  media_type: 'photo' | 'video';
+  created_at: Date;
+}
+
+// 過去のプロジェクトで実際に使用されているジム情報プロパティ
+export interface Gym {
+  gym_id: number;
+  gym_name: string;
+  hp_link?: string;
+  prefecture: string;
+  city?: string;
+  address_line?: string;
+  latitude?: number;  // 地図表示に必須
+  longitude?: number; // 地図表示に必須
+  tel_no?: string;
+  fee?: number;
+  minimum_fee?: number;
+  equipment_rental_fee?: number;
+
+  // 将来的に実装予定の詳細プロパティ（現在は未使用）
+  // gym_branch?: string;
+  // area?: string;
+  // nearest_station?: string;
+  // walk_minute?: number;
+  // google_map_url?: string;
+  // image_url?: string;
+  // regular_holiday?: string;
+  // business_hours?: string;
+  // parking?: string;
+  // how_to_book?: string;
+  // janre?: string;
+  // wall_height?: number;
+  // num_of_walls?: number;
+  // boul_num?: number;
+  // monthly_boul_update?: boolean;
+  // boul_levels?: string;
+  // grade_sence?: string;
+  // hold_type?: string;
+  // wall_type?: string;
+  // other_equipment?: string;
+  // kids_space?: boolean;
+  // rest_space?: boolean;
+  // free_wifi?: boolean;
+  // parking_space?: boolean;
+  // rental_shoes?: boolean;
+  // rental_chalk?: boolean;
+  // rental_wear?: boolean;
+  // beginner_plan?: boolean;
+  // one_coin_plan?: boolean;
+  // other_plan?: string;
+  // lessons?: string;
+  // kids_school?: boolean;
+  // experienced_school?: boolean;
+  // one_day_price?: number;
+  // membership_price?: number;
+  // membership_price_tax?: number;
+  // other_plan_prices?: string;
+  // route_setting?: string;
+  // route_setter?: string;
+  // community?: string;
+  // access_count?: number;
+  // twitter_url?: string;
+  // instagram_url?: string;
+  // youtube_url?: string;
+  // line_url?: string;
+  // facebook_url?: string;
+}
+
+// 過去のプロジェクトで使用されているクライミングタイプ情報
+export interface ClimbingType {
+  gym_id: number;
+  is_bouldering_gym: boolean;
+  is_lead_gym: boolean;
+  is_speed_gym: boolean;
+}
+
+// 過去のプロジェクトで使用されている営業時間情報
+export interface GymHours {
+  gym_id: number;
+  sun_open?: string;
+  sun_close?: string;
+  mon_open?: string;
+  mon_close?: string;
+  tue_open?: string;
+  tue_close?: string;
+  wed_open?: string;
+  wed_close?: string;
+  thu_open?: string;
+  thu_close?: string;
+  fri_open?: string;
+  fri_close?: string;
+  sat_open?: string;
+  sat_close?: string;
+}
+
+export interface FavoriteUserRelation {
+  liker_user_id: string;
+  likee_user_id: string;
+  liked_time: Date;
+}
+
+export interface FavoriteGym {
+  user_id: string;
+  gym_id: number;
+  created_at: Date;
+}
+
+// API Response types
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  code?: string;
+}
+
+export interface PaginationParams {
+  limit?: number;
+  cursor?: string;
+  offset?: number;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  nextCursor?: string;
+  hasMore: boolean;
+  total?: number;
+}

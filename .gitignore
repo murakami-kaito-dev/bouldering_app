@@ -1,0 +1,117 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VSCode 関連設定
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Androidプロジェクト
+/android/*
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Firebase設定（テンプレート構造は保持）
+ios/Runner/GoogleService-Info.plist
+firebase-config.json
+**/firebase-config.json
+lib/shared/config/firebase_options_dev.dart
+lib/shared/config/firebase_options_prod.dart
+
+# API Keys（秘匿情報のため）
+# iOS証明書・プロビジョニング
+ios/**/*.p12
+ios/**/*.mobileprovision
+ios/Runner/Config.plist
+# Android証明書・キーストア
+android/app/*.jks
+android/app/*.keystore
+android/keystore.properties
+
+# webプロジェクト
+/web/
+
+# tempファイル・一時ファイル・tempフォルダ
+/temp/
+/temp*.txt
+/temp*.md
+
+# APIキー・認証情報（全て機密情報）
+assets/keys/
+assets/keys/*.json
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+
+# envファイル / 環境変数ファイル（データベースパスワード等含む）
+backend/.env.dev
+backend/.env.prod
+.env
+.env.local
+.env.*.local
+
+# Google Cloud サービスアカウントキー
+**/service_account.json
+**/*service_account*.json
+**/*gcs_storage*.json
+**/*firebase_admin*.json
+
+# ログ・一時ファイル
+backend/dist/
+backend/logs/
+backend/**/*.log
+*.tmp
+*.temp
+crash-reports/
+performance-logs/
+
+# Google Cloud設定ファイル
+.gcloudignore
+**/.gcloudignore
+
+# その他：強制ログアウトファイル
+/scripts/
+
+# その他：testフォルダ
+/test/
+
+# その他：ジムrawデータ・ファイル関連
+/docs/gym_information_data/
+/docs/gym_information_data/raw_data/*
+/docs/gym_information_data/scraping/*
+/docs/gcloud_sql_data/
+/docs/gcloud_sql_data/*
+
+# ドキュメント(セキュリティ情報を含む可能性大)
+/docs/
+/docs/backend
