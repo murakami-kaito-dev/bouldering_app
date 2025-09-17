@@ -1,0 +1,42 @@
+[
+  {
+    "featureType": "poi",
+    "elementType": "labels.icon",
+    "stylers": [{ "visibility": "off" }]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text",
+    "stylers": [{ "visibility": "off" }]
+  },
+  {
+    "featureType": "poi.business",
+    "elementType": "all",
+    "stylers": [{ "visibility": "off" }]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.icon",
+    "stylers": [{ "visibility": "off" }]
+  },
+  {
+    "featureType": "poi.medical",
+    "elementType": "labels.icon",
+    "stylers": [{ "visibility": "off" }]
+  },
+  {
+    "featureType": "transit.station.rail",
+    "elementType": "all",
+    "stylers": [{ "visibility": "on" }]
+  },
+  {
+    "featureType": "road",
+    "elementType": "all",
+    "stylers": [{ "visibility": "on" }]
+  },
+  {
+    "featureType": "water",
+    "elementType": "all",
+    "stylers": [{ "visibility": "on" }]
+  }
+]
