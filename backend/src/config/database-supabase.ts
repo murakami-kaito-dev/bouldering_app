@@ -35,7 +35,7 @@ export function createSupabasePool(): Pool {
   // Supabase必須のSSL設定
   if (config.database.ssl) {
     poolConfig.ssl = {
-      rejectUnauthorized: false, // Cloud Run環境での証明書検証回避
+      rejectUnauthorized: false // 自己署名証明書を許可（証明書検証を緩める）
     };
   }
 
