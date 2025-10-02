@@ -101,6 +101,8 @@ performance-logs/
 
 # その他：強制ログアウトファイル
 /scripts/
+/lib/main_force_logout_dev.dart
+/lib/main_force_logout_prod.dart
 
 # その他：testフォルダ
 /test/

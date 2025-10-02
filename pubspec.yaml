@@ -3,6 +3,8 @@ description: "A new Flutter project."
 publish_to: 'none'
 
 version: 1.0.0+1
+#   - 1.0.0 = バージョン番号
+#   - +1 = ビルド番号
 
 environment:
   sdk: ^3.5.3
@@ -53,6 +55,7 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/icon.png"
+  remove_alpha_ios: true
 
 flutter:
   assets:
@@ -64,7 +67,6 @@ flutter:
     - lib/view/assets/home_gim_icon.svg
     - lib/view/assets/test_user_icon.png
     - lib/view/assets/gym_facilitation.png
-    - assets/keys/firebase_admin_dev.json
     - assets/keys/gcs_storage_dev.json
     - assets/keys/gcs_storage_prod.json
     - assets/

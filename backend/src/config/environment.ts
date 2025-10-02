@@ -15,13 +15,25 @@ export const config = {
 
   // Database
   database: {
+    // プロバイダー選択（cloudsql または supabase）
+    provider: process.env.DB_PROVIDER || 'supabase',
+
+    // 接続URL（Supabase推奨）
+    url: process.env.DATABASE_URL,
+
+    // 個別接続パラメータ
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '5432', 10),
     database: process.env.DB_NAME || 'bouldering_app',
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || '',
-    // Cloud SQL instance connection name (for production)
+
+    // Cloud SQL専用
     instanceConnectionName: process.env.INSTANCE_CONNECTION_NAME,
+
+    // Supabase専用
+    ssl: process.env.DB_SSL === 'true',
+    maxConnections: parseInt(process.env.DB_POOL_MAX || '10', 10),
   },
 
   // Firebase
@@ -47,11 +59,19 @@ export function validateEnvironment(): void {
   ];
 
   if (config.server.isProduction) {
-    required.push('DB_PASSWORD', 'INSTANCE_CONNECTION_NAME');
+    const provider = config.database.provider;
+
+    if (provider === 'cloudsql') {
+      required.push('DB_PASSWORD', 'INSTANCE_CONNECTION_NAME');
+    } else if (provider === 'supabase') {
+      // DATABASE_URLがある場合は個別パラメータ不要
+      if (!config.database.url) {
+        required.push('DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD');
+      }
+    }
   }
 
-  const missing = required.filter(key => !process.env[key]);
-
+  const missing = required.filter((key) => !process.env[key]);
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
