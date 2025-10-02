@@ -1,27 +1,26 @@
-import { Pool, PoolConfig } from 'pg';
+import { Pool } from 'pg';
 import { config } from './environment';
 import logger from '../utils/logger';
+import { createCloudSQLPool } from './database-cloudsql';
+import { createSupabasePool } from './database-supabase';
 
-// Database connection pool configuration
-const poolConfig: PoolConfig = {
-  user: config.database.user,
-  password: config.database.password,
-  database: config.database.database,
-  port: config.database.port,
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // 30 seconds
-  connectionTimeoutMillis: 2000, // 2 seconds
-};
+// データベースプロバイダーに基づいて適切な接続プールを作成
+let pool: Pool;
 
-// For Cloud SQL in production
-if (config.server.isProduction && config.database.instanceConnectionName) {
-  poolConfig.host = `/cloudsql/${config.database.instanceConnectionName}`;
-} else {
-  poolConfig.host = config.database.host;
+const provider = config.database.provider || 'supabase';
+
+switch (provider) {
+  case 'cloudsql':
+    pool = createCloudSQLPool();
+    break;
+  case 'supabase':
+    pool = createSupabasePool();
+    break;
+  default:
+    throw new Error(`Unknown database provider: ${provider}`);
 }
 
-// Create the connection pool
-export const pool = new Pool(poolConfig);
+logger.info(`Database provider initialized: ${provider}`);
 
 // Database service class for better abstraction
 export class DatabaseService {
@@ -100,5 +99,5 @@ export class DatabaseService {
   }
 }
 
-// Export singleton instance
 export const db = new DatabaseService();
+export { pool };

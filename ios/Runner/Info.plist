@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>イワノボリタイ</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -47,11 +47,23 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	
+
 	<!-- Google Maps用の位置情報権限設定 -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>ジムの位置情報を地図上に表示するため、現在地を使用します</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>ジムの位置情報を地図上に表示するため、現在地を使用します</string>
+
+	<!-- 写真ライブラリアクセス権限設定 -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ボルダリング体験の写真をツイートに添付するために、写真ライブラリへのアクセスが必要です</string>
+	
+	<!-- カメラアクセス権限設定 -->
+	<key>NSCameraUsageDescription</key>
+	<string>ボルダリング体験の写真を撮影してツイートに投稿するために、カメラへのアクセスが必要です</string>
+	
+	<!-- 輸出コンプライアンス設定（HTTPSのみ使用） -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
