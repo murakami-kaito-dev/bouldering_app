@@ -94,8 +94,11 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                   controller: _descriptionController,
                   focusNode: _descriptionFocusNode,
                   maxLines: null,
+                  minLines: null,
+                  expands: true,
                   maxLength: 1000,
                   style: const TextStyle(fontSize: 14),
+                  textAlignVertical: TextAlignVertical.top,
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.all(16),
@@ -143,6 +146,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
 
             // 利用規約・ガイドラインリンク
             Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
                   onTap: () {
