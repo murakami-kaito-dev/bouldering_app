@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/user.dart';
 import '../providers/user_provider.dart';
 import '../providers/auth_provider.dart';
 import '../components/common/loading_widget.dart';
 import '../components/common/error_widget.dart';
 import '../../shared/utils/navigation_helper.dart';
+import '../../shared/utils/url_launcher_helper.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -173,21 +173,21 @@ class SettingsPage extends ConsumerWidget {
             icon: Icons.privacy_tip,
             title: 'プライバシーポリシー',
             subtitle: 'プライバシーポリシーを確認',
-            onTap: () => _showPrivacyPolicy(context),
+            onTap: () => UrlLauncherHelper.showPrivacyPolicy(context),
             isExternalLink: true, // 外部サイトへ遷移
           ),
           _buildSettingsItem(
             icon: Icons.description,
             title: '利用規約',
             subtitle: '利用規約を確認',
-            onTap: () => _showTermsOfService(context),
+            onTap: () => UrlLauncherHelper.showTermsOfService(context),
             isExternalLink: true, // 外部サイトへ遷移
           ),
           _buildSettingsItem(
             icon: Icons.feedback,
             title: 'フィードバック',
             subtitle: 'アプリの改善提案・バグ報告',
-            onTap: () => _showFeedbackDialog(context),
+            onTap: () => UrlLauncherHelper.showFeedbackForm(context),
             isExternalLink: true, // 外部サイトへ遷移（将来的に外部フォームへ）
           ),
         ],
@@ -298,104 +298,6 @@ class SettingsPage extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  void _showPrivacyPolicy(BuildContext context) async {
-    const url =
-        'https://spiral-menu-66b.notion.site/268acc8f8f0080caad6ed16c046baa9d';
-    final uri = Uri.parse(url);
-
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication, // 外部ブラウザで開く
-        );
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('プライバシーポリシーを開けませんでした'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('エラーが発生しました: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _showTermsOfService(BuildContext context) async {
-    const url =
-        'https://spiral-menu-66b.notion.site/268acc8f8f00801398e2f1d368322f4b';
-    final uri = Uri.parse(url);
-
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication, // 外部ブラウザで開く
-        );
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('利用規約を開けませんでした'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('エラーが発生しました: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _showFeedbackDialog(BuildContext context) async {
-    const url = 'https://forms.gle/oMGHSeEtHs8HAPkc9';
-    final uri = Uri.parse(url);
-
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication, // 外部ブラウザで開く
-        );
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('フィードバックフォームを開けませんでした'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('エラーが発生しました: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {

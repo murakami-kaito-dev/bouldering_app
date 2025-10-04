@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/report_provider.dart';
 import '../providers/user_provider.dart';
+import '../../shared/utils/url_launcher_helper.dart';
 
 /// 報告フォーム画面
-/// 
+///
 /// ツイートの不適切な内容を報告するためのフォーム画面
 /// 参考画像: debug_photo/報告フォーム.jpg の通りに実装
 class ReportPage extends ConsumerStatefulWidget {
@@ -56,7 +57,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         ),
         centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +85,11 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             const SizedBox(height: 24),
 
             // テキスト入力フィールド
-            Expanded(
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: 200,
+                maxHeight: 300,
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
@@ -94,8 +99,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                   controller: _descriptionController,
                   focusNode: _descriptionFocusNode,
                   maxLines: null,
-                  minLines: null,
-                  expands: true,
+                  minLines: 8,
                   maxLength: 1000,
                   style: const TextStyle(fontSize: 14),
                   textAlignVertical: TextAlignVertical.top,
@@ -149,9 +153,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap: () {
-                    // 利用規約へのリンク（実装時にURLを設定）
-                  },
+                  onTap: () => UrlLauncherHelper.showTermsOfService(context),
                   child: const Text(
                     '利用規約はこちら',
                     style: TextStyle(
@@ -162,11 +164,9 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                 ),
                 const SizedBox(height: 8),
                 GestureDetector(
-                  onTap: () {
-                    // コミュニティガイドラインへのリンク（実装時にURLを設定）
-                  },
+                  onTap: () => UrlLauncherHelper.showPrivacyPolicy(context),
                   child: const Text(
-                    'コミュニティガイドラインはこちら',
+                    'プライバシーポリシーはこちら',
                     style: TextStyle(
                       fontSize: 14,
                       color: Color(0xFF007AFF),
@@ -185,7 +185,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
   /// 報告を送信する
   Future<void> _submitReport() async {
     final description = _descriptionController.text.trim();
-    
+
     // 入力内容のバリデーション
     if (description.isEmpty) {
       _showErrorSnackBar('報告内容を入力してください');
