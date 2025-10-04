@@ -6,6 +6,7 @@ import '../../providers/dependency_injection.dart';
 import '../../../shared/utils/image_url_validator.dart';
 import '../../../shared/utils/navigation_helper.dart';
 import '../../pages/activity_post_page.dart';
+import '../../pages/report_page.dart';
 import 'image_viewer.dart';
 
 class BoulLog extends ConsumerStatefulWidget {
@@ -114,9 +115,10 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                 ),
               ),
 
-              // ツイートのユーザーIDが，ログインしているユーザーのユーザーIDと同じ場合「⋮」を表示する
-              // 編集・削除 機能
-              if (widget.userId == myUserId)
+              // ログインしているユーザーの場合「⋮」を表示する
+              // 自分のツイート：編集・削除・報告 機能
+              // 他人のツイート：報告 機能
+              if (myUserId != null)
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert),
                   onSelected: (value) async {
@@ -203,21 +205,45 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           ),
                         ),
                       );
+                    } else if (value == 'report' && widget.tweetId != null) {
+                      // 報告画面への遷移
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ReportPage(
+                            targetUserId: widget.userId,
+                            targetTweetId: widget.tweetId!,
+                          ),
+                        ),
+                      );
                     }
                   },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'edit',
-                      child: Text('編集する'),
-                    ),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Text(
-                        '削除する',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ],
+                  itemBuilder: (context) {
+                    final isMyTweet = widget.userId == myUserId;
+                    
+                    return [
+                      // 自分のツイートの場合は編集・削除を表示
+                      if (isMyTweet) ...[
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Text('編集する'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Text(
+                            '削除する',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
+                      // 報告は他人のツイートの場合のみ表示
+                      if (!isMyTweet)
+                        const PopupMenuItem(
+                          value: 'report',
+                          child: Text('報告する'),
+                        ),
+                    ];
+                  },
                 ),
             ],
           ),
