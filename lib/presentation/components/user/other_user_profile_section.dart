@@ -223,22 +223,54 @@ class _OtherUserProfileSectionState
       ),
       error: (error, stackTrace) => SliverToBoxAdapter(
         child: Container(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(32.0),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.error_outline,
-                size: 48,
-                color: Colors.red,
+              Icon(
+                error.toString().contains('USER_WITHDRAWN')
+                    ? Icons.person_off
+                    : Icons.error_outline,
+                size: 64,
+                color: error.toString().contains('USER_WITHDRAWN')
+                    ? Colors.grey[400]
+                    : Colors.red[400],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Text(
-                'ユーザー情報の読み込みに失敗しました',
+                error.toString().contains('USER_WITHDRAWN')
+                    ? 'このユーザーページを取得することができませんでした'
+                    : 'ユーザー情報の読み込みに失敗しました',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error.toString().contains('USER_WITHDRAWN')
+                    ? '退会した可能性があります'
+                    : '通信エラーが発生しました',
+                style: TextStyle(
+                  fontSize: 14,
                   color: Colors.grey[600],
                 ),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  '戻る',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF0056FF),
+                  ),
+                ),
               ),
             ],
           ),
