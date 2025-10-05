@@ -15,6 +15,7 @@ import { initializeApplication } from './infrastructure/setup/dependencies';
 import userRoutes from './routes/users';
 import tweetRoutes from './routes/tweets';
 import gymRoutes from './routes/gyms';
+import reportRoutes from './routes/reports';
 import internalTasksRoutes from './routes/internal_tasks';
 
 // Validate environment variables
@@ -61,6 +62,7 @@ app.get('/health', async (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/tweets', tweetRoutes);
 app.use('/api/gyms', gymRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Internal task routes (for Cloud Tasks workers)
 app.use('/internal/tasks', internalTasksRoutes);

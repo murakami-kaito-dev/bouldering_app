@@ -194,3 +194,23 @@ export const validateFavoriteGym = () => [
     .isInt({ min: 1 })
     .withMessage('Valid gym ID is required'),
 ];
+
+// Report validation（報告機能のバリデーション）
+export const validateCreateReport = () => [
+  body('reporter_user_id')
+    .isString()
+    .notEmpty()
+    .withMessage('報告者のユーザーIDが必要です'),
+  body('target_user_id')
+    .isString()
+    .notEmpty()
+    .withMessage('対象ユーザーIDが必要です'),
+  body('target_tweet_id')
+    .isInt({ min: 1 })
+    .withMessage('有効なツイートIDが必要です'),
+  body('report_description')
+    .optional()
+    .isString()
+    .isLength({ max: 1000 })
+    .withMessage('報告内容は1000文字以内で入力してください'),
+];
