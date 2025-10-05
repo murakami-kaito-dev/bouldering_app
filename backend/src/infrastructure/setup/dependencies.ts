@@ -8,6 +8,8 @@ import { PostgresTweetRepository } from '../repositories/PostgresTweetRepository
 import { PostgresUserRepository } from '../repositories/PostgresUserRepository';
 import { PostgresGymRepository } from '../repositories/PostgresGymRepository';
 import { PostgresFavoriteRepository } from '../repositories/PostgresFavoriteRepository';
+import { PostgresReportRepository } from '../repositories/PostgresReportRepository';
+import { ReportService } from '../../services/reportService';
 import logger from '../../utils/logger';
 
 /**
@@ -30,12 +32,14 @@ let tweetServiceInstance: TweetService | null = null;
 let userServiceInstance: UserService | null = null;
 let gymServiceInstance: GymService | null = null;
 let favoriteServiceInstance: FavoriteService | null = null;
+let reportServiceInstance: ReportService | null = null;
 
 // リポジトリインスタンス
 let tweetRepository: PostgresTweetRepository | null = null;
 let userRepository: PostgresUserRepository | null = null;
 let gymRepository: PostgresGymRepository | null = null;
 let favoriteRepository: PostgresFavoriteRepository | null = null;
+let reportRepository: PostgresReportRepository | null = null;
 
 /**
  * リポジトリインスタンスを取得
@@ -66,6 +70,13 @@ function getFavoriteRepository(): PostgresFavoriteRepository {
     favoriteRepository = new PostgresFavoriteRepository();
   }
   return favoriteRepository;
+}
+
+function getReportRepository(): PostgresReportRepository {
+  if (!reportRepository) {
+    reportRepository = new PostgresReportRepository();
+  }
+  return reportRepository;
 }
 
 /**
@@ -185,6 +196,26 @@ export function getFavoriteService(): FavoriteService {
   return favoriteServiceInstance;
 }
 
+/**
+ * ReportServiceの依存性注入済みインスタンスを取得
+ */
+export function getReportService(): ReportService {
+  if (reportServiceInstance) {
+    return reportServiceInstance;
+  }
+
+  // リポジトリを注入してReportServiceを作成
+  // 報告機能はイベントバスを使用しない
+  const reportRepo = getReportRepository();
+  reportServiceInstance = new ReportService(reportRepo);
+
+  logger.info('ReportService initialized', {
+    hasRepository: true
+  });
+
+  return reportServiceInstance;
+}
+
 
 /**
  * アプリケーション初期化
@@ -201,6 +232,7 @@ export function initializeApplication(): void {
   getUserService();
   getGymService();
   getFavoriteService();
+  getReportService();
   
   logger.info('Application dependencies initialized successfully');
 }
