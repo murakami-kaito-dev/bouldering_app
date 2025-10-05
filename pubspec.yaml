@@ -65,8 +65,6 @@ flutter:
     - lib/view/assets/map_image.png
     - lib/view/assets/date_range.svg
     - lib/view/assets/home_gim_icon.svg
-    - lib/view/assets/test_user_icon.png
-    - lib/view/assets/gym_facilitation.png
     - assets/keys/gcs_storage_dev.json
     - assets/keys/gcs_storage_prod.json
     - assets/
