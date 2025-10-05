@@ -413,14 +413,29 @@ class UserDataSource {
   Future<bool> deleteUser(String userId) async {
     try {
       // API通信でユーザーを削除
+      print('[DEBUG] DB削除API呼び出し開始 - userId: $userId');
+      
       final response = await _apiClient.delete(
         endpoint: '/users/$userId',
         requireAuth: true,  // 認証必要
       );
-
-      // 削除成功を確認
-      return response['success'] == true;
+      
+      // レスポンスの詳細をログ出力
+      print('[DEBUG] DB削除APIレスポンス: $response');
+      print('[DEBUG] response type: ${response.runtimeType}');
+      
+      // レスポンスがMapの場合
+      if (response is Map) {
+        print('[DEBUG] success field: ${response['success']}');
+        return response['success'] == true;
+      }
+      
+      // レスポンスがMap以外の場合（nullや他の型）
+      print('[DEBUG] 予期しないレスポンス形式');
+      return false;
+      
     } catch (e) {
+      print('[ERROR] DB削除API呼び出しエラー: $e');
       throw Exception('ユーザー削除に失敗しました: $e');
     }
   }

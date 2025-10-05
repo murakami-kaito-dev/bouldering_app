@@ -16,6 +16,7 @@ class AuthNotifier extends StateNotifier<bool> {
   final PasswordResetUseCase _passwordResetUseCase;
 
   bool _isSigningUp = false;
+  bool _isDeleting = false; // 退会処理中フラグ
   Timer? _debounceTimer;
 
   StreamSubscription<User?>? _authSub;
@@ -201,12 +202,21 @@ class AuthNotifier extends StateNotifier<bool> {
 
   /// アカウント削除処理
   /// 
-  /// パスワード再認証後、Cloud SQL と Firebase Auth からユーザーを削除
+  /// パスワード再認証後、データベース（Supabase/Cloud SQL）と Firebase Auth からユーザーを削除
   Future<void> deleteAccount({required String password}) async {
+    // 二重呼び出し防止
+    if (_isDeleting) {
+      print('[DEBUG] 退会処理は既に実行中です');
+      return;
+    }
+    
     final currentUser = _authService.currentUser;
     if (currentUser == null) {
       throw Exception('ログインしていません');
     }
+    
+    _isDeleting = true; // 削除処理開始フラグを立てる
+    print('[DEBUG] 退会処理開始 - userId: ${currentUser.uid}');
     
     try {
       // セキュリティのため再認証を要求
@@ -215,23 +225,48 @@ class AuthNotifier extends StateNotifier<bool> {
         password: password,
       );
       await currentUser.reauthenticateWithCredential(credential);
+      print('[DEBUG] 再認証成功');
 
-      // Cloud SQLからユーザー情報を削除
-      await ref.read(userProvider.notifier).deleteAccount(currentUser.uid);
+      // 1. データベース（Supabase/Cloud SQL）からユーザー情報を削除（認証トークンがまだ有効）
+      bool dbDeleted = false;
+      try {
+        print('[DEBUG] DB削除開始');
+        await ref.read(userProvider.notifier).deleteAccount(currentUser.uid);
+        dbDeleted = true;
+        print('[DEBUG] DB削除成功');
+      } catch (dbError) {
+        print('[ERROR] DB削除エラー: $dbError');
+        // DB削除に失敗してもFirebase Auth削除は試みる
+      }
       
-      // Firebase Authからユーザーを削除
-      await _authService.deleteAccount();
+      // 2. Firebase Authからユーザーを削除
+      try {
+        print('[DEBUG] Firebase Auth削除開始');
+        await _authService.deleteAccount();
+        print('[DEBUG] Firebase Auth削除成功');
+      } catch (authError) {
+        print('[ERROR] Firebase Auth削除エラー: $authError');
+        // DB削除が成功していた場合は不整合状態
+        if (dbDeleted) {
+          print('[WARNING] DBは削除済みだがFirebase Authの削除に失敗');
+        }
+        rethrow;
+      }
 
       // ローカル状態をクリア
       state = false;
       ref.read(userProvider.notifier).logout();
+      print('[DEBUG] 退会処理完了');
     } catch (e) {
+      print('[ERROR] 退会処理エラー: $e');
       rethrow;
+    } finally {
+      _isDeleting = false; // 処理完了後フラグをリセット
     }
   }
 
   /// Firebase Authメールアドレス変更：**送信→強制ログアウト**のみ
-  /// Cloud SQL はここでは触らない（検証完了していないため）
+  /// データベース（Supabase/Cloud SQL）はここでは触らない（検証完了していないため）
   Future<void> updateEmailInFirebaseAuth({
     required String newEmail,
     required String currentPassword,
