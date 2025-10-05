@@ -209,12 +209,11 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
           ),
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
-              'lib/view/assets/rock_unselected.svg',
+              _currentIndex == 3
+                  ? 'lib/view/assets/rock_selected.svg'
+                  : 'lib/view/assets/rock_unselected.svg',
               width: 24,
               height: 24,
-              colorFilter: _currentIndex == 3
-                  ? const ColorFilter.mode(Color(0xFF0056FF), BlendMode.srcIn)
-                  : const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
             ),
             label: 'マイページ',
           ),
