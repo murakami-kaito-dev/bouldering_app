@@ -18,7 +18,11 @@ final otherUserProvider =
     final user = await userRepository.getUserProfile(userId);  // 公開プロフィール取得
     return user;
   } catch (e) {
-    // エラー時はnullを返す
-    return null;
+    // 404エラーの場合は退会済みユーザーとして特別なエラーを投げる
+    if (e.toString().contains('404') || e.toString().contains('User not found')) {
+      throw Exception('USER_WITHDRAWN');
+    }
+    // その他のエラーは一般的なエラーとして扱う
+    rethrow;
   }
 });

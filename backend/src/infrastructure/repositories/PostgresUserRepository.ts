@@ -258,14 +258,22 @@ export class PostgresUserRepository implements IUserRepository {
 
   async deleteUser(userId: string): Promise<boolean> {
     try {
-      const result = await db.query('DELETE FROM users WHERE user_id = $1', [userId]);
+      // 削除前に存在チェック
+      const checkResult = await db.query('SELECT 1 FROM users WHERE user_id = $1', [userId]);
       
-      const deleted = result.length > 0;
-      if (deleted) {
-        logger.info('User deleted successfully', { userId });
+      if (checkResult.length === 0) {
+        // ユーザーが既に削除済み、あるいは存在しない
+        logger.info('User not found or already deleted', { userId });
+        // 冪等性を担保するためtrueを返す
+        return true;
       }
       
-      return deleted;
+      // 存在しているなら削除実行
+      await db.query('DELETE FROM users WHERE user_id = $1', [userId]);
+      
+      // 例外が発生しなければ削除成功
+      logger.info('User deleted successfully', { userId });
+      return true;
     } catch (error) {
       logger.error('Error deleting user', { userId, error });
       throw new ApiError(500, 'Failed to delete user');

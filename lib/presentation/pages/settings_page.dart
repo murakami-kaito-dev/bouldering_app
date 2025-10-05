@@ -221,13 +221,11 @@ class SettingsPage extends ConsumerWidget {
           ),
           _buildSettingsItem(
             icon: Icons.delete_forever,
-            title: '退会（準備中）', // 次回リリース時：「退会」
-            subtitle:
-                '現在ご利用いただけません．次回アップデートで提供予定です．', // 次回リリース時：「アカウントとすべてのデータを削除」
+            title: '退会',
+            subtitle: 'アカウントとすべてのデータを削除',
             iconColor: Colors.red[600],
             titleColor: Colors.red[800],
-            // onTap: () => _confirmAccountDeletion(context, ref),
-            onTap: () {},
+            onTap: () => _confirmAccountDeletion(context, ref),
           ),
         ],
       ),
@@ -364,13 +362,13 @@ class SettingsPage extends ConsumerWidget {
       return;
     }
 
-    final rootNavigator = Navigator.of(context, rootNavigator: true);
-    try {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        useRootNavigator: true,
-        builder: (context) => const AlertDialog(
+    // プログレスダイアログを表示
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => WillPopScope(
+        onWillPop: () async => false,
+        child: const AlertDialog(
           content: Row(
             children: [
               CircularProgressIndicator(),
@@ -379,14 +377,19 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
         ),
-      );
+      ),
+    );
 
+    try {
+      // 削除処理を実行
       await ref.read(authProvider.notifier).deleteAccount(password: password);
 
-      try {
-        rootNavigator.maybePop();
-      } catch (_) {}
+      // 成功した場合
       if (context.mounted) {
+        // プログレスダイアログを閉じる
+        Navigator.of(context).pop();
+        
+        // 成功メッセージを表示
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('アカウントを削除しました'),
@@ -394,24 +397,25 @@ class SettingsPage extends ConsumerWidget {
             duration: Duration(seconds: 2),
           ),
         );
+        
+        // 少し待ってから最初の画面に戻る
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (context.mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
       }
-      try {
-        rootNavigator.popUntil((route) => route.isFirst);
-      } catch (_) {}
     } catch (e) {
-      try {
-        rootNavigator.maybePop();
-      } catch (_) {}
+      // エラーが発生した場合
       if (context.mounted) {
+        // プログレスダイアログを閉じる
+        Navigator.of(context).pop();
+        
+        // エラーダイアログを表示
         NavigationHelper.showErrorDialog(
           context: context,
           message: _toFriendlyMessage(e),
         );
       }
-    } finally {
-      try {
-        rootNavigator.maybePop();
-      } catch (_) {}
     }
   }
 
