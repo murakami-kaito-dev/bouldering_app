@@ -72,6 +72,7 @@ assets/keys/
 assets/keys/*.json
 ios/Runner/GoogleService-Info.plist
 android/app/google-services.json
+ios/Runner/Firebase/
 
 # envファイル / 環境変数ファイル（データベースパスワード等含む）
 backend/.env.dev
