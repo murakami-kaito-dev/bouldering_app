@@ -138,15 +138,15 @@ backend/src/
 | **PostgreSQL** | 15 | リレーショナルデータベース |
 | **Firebase Admin SDK** | 11.11.1+ | 認証トークン検証 |
 
-### インフラストラクチャ（Google Cloud Platform）
+### インフラストラクチャ（Google Cloud Platform他）
 | サービス | 用途 |
 |---------|------|
 | **Cloud Run** | コンテナ化されたAPIサーバーのホスティング |
-| **Cloud SQL** | マネージドPostgreSQLデータベース |
 | **Cloud Storage** | 画像・メディアファイルの保存 |
 | **Cloud Tasks** | 非同期タスク処理（画像削除など） |
 | **Secret Manager** | APIキー・パスワードの安全な管理 |
 | **Artifact Registry** | Dockerイメージの管理 |
+| **Supabase** | マネージドPostgreSQLデータベース |
 
 ## 🚀 開発環境セットアップ
 
@@ -154,7 +154,6 @@ backend/src/
 
 - Flutter SDK 3.5.3以上
 - Node.js 18.0.0以上
-- PostgreSQL（ローカル開発用）
 - Xcode 13以上（iOS開発）
 - Android Studio（Android開発）
 
@@ -305,12 +304,6 @@ gcloud run deploy [SERVICE_NAME] --image [IMAGE_TAG]
 
 ## 📊 プロジェクト状況
 
-### 開発進捗
-- **フロントエンド**: 95% 完成
-- **バックエンド**: 90% 完成
-- **インフラ構築**: 85% 完成
-- **ドキュメント**: 95% 完成
-
 ### 実装済み機能
 ✅ ユーザー認証（Firebase Authentication）
 ✅ ジム検索・地図表示
@@ -329,14 +322,6 @@ gcloud run deploy [SERVICE_NAME] --image [IMAGE_TAG]
 - スレッド会話機能
 - コンペティション機能
 
-## 📄 ライセンス
-
-ISCライセンス - 詳細は package.json を参照
-
 ## 👥 開発チーム
 
 日本のボルダリング愛好者のために開発されたコミュニティアプリケーション
-
----
-
-**注記**: 本READMEは公開用のドキュメントです。機密情報（APIキー、データベース接続情報等）は含まれていません。開発に必要な詳細設定については、別途提供される開発者向けドキュメントを参照してください。
