@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../shared/config/environment_config.dart';
 import '../../shared/constants/app_routes.dart';
 import '../providers/auth_provider.dart';
+import '../providers/terms_acceptance_provider.dart';
 import 'home_page.dart';
 import 'gym_detail_page.dart';
 import 'gym_search_page.dart';
@@ -15,6 +16,7 @@ import 'favorite_users_page.dart';
 import 'boul_log_page.dart';
 import 'my_page.dart';
 import 'other_user_profile_page.dart';
+import 'terms_agreement_page.dart';
 
 /// メインアプリケーションクラス
 ///
@@ -31,12 +33,21 @@ class BoulderingApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final termsState = ref.watch(termsAcceptanceProvider);
+
     return MaterialApp(
       title: 'ボルダリングアプリ${EnvironmentConfig.appVersionSuffix}',
       theme: _buildTheme(),
       debugShowCheckedModeBanner:
           EnvironmentConfig.isDevelopment, // 開発環境でのみデバッグバナー表示
-      home: const ScaffoldWithNavBar(),
+      home: termsState.isLoading
+          ? const Scaffold(
+              backgroundColor: Color(0xFFFEF7FF),
+              body: Center(child: CircularProgressIndicator()),
+            )
+          : termsState.hasAccepted
+              ? const ScaffoldWithNavBar()
+              : const TermsAgreementPage(),
       routes: _buildRoutes(),
     );
   }
