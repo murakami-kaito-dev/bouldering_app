@@ -10,6 +10,8 @@ import { PostgresGymRepository } from '../repositories/PostgresGymRepository';
 import { PostgresFavoriteRepository } from '../repositories/PostgresFavoriteRepository';
 import { PostgresReportRepository } from '../repositories/PostgresReportRepository';
 import { ReportService } from '../../services/reportService';
+import { PostgresBlockRepository } from '../repositories/PostgresBlockRepository';
+import { BlockService } from '../../services/blockService';
 import logger from '../../utils/logger';
 
 /**
@@ -33,6 +35,7 @@ let userServiceInstance: UserService | null = null;
 let gymServiceInstance: GymService | null = null;
 let favoriteServiceInstance: FavoriteService | null = null;
 let reportServiceInstance: ReportService | null = null;
+let blockServiceInstance: BlockService | null = null;
 
 // リポジトリインスタンス
 let tweetRepository: PostgresTweetRepository | null = null;
@@ -40,6 +43,7 @@ let userRepository: PostgresUserRepository | null = null;
 let gymRepository: PostgresGymRepository | null = null;
 let favoriteRepository: PostgresFavoriteRepository | null = null;
 let reportRepository: PostgresReportRepository | null = null;
+let blockRepository: PostgresBlockRepository | null = null;
 
 /**
  * リポジトリインスタンスを取得
@@ -77,6 +81,13 @@ function getReportRepository(): PostgresReportRepository {
     reportRepository = new PostgresReportRepository();
   }
   return reportRepository;
+}
+
+function getBlockRepository(): PostgresBlockRepository {
+  if (!blockRepository) {
+    blockRepository = new PostgresBlockRepository();
+  }
+  return blockRepository;
 }
 
 /**
@@ -216,6 +227,26 @@ export function getReportService(): ReportService {
   return reportServiceInstance;
 }
 
+/**
+ * BlockServiceの依存性注入済みインスタンスを取得
+ */
+export function getBlockService(): BlockService {
+  if (blockServiceInstance) {
+    return blockServiceInstance;
+  }
+
+  // リポジトリを注入してBlockServiceを作成
+  // ブロック機能はイベントバスを使用しない
+  const blockRepo = getBlockRepository();
+  blockServiceInstance = new BlockService(blockRepo);
+
+  logger.info('BlockService initialized', {
+    hasRepository: true
+  });
+
+  return blockServiceInstance;
+}
+
 
 /**
  * アプリケーション初期化
@@ -233,6 +264,7 @@ export function initializeApplication(): void {
   getGymService();
   getFavoriteService();
   getReportService();
+  getBlockService();
   
   logger.info('Application dependencies initialized successfully');
 }
