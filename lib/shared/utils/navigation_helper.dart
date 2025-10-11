@@ -73,6 +73,43 @@ class NavigationHelper {
     );
   }
 
+  /// 他ユーザープロフィール画面への遷移（ブロック状態チェック付き）
+  ///
+  /// [context] BuildContext
+  /// [userId] 表示するユーザーのID
+  /// [blockChecker] ブロック状態を確認する関数（依存性注入）
+  ///
+  /// ブロック状態をチェックして、適切なページに遷移する
+  /// 依存性注入により、NavigationHelperはブロック判定ロジックに依存しない
+  static Future<void> toOtherUserProfileWithBlockCheck(
+    BuildContext context,
+    String userId,
+    Future<bool> Function(String) blockChecker,
+  ) async {
+    try {
+      final isBlocked = await blockChecker(userId);
+      
+      if (isBlocked) {
+        // ブロック済みユーザーページに遷移
+        await Navigator.pushNamed(context, AppRoutes.blockedUser);
+      } else {
+        // 通常のプロフィールページに遷移
+        await Navigator.pushNamed(
+          context,
+          AppRoutes.otherUserProfile,
+          arguments: {RouteParams.userId: userId},
+        );
+      }
+    } catch (e) {
+      // エラーが発生した場合は通常のプロフィールページに遷移
+      await Navigator.pushNamed(
+        context,
+        AppRoutes.otherUserProfile,
+        arguments: {RouteParams.userId: userId},
+      );
+    }
+  }
+
   /// プロフィール編集画面への遷移
   static Future<void> toEditProfile(BuildContext context) async {
     await Navigator.pushNamed(context, AppRoutes.editProfile);
@@ -91,6 +128,11 @@ class NavigationHelper {
   /// 設定画面への遷移
   static Future<void> toSettings(BuildContext context) async {
     await Navigator.pushNamed(context, AppRoutes.settings);
+  }
+
+  /// ブロックリスト画面への遷移
+  static Future<void> toBlockList(BuildContext context) async {
+    await Navigator.pushNamed(context, AppRoutes.blockList);
   }
 
   /// 確認ダイアログの表示

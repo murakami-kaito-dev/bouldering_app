@@ -20,12 +20,14 @@ import '../../infrastructure/datasources/gym_datasource.dart';
 import '../../infrastructure/datasources/tweet_datasource.dart';
 import '../../infrastructure/datasources/favorite_datasource.dart';
 import '../../infrastructure/datasources/report_datasource.dart';
+import '../../infrastructure/datasources/block_datasource.dart';
 import '../../infrastructure/repositories/user_repository_impl.dart';
 import '../../infrastructure/repositories/gym_repository_impl.dart';
 import '../../infrastructure/repositories/tweet_repository_impl.dart';
 import '../../infrastructure/repositories/favorite_repository_impl.dart';
 import '../../infrastructure/repositories/storage_repository_impl.dart';
 import '../../infrastructure/repositories/report_repository_impl.dart';
+import '../../infrastructure/repositories/block_repository_impl.dart';
 
 // Domain
 import '../../domain/repositories/user_repository.dart';
@@ -34,6 +36,7 @@ import '../../domain/repositories/tweet_repository.dart';
 import '../../domain/repositories/favorite_repository.dart';
 import '../../domain/repositories/storage_repository.dart';
 import '../../domain/repositories/report_repository.dart';
+import '../../domain/repositories/block_repository.dart';
 import '../../domain/usecases/auth_usecases.dart';
 import '../../domain/usecases/user_usecases.dart';
 import '../../domain/usecases/gym_usecases.dart';
@@ -44,6 +47,7 @@ import '../../domain/usecases/get_monthly_statistics_usecase.dart';
 import '../../domain/usecases/image_picker_usecases.dart';
 import '../../domain/usecases/get_user_favorite_gyms_usecase.dart';
 import '../../domain/usecases/report_usecase.dart';
+import '../../domain/usecases/block_usecase.dart';
 
 /// 依存関係注入（DI）コンテナ
 ///
@@ -416,4 +420,24 @@ final createReportUseCaseProvider = Provider<CreateReportUseCase>((ref) {
   final reportRepository = ref.read(reportRepositoryProvider);
 
   return CreateReportUseCase(reportRepository);
+});
+
+// ==================== ブロック関連 ====================
+
+/// ブロックデータソースProvider
+final blockDataSourceProvider = Provider<BlockDataSource>((ref) {
+  final apiClient = ref.read(apiClientProvider);
+  return BlockDataSource(apiClient);
+});
+
+/// ブロックリポジトリProvider
+final blockRepositoryProvider = Provider<BlockRepository>((ref) {
+  final dataSource = ref.read(blockDataSourceProvider);
+  return BlockRepositoryImpl(dataSource);
+});
+
+/// ブロックユースケースProvider
+final blockUseCaseProvider = Provider<BlockUseCase>((ref) {
+  final blockRepository = ref.read(blockRepositoryProvider);
+  return BlockUseCase(blockRepository);
 });

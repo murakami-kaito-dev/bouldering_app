@@ -36,10 +36,13 @@ export class PostgresBlockRepository implements IBlockRepository {
     try {
       const result = await db.query(
         `DELETE FROM user_blocks
-         WHERE blocker_user_id = $1 AND blocked_user_id = $2`,
+         WHERE blocker_user_id = $1 AND blocked_user_id = $2
+         RETURNING *`,
         [blockerUserId, blockedUserId]
       );
 
+      // RETURNING *により、削除されたレコードが返される
+      // result.length > 0 なら削除成功、0なら削除対象が存在しなかった
       return result.length > 0;
     } catch (error) {
       logger.error('Error deleting block', { blockerUserId, blockedUserId, error });

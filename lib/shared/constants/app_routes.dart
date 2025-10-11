@@ -29,6 +29,10 @@ class AppRoutes {
 
   // 設定関連
   static const String settings = '/settings';
+
+  // ブロック関連
+  static const String blockList = '/block/list';
+  static const String blockedUser = '/block/blocked-user';
 }
 
 /// ルートパラメータ用のクラス

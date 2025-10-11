@@ -19,6 +19,7 @@ class SettingsPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('設定'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        foregroundColor: Colors.black,
       ),
       body: userState.when(
         data: (user) => _buildSettingsContent(context, ref, user),
@@ -45,6 +46,8 @@ class SettingsPage extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       children: [
         _buildUserInfoSection(context, user),
+        const SizedBox(height: 24),
+        _buildPrivacySection(context),
         const SizedBox(height: 24),
         _buildSecuritySection(context, ref, user),
         const SizedBox(height: 24),
@@ -114,6 +117,31 @@ class SettingsPage extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPrivacySection(BuildContext context) {
+    return Card(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text('ユーザー管理',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      )),
+            ),
+          ),
+          _buildSettingsItem(
+            icon: Icons.block,
+            title: 'ブロックしたユーザー',
+            subtitle: 'ブロックしたユーザーの管理',
+            onTap: () => NavigationHelper.toBlockList(context),
+          ),
+        ],
       ),
     );
   }
@@ -388,7 +416,7 @@ class SettingsPage extends ConsumerWidget {
       if (context.mounted) {
         // プログレスダイアログを閉じる
         Navigator.of(context).pop();
-        
+
         // 成功メッセージを表示
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -397,7 +425,7 @@ class SettingsPage extends ConsumerWidget {
             duration: Duration(seconds: 2),
           ),
         );
-        
+
         // 少し待ってから最初の画面に戻る
         await Future.delayed(const Duration(milliseconds: 500));
         if (context.mounted) {
@@ -409,7 +437,7 @@ class SettingsPage extends ConsumerWidget {
       if (context.mounted) {
         // プログレスダイアログを閉じる
         Navigator.of(context).pop();
-        
+
         // エラーダイアログを表示
         NavigationHelper.showErrorDialog(
           context: context,

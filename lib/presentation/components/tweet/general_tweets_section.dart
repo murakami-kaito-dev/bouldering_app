@@ -87,6 +87,18 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
             content: generalTweet.content,
             mediaUrls: generalTweet.mediaUrls,
             tweetId: generalTweet.id,
+            // ブロック成功時の処理：ツイート一覧を更新
+            onBlockSuccess: () async {
+              // ツイート一覧を再取得（ブロックしたユーザーのツイートは除外される）
+              await ref.read(generalTweetsProvider.notifier).refreshTweets();
+              
+              // ユーザーに更新したことを知らせる（任意）
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('タイムラインを更新しました')),
+                );
+              }
+            },
           );
         },
       ),
