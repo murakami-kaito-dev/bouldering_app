@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/dependency_injection.dart';
+import '../../providers/block_provider.dart';
 import '../../../shared/utils/image_url_validator.dart';
 import '../../../shared/utils/navigation_helper.dart';
 import '../../pages/activity_post_page.dart';
@@ -20,6 +21,7 @@ class BoulLog extends ConsumerStatefulWidget {
   final String content;
   final List<String>? mediaUrls; // 画像がある場合のみ使用される
   final int? tweetId;
+  final VoidCallback? onBlockSuccess; // ブロック成功時のコールバック
 
   const BoulLog({
     super.key,
@@ -33,6 +35,7 @@ class BoulLog extends ConsumerStatefulWidget {
     required this.content,
     this.mediaUrls, // null許容にすることで未添付もOK
     this.tweetId,
+    this.onBlockSuccess, // ブロック成功時の処理を親から受け取る
   });
 
   @override
@@ -205,6 +208,68 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           ),
                         ),
                       );
+                    } else if (value == 'block') {
+                      // ブロック確認ダイアログを表示
+                      final shouldBlock = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          titlePadding: const EdgeInsets.only(
+                              top: 24, left: 24, right: 24, bottom: 0),
+                          contentPadding:
+                              const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                          title: const Center(
+                            child: Text(
+                              "ユーザーをブロック",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          content: const Text(
+                            "このユーザーについて\n本当にブロックしてよろしいですか？\n",
+                            style: TextStyle(fontSize: 14, color: Colors.black),
+                            textAlign: TextAlign.center,
+                          ),
+                          actionsAlignment: MainAxisAlignment.spaceBetween,
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text(
+                                "キャンセル",
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text(
+                                "ブロックする",
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                      
+                      if (shouldBlock == true) {
+                        try {
+                          await ref.read(blockProvider.notifier).blockUser(widget.userId);
+                          
+                          if (!context.mounted) return;
+                          
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('ユーザーをブロックしました')),
+                          );
+                          
+                          // ブロック成功時、親コンポーネントに通知
+                          // これにより、ツイート一覧が更新される
+                          widget.onBlockSuccess?.call();
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('ブロックに失敗しました')),
+                          );
+                        }
+                      }
                     } else if (value == 'report' && widget.tweetId != null) {
                       // 報告画面への遷移
                       Navigator.push(
@@ -236,12 +301,17 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           ),
                         ),
                       ],
-                      // 報告は他人のツイートの場合のみ表示
-                      if (!isMyTweet)
+                      // 報告・ブロックは他人のツイートの場合のみ表示
+                      if (!isMyTweet) ...[
+                        const PopupMenuItem(
+                          value: 'block',
+                          child: Text('ブロック'),
+                        ),
                         const PopupMenuItem(
                           value: 'report',
                           child: Text('報告する'),
                         ),
+                      ],
                     ];
                   },
                 ),

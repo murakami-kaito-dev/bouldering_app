@@ -250,26 +250,31 @@ class UserProfileSection extends ConsumerWidget {
 
           // ホームジム
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // SVGアイコンの代わりにIconを使用
               const Icon(Icons.home, size: 16, color: Colors.grey),
               const SizedBox(width: 8),
               const Text("ホームジム：", style: TextStyle(fontSize: 12)),
-              GestureDetector(
-                onTap: user?.homeGymId != null && user?.homeGymId != 0
-                    ? () {
-                        NavigationHelper.toGymDetail(context, user!.homeGymId!);
-                      }
-                    : null,
-                child: Text(
-                  getHomeGymName(user?.homeGymId, gymMap),
-                  style: TextStyle(
-                    color: (user?.homeGymId != null && user?.homeGymId != 0)
-                        ? Colors.blue
-                        : Colors.black,
-                    fontSize: 12,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
+              Expanded(
+                child: GestureDetector(
+                  onTap: user?.homeGymId != null && user?.homeGymId != 0
+                      ? () {
+                          NavigationHelper.toGymDetail(context, user!.homeGymId!);
+                        }
+                      : null,
+                  child: Text(
+                    getHomeGymName(user?.homeGymId, gymMap),
+                    style: TextStyle(
+                      color: (user?.homeGymId != null && user?.homeGymId != 0)
+                          ? Colors.blue
+                          : Colors.black,
+                      fontSize: 12,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.visible,
+                    softWrap: true,
                   ),
                 ),
               ),

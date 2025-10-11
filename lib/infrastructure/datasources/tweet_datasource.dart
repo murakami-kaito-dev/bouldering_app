@@ -38,6 +38,9 @@ class TweetDataSource {
   /// 3. APIエラー時は例外を上位に伝播
   Future<List<Tweet>> getAllTweets({int limit = 20, String? cursor}) async {
     try {
+      print('TweetDataSource: getAllTweets呼び出し');
+      print('Cursor: ${cursor ?? "初回取得"}');
+      
       final parameters = <String, String>{
         'limit': limit.toString(),
       };
@@ -51,6 +54,8 @@ class TweetDataSource {
         endpoint: '/tweets',
         parameters: parameters,
       );
+      
+      print('取得したツイート数: ${(response['data'] as List).length}');
 
       final List<dynamic> tweetData = response['data'] ?? [];
       return tweetData.map((item) => _mapToTweetEntity(item)).toList();

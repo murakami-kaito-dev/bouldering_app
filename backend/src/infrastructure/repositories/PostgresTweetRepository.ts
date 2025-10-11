@@ -14,10 +14,23 @@ import logger from '../../utils/logger';
  * - PostgreSQLデータベースとの具体的な通信を担当
  */
 export class PostgresTweetRepository implements ITweetRepository {
-  async getAllTweets(limit: number = 20, cursor?: string): Promise<any[]> {
+  async getAllTweets(limit: number = 20, cursor?: string, requestUserId?: string): Promise<any[]> {
     try {
       let query: string;
       let params: any[];
+
+      // ブロックフィルタ条件を構築
+      let blockFilterCondition = '';
+      
+      if (requestUserId) {
+        const paramIndex = cursor ? 3 : 2; // cursor有:$3, cursor無:$2
+        blockFilterCondition = `
+          AND t.user_id NOT IN (
+            SELECT blocked_user_id FROM user_blocks WHERE blocker_user_id = $${paramIndex}
+            UNION
+            SELECT blocker_user_id FROM user_blocks WHERE blocked_user_id = $${paramIndex}
+          )`;
+      }
 
       if (cursor) {
         query = `
@@ -42,10 +55,10 @@ export class PostgresTweetRepository implements ITweetRepository {
           FROM tweets AS t
           INNER JOIN users AS u ON t.user_id = u.user_id
           INNER JOIN gyms AS g ON t.gym_id = g.gym_id
-          WHERE t.tweeted_date < $1
+          WHERE t.tweeted_date < $1 ${blockFilterCondition}
           ORDER BY t.tweeted_date DESC
           LIMIT $2`;
-        params = [cursor, limit];
+        params = requestUserId ? [cursor, limit, requestUserId] : [cursor, limit];
       } else {
         query = `
           SELECT
@@ -69,9 +82,10 @@ export class PostgresTweetRepository implements ITweetRepository {
           FROM tweets AS t
           INNER JOIN users AS u ON t.user_id = u.user_id
           INNER JOIN gyms AS g ON t.gym_id = g.gym_id
+          WHERE 1 = 1 ${blockFilterCondition}
           ORDER BY t.tweeted_date DESC
           LIMIT $1`;
-        params = [limit];
+        params = requestUserId ? [limit, requestUserId] : [limit];
       }
 
       const result = await db.query(query, params);

@@ -17,6 +17,8 @@ import 'boul_log_page.dart';
 import 'my_page.dart';
 import 'other_user_profile_page.dart';
 import 'terms_agreement_page.dart';
+import 'block_list_page.dart';
+import 'blocked_user_page.dart';
 
 /// メインアプリケーションクラス
 ///
@@ -81,6 +83,8 @@ class BoulderingApp extends ConsumerWidget {
         final userId = args?[RouteParams.userId] as String?;
         return OtherUserProfilePage(userId: userId ?? '');
       },
+      AppRoutes.blockList: (context) => const BlockListPage(),
+      AppRoutes.blockedUser: (context) => const BlockedUserPage(),
       // Note: Tweet detail uses parameters, so it's handled in navigation helper
     };
   }

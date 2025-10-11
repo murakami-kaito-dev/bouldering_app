@@ -12,8 +12,11 @@ import { Tweet, TweetMedia } from '../../models/types';
 export interface ITweetRepository {
   /**
    * 全ツイート取得（ページネーション付き）
+   * @param limit 取得件数
+   * @param cursor ページネーション用カーソル
+   * @param requestUserId リクエストユーザーID（ブロック関係のフィルタリング用）
    */
-  getAllTweets(limit: number, cursor?: string): Promise<any[]>;
+  getAllTweets(limit: number, cursor?: string, requestUserId?: string): Promise<any[]>;
 
   /**
    * ユーザーのツイート取得

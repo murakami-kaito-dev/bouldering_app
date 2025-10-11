@@ -24,10 +24,12 @@ router.get(
   async (req, res, next) => {
     try {
       const { limit = '20', cursor } = req.query;
+      const requestUser = (req as AuthenticatedRequest).user;
 
       const tweets = await tweetService.getAllTweets(
         parseInt(limit as string),
-        cursor as string
+        cursor as string,
+        requestUser?.uid // 認証されている場合はユーザーIDを渡す
       );
 
       res.json({

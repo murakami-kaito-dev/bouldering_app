@@ -26,6 +26,21 @@ export interface Tweet {
   movie_url?: string;
 }
 
+export interface UserBlock {
+  block_id: number;
+  blocker_user_id: string;
+  blocked_user_id: string;
+  created_at: Date;
+}
+
+export interface BlockedUserDetail {
+  blocked_user_id: string;
+  user_name: string;
+  user_icon_url: string | null;
+  user_bio: string | null;
+  blocked_at: Date;
+}
+
 export interface TweetMedia {
   tweet_id: number;
   media_url: string;

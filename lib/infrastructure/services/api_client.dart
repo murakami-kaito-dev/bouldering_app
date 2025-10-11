@@ -46,14 +46,18 @@ class ApiClient {
       
       // 未認証の場合はnullを返す
       if (user == null) {
+        print('Firebase Auth: ユーザーは未ログイン状態');
         return null;
       }
+      
+      print('Firebase Auth: ログイン中のユーザーID: ${user.uid}');
       
       // IDトークンを取得して返す
       final token = await user.getIdToken();
       return token;
     } catch (e) {
       // トークン取得失敗時はnullを返す
+      print('Firebase Auth: トークン取得エラー: $e');
       return null;
     }
   }
@@ -69,13 +73,22 @@ class ApiClient {
       'Content-Type': 'application/json',
     };
 
-    // 認証が必要な場合のみFirebase Auth IDトークンを追加
-    if (requireAuth) {
-      final idToken = await _getIdToken();
-      if (idToken != null) {
-        headers['Authorization'] = 'Bearer $idToken';
-      }
+    // Firebase認証トークンを取得（ユーザーがログインしている場合のみ取得可能）
+    // このトークンにはユーザーIDが含まれている
+    final userIdToken = await _getIdToken();
+    
+    // 認証処理の分岐（3パターン）
+    if (userIdToken != null) {
+      // パターン1: ログイン中の場合
+      // → 認証トークンをヘッダーに追加（ブロック機能などが有効になる）
+      headers['Authorization'] = 'Bearer $userIdToken';
+    } else if (requireAuth) {
+      // パターン2: 未ログイン かつ 認証必須（requireAuth=true）の場合
+      // → エラーを投げる（例：プロフィール編集など、ログイン必須の機能）
+      throw ApiException('認証が必要ですが、ログインしていません');
     }
+    // パターン3（else節なし）: 未ログイン かつ 認証任意（requireAuth=false）の場合
+    // → そのまま続行（例：ツイート一覧表示。未ログインでも見られるが、ブロック機能は無効）
 
     return headers;
   }
@@ -104,6 +117,14 @@ class ApiClient {
 
       // ヘッダーの構築（認証が必要な場合はIDトークンを含む）
       final headers = await _buildHeaders(requireAuth: requireAuth);
+      
+      // デバッグ：認証情報の送信状況を確認
+      print('API GET Request: $endpoint');
+      print('RequireAuth: $requireAuth');
+      print('Headers contain Authorization: ${headers.containsKey('Authorization')}');
+      if (headers.containsKey('Authorization')) {
+        print('Authorization header exists (token hidden for security)');
+      }
 
       // GETリクエストの実行
       final response = await http
