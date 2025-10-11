@@ -309,6 +309,11 @@ export class PostgresFavoriteRepository implements IFavoriteRepository {
             user_favorites uf ON uf.likee_user_id = t.user_id
           WHERE uf.liker_user_id = $1
             AND t.tweeted_date < $2
+            AND t.user_id NOT IN (
+              SELECT blocked_user_id FROM user_blocks WHERE blocker_user_id = $1
+              UNION
+              SELECT blocker_user_id FROM user_blocks WHERE blocked_user_id = $1
+            )
           ORDER BY
             t.tweeted_date DESC
           LIMIT $3
@@ -344,6 +349,11 @@ export class PostgresFavoriteRepository implements IFavoriteRepository {
             user_favorites uf ON uf.likee_user_id = t.user_id
           WHERE
             uf.liker_user_id = $1
+            AND t.user_id NOT IN (
+              SELECT blocked_user_id FROM user_blocks WHERE blocker_user_id = $1
+              UNION
+              SELECT blocker_user_id FROM user_blocks WHERE blocked_user_id = $1
+            )
           ORDER BY
             t.tweeted_date DESC
           LIMIT $2

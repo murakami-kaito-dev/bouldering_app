@@ -21,9 +21,12 @@ export class TweetService {
 
   /**
    * 全ツイート取得（ページネーション付き）
+   * @param limit 取得件数
+   * @param cursor ページネーション用カーソル
+   * @param requestUserId リクエストユーザーID（ブロック関係のフィルタリング用）
    */
-  async getAllTweets(limit: number = 20, cursor?: string): Promise<any[]> {
-    return await this.tweetRepository.getAllTweets(limit, cursor);
+  async getAllTweets(limit: number = 20, cursor?: string, requestUserId?: string): Promise<any[]> {
+    return await this.tweetRepository.getAllTweets(limit, cursor, requestUserId);
   }
 
   /**
