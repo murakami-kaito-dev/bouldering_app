@@ -260,8 +260,6 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
         _tileKeys[blockedUser.userId]?.currentState?.clearCache();
       }
     } catch (error) {
-      // デバッグ用ログ（実際のエラー内容を確認）
-      print('Block removal error: $error');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -291,7 +289,6 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
         _tileKeys[blockedUser.userId]?.currentState?.clearCache();
       }
     } catch (error) {
-      print('Block addition error: $error');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

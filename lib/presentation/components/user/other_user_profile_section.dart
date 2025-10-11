@@ -183,26 +183,31 @@ class _OtherUserProfileSectionState
 
               // ホームジム
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(Icons.home, size: 16, color: Colors.grey),
                   const SizedBox(width: 8),
                   const Text("ホームジム：", style: TextStyle(fontSize: 12)),
-                  GestureDetector(
-                    onTap: otherUser?.homeGymId != null
-                        ? () {
-                            NavigationHelper.toGymDetail(
-                                context, otherUser!.homeGymId!);
-                          }
-                        : null,
-                    child: Text(
-                      getHomeGymName(otherUser?.homeGymId, gymMap),
-                      style: TextStyle(
-                        color: otherUser?.homeGymId != null
-                            ? Colors.blue
-                            : Colors.black,
-                        fontSize: 12,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: otherUser?.homeGymId != null
+                          ? () {
+                              NavigationHelper.toGymDetail(
+                                  context, otherUser!.homeGymId!);
+                            }
+                          : null,
+                      child: Text(
+                        getHomeGymName(otherUser?.homeGymId, gymMap),
+                        style: TextStyle(
+                          color: otherUser?.homeGymId != null
+                              ? Colors.blue
+                              : Colors.black,
+                          fontSize: 12,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.visible,
+                        softWrap: true,
                       ),
                     ),
                   ),
