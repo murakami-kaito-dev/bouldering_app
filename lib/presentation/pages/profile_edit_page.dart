@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
+import 'gym_selection_page.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/entities/gym.dart';
 import '../providers/user_provider.dart';
@@ -9,7 +10,7 @@ import '../providers/dependency_injection.dart';
 import '../components/common/loading_widget.dart';
 import '../components/common/error_widget.dart';
 import '../../shared/utils/navigation_helper.dart';
-import 'gym_selection_page.dart';
+import '../../shared/utils/ng_word_validator.dart';
 
 /// プロフィール編集ページ
 ///
@@ -65,8 +66,12 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('プロフィール編集'),
+        title: const Text(
+          'プロフィール編集',
+          style: TextStyle(color: Colors.black),
+        ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        foregroundColor: Colors.black,
         actions: [
           TextButton(
             onPressed: _hasChanges && !_isSaving ? _saveProfile : null,
@@ -76,7 +81,10 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('保存'),
+                : const Text(
+                    '保存',
+                    style: TextStyle(color: Colors.black),
+                  ),
           ),
         ],
       ),
@@ -475,7 +483,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         const SizedBox(height: 8),
         GestureDetector(
           onTap: () {
-            // TODO: 日付選択ダイアログを実装
+            // 日付選択ダイアログ
             _showDatePicker('birthday');
           },
           child: Container(
@@ -536,7 +544,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         const SizedBox(height: 8),
         GestureDetector(
           onTap: () {
-            // TODO: 性別選択ダイアログを実装
+            // 性別選択ダイアログ
             _showGenderSelectionDialog();
           },
           child: Container(
@@ -578,7 +586,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         const SizedBox(height: 8),
         GestureDetector(
           onTap: () {
-            // TODO: 日付選択ダイアログを実装
+            // 日付選択ダイアログ
             _showDatePicker('boulStartDate');
           },
           child: Container(
@@ -785,6 +793,24 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         return;
       }
 
+      // NGワードチェック（共通化処理を使用）
+      final fieldsToCheck = <String, String>{
+        'ユーザー名': _userNameController.text.trim(),
+        '自己紹介': _introductionController.text.trim(),
+        'お気に入りのジム': _favoriteGymsController.text.trim(),
+      };
+
+      final isValid = await NGWordValidator.validateMultipleFields(
+        context: context,
+        ref: ref,
+        fields: fieldsToCheck,
+      );
+
+      if (!isValid) {
+        setState(() => _isSaving = false);
+        return; // NGワード検出時は処理中断
+      }
+
       // プロフィール情報の更新処理
       // ホームジムIDを準備（未選択の場合は0を送信）
       final homeGymIdToSend = _selectedHomeGym?.id ?? 0;
@@ -792,10 +818,10 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       // 各入力フィールドから値を取得し、空文字の場合はデフォルト値を設定
       final userNameValue = _userNameController.text.trim();
       final userIntroduceValue = _introductionController.text.trim().isEmpty
-          ? "-"  // 空の場合はクリア指示として"-"を送信
+          ? "-" // 空の場合はクリア指示として"-"を送信
           : _introductionController.text.trim();
       final favoriteGymValue = _favoriteGymsController.text.trim().isEmpty
-          ? "-"  // 空の場合はクリア指示として"-"を送信
+          ? "-" // 空の場合はクリア指示として"-"を送信
           : _favoriteGymsController.text.trim();
 
       // UserProviderを通じて一括でプロフィール情報を更新
@@ -813,10 +839,10 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       if (_selectedProfileImage != null) {
         // アイコン更新用UseCaseを取得
         final updateUserIconUseCase = ref.read(updateUserIconUseCaseProvider);
-        
+
         // 現在ログイン中のユーザー情報を取得
         final currentUser = ref.read(userProvider).value;
-        
+
         if (currentUser != null) {
           try {
             // 画像ファイルをクラウドストレージにアップロードし、DBのアイコンURLを更新
@@ -838,7 +864,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
         // 編集画面を閉じて前の画面に戻る
         Navigator.of(context).pop();
-        
+
         // 更新成功をユーザーに通知
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('プロフィールを更新しました')),
