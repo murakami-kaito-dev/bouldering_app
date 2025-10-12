@@ -194,6 +194,13 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                       content: favoriteUserTweet.content,
                       mediaUrls: favoriteUserTweet.mediaUrls,
                       tweetId: favoriteUserTweet.id,
+                      // ブロック成功時の処理：ツイート一覧を更新
+                      onBlockSuccess: () async {
+                        // ツイート一覧を再取得（ブロックしたユーザーのツイートは除外される）
+                        await ref
+                            .read(favoriteUserTweetsProvider(userId).notifier)
+                            .refreshTweets();
+                      },
                     );
                   },
                 ),
