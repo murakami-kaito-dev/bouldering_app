@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
+import '../pages/gym_selection_page.dart';
 import '../components/common/app_logo.dart';
 import '../providers/user_provider.dart';
 import '../providers/statistics_provider.dart';
-import '../pages/gym_selection_page.dart';
 import '../providers/dependency_injection.dart';
 import '../../shared/utils/image_url_validator.dart';
-import '../providers/post_moderation_provider.dart';
+import '../../shared/utils/ng_word_validator.dart';
 
 /// ■ クラス
 /// - View
@@ -264,37 +264,16 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                     // 投稿(編集)処理開始
                     setState(() => _isPosting = true);
 
-                    // NGワードチェック
-                    final moderationResult = ref.read(postModerationProvider.notifier)
-                        .validateContent(_textController.text);
-                    
-                    if (!moderationResult.isAllowed) {
-                      // NGワードが検出された場合
+                    // NGワードチェック（共通化処理を使用）
+                    final isValid = await NGWordValidator.validateWithDialog(
+                      context: context,
+                      ref: ref,
+                      content: _textController.text,
+                      fieldName: '投稿内容',
+                    );
+
+                    if (!isValid) {
                       setState(() => _isPosting = false);
-                      
-                      if (mounted) {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('投稿できません'),
-                              content: Text(
-                                '不適切な表現が含まれています。\n'
-                                '検出された表現: ${moderationResult.firstDetectedWord}\n\n'
-                                '投稿内容を修正してください。',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }
                       return; // 投稿処理を中断
                     }
 
