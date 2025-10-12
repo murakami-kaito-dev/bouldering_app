@@ -36,28 +36,24 @@ class ApiClient {
   /// 返り値:
   /// [String?] IDトークン（未認証の場合はnull）
   /// Firebase Auth IDトークンを取得
-  /// 
+  ///
   /// 返り値:
   /// [String?] IDトークン（未認証の場合はnull）
   Future<String?> _getIdToken() async {
     try {
       // 現在のユーザーを取得
       final user = _firebaseAuth.currentUser;
-      
+
       // 未認証の場合はnullを返す
       if (user == null) {
-        print('Firebase Auth: ユーザーは未ログイン状態');
         return null;
       }
-      
-      print('Firebase Auth: ログイン中のユーザーID: ${user.uid}');
-      
+
       // IDトークンを取得して返す
       final token = await user.getIdToken();
       return token;
     } catch (e) {
       // トークン取得失敗時はnullを返す
-      print('Firebase Auth: トークン取得エラー: $e');
       return null;
     }
   }
@@ -76,7 +72,7 @@ class ApiClient {
     // Firebase認証トークンを取得（ユーザーがログインしている場合のみ取得可能）
     // このトークンにはユーザーIDが含まれている
     final userIdToken = await _getIdToken();
-    
+
     // 認証処理の分岐（3パターン）
     if (userIdToken != null) {
       // パターン1: ログイン中の場合
@@ -117,14 +113,6 @@ class ApiClient {
 
       // ヘッダーの構築（認証が必要な場合はIDトークンを含む）
       final headers = await _buildHeaders(requireAuth: requireAuth);
-      
-      // デバッグ：認証情報の送信状況を確認
-      print('API GET Request: $endpoint');
-      print('RequireAuth: $requireAuth');
-      print('Headers contain Authorization: ${headers.containsKey('Authorization')}');
-      if (headers.containsKey('Authorization')) {
-        print('Authorization header exists (token hidden for security)');
-      }
 
       // GETリクエストの実行
       final response = await http

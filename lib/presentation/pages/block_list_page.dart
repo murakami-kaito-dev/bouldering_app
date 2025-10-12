@@ -234,7 +234,7 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
               await _reblockUser(blockedUser);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey,
+              backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
             child: const Text('追加'),
@@ -260,7 +260,6 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
         _tileKeys[blockedUser.userId]?.currentState?.clearCache();
       }
     } catch (error) {
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -289,7 +288,6 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
         _tileKeys[blockedUser.userId]?.currentState?.clearCache();
       }
     } catch (error) {
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -428,14 +426,17 @@ class _BlockedUserTileState extends ConsumerState<_BlockedUserTile> {
                     onPressed: widget.onShowUnblockDialog,
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(
-                        color: const Color(0xFF0056FF),
+                        color: Color(0xFF0056FF),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       minimumSize: const Size(0, 36),
                     ),
                     child: const Text(
                       'ブロックを解除',
-                      style: TextStyle(fontSize: 12),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF0056FF),
+                      ),
                     ),
                   );
                 } else {
