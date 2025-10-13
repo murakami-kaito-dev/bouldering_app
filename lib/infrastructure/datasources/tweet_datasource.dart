@@ -1,15 +1,16 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../services/api_client.dart';
 import '../services/storage_service.dart';
 import '../../domain/entities/tweet.dart';
 
 /// ツイートデータソースクラス
-/// 
+///
 /// 役割:
 /// - ツイート関連のAPI通信を担当
 /// - APIレスポンスとDomainエンティティ間の変換
 /// - ツイート投稿、取得、削除処理
-/// 
+///
 /// クリーンアーキテクチャにおける位置づけ:
 /// - Infrastructure層のデータソースコンポーネント
 /// - 外部API（ツイートAPI）との通信窓口
@@ -19,32 +20,31 @@ class TweetDataSource {
   final StorageService _storageService;
 
   /// コンストラクタ
-  /// 
+  ///
   /// [_apiClient] API通信クライアント
   /// [_storageService] ファイルストレージサービス
   TweetDataSource(this._apiClient, this._storageService);
 
   /// 全ツイート取得
-  /// 
+  ///
   /// [limit] 取得件数の上限
   /// [cursor] ページネーション用のカーソル（前回取得の最後のツイートの投稿日時）
-  /// 
+  ///
   /// 返り値:
   /// [List<Tweet>] ツイートリスト
-  /// 
+  ///
   /// 処理フロー:
   /// 1. REST API: GET /api/tweets?limit={limit}&cursor={cursor} で全ツイート取得
   /// 2. カーソルベースページネーションによる無限スクロール対応
   /// 3. APIエラー時は例外を上位に伝播
   Future<List<Tweet>> getAllTweets({int limit = 20, String? cursor}) async {
     try {
-      print('TweetDataSource: getAllTweets呼び出し');
-      print('Cursor: ${cursor ?? "初回取得"}');
-      
+      debugPrint('Cursor: ${cursor ?? "初回取得"}');
+
       final parameters = <String, String>{
         'limit': limit.toString(),
       };
-      
+
       // カーソルがある場合のみcursorパラメータを追加（初回はcursor無しで最新取得）
       if (cursor != null && cursor.isNotEmpty) {
         parameters['cursor'] = cursor;
@@ -54,8 +54,8 @@ class TweetDataSource {
         endpoint: '/tweets',
         parameters: parameters,
       );
-      
-      print('取得したツイート数: ${(response['data'] as List).length}');
+
+      debugPrint('取得したツイート数: ${(response['data'] as List).length}');
 
       final List<dynamic> tweetData = response['data'] ?? [];
       return tweetData.map((item) => _mapToTweetEntity(item)).toList();
@@ -65,14 +65,14 @@ class TweetDataSource {
   }
 
   /// ユーザーID指定によるツイート取得
-  /// 
+  ///
   /// [userId] ユーザーID
   /// [limit] 取得件数の上限
   /// [offset] 取得開始位置
-  /// 
+  ///
   /// 返り値:
   /// [List<Tweet>] 指定ユーザーのツイートリスト
-  /// 
+  ///
   /// 処理フロー:
   /// 1. REST API: GET /api/users/{userId}/tweets?limit={limit}&offset={offset} でユーザーツイート取得
   /// 2. APIエラー時は例外を上位に伝播
@@ -86,7 +86,7 @@ class TweetDataSource {
       final parameters = <String, String>{
         'limit': limit.toString(),
       };
-      
+
       // offsetが0より大きい場合のみcursorパラメータを追加
       // 実際のカーソル値はバックエンドのレスポンスから取得する必要がある
       if (offset > 0) {
@@ -97,7 +97,7 @@ class TweetDataSource {
       final response = await _apiClient.get(
         endpoint: '/tweets/users/$userId',
         parameters: parameters,
-        requireAuth: false,  // This is a public endpoint
+        requireAuth: false, // This is a public endpoint
       );
 
       final List<dynamic> tweetData = response['data'] ?? [];
@@ -108,14 +108,14 @@ class TweetDataSource {
   }
 
   /// ジムID指定によるツイート取得
-  /// 
+  ///
   /// [gymId] ジムID
   /// [limit] 取得件数の上限
   /// [offset] 取得開始位置
-  /// 
+  ///
   /// 返り値:
   /// [List<Tweet>] 指定ジムのツイートリスト
-  /// 
+  ///
   /// 処理フロー:
   /// 1. REST API: GET /api/gyms/{gymId}/tweets?limit={limit}&offset={offset} でジムツイート取得
   /// 2. APIエラー時は例外を上位に伝播
@@ -141,14 +141,14 @@ class TweetDataSource {
   }
 
   /// お気に入りユーザーのツイート取得
-  /// 
+  ///
   /// [userId] ログインユーザーID
   /// [limit] 取得件数の上限
   /// [cursor] ページネーション用のカーソル（前回取得の最後のツイートの投稿日時）
-  /// 
+  ///
   /// 返り値:
   /// [List<Tweet>] お気に入りユーザーのツイートリスト
-  /// 
+  ///
   /// 処理フロー:
   /// 1. REST API: GET /api/users/{userId}/favorites/users/tweets?limit={limit}&cursor={cursor} でお気に入りツイート取得
   /// 2. カーソルベースページネーションによる無限スクロール対応
@@ -162,7 +162,7 @@ class TweetDataSource {
       final parameters = <String, String>{
         'limit': limit.toString(),
       };
-      
+
       // カーソルがある場合のみcursorパラメータを追加（初回はcursor無しで最新取得）
       if (cursor != null && cursor.isNotEmpty) {
         parameters['cursor'] = cursor;
@@ -171,7 +171,7 @@ class TweetDataSource {
       final response = await _apiClient.get(
         endpoint: '/users/$userId/favorites/users/tweets',
         parameters: parameters,
-        requireAuth: true,  // 認証が必要
+        requireAuth: true, // 認証が必要
       );
 
       final List<dynamic> tweetData = response['data'] ?? [];
@@ -182,12 +182,12 @@ class TweetDataSource {
   }
 
   /// ツイート詳細取得
-  /// 
+  ///
   /// [tweetId] ツイートID
-  /// 
+  ///
   /// 返り値:
   /// [Tweet?] ツイートエンティティ、存在しない場合はnull
-  /// 
+  ///
   /// 処理フロー:
   /// 1. REST API: GET /api/tweets/{tweetId} でツイート詳細取得
   /// 2. APIエラー時は例外を上位に伝播
@@ -207,7 +207,7 @@ class TweetDataSource {
   }
 
   /// ツイート新規投稿
-  /// 
+  ///
   /// [userId] 投稿者のユーザーID
   /// [gymId] 投稿対象のジムID
   /// [content] ツイート内容
@@ -215,10 +215,10 @@ class TweetDataSource {
   /// [postUuid] 投稿UUID（クライアント側で生成済み）
   /// [movieUrl] 動画URL（オプション）
   /// [mediaData] 画像データリスト（オプション）
-  /// 
+  ///
   /// 返り値:
   /// [bool] 投稿成功時はtrue、失敗時はfalse
-  /// 
+  ///
   /// 処理フロー:
   /// 1. REST API: POST /api/tweets でツイート投稿
   /// 2. APIエラー時は例外を上位に伝播
@@ -239,22 +239,24 @@ class TweetDataSource {
         'visited_date': _formatDate(visitedDate),
         'post_uuid': postUuid,
       };
-      
+
       if (movieUrl != null) {
         tweetData['movie_url'] = movieUrl;
       }
-      
+
       // mediaDataから各情報を抽出してサーバーに送信
       if (mediaData != null && mediaData.isNotEmpty) {
         // URLのリストと拡張メディア情報を送信
         tweetData['media_urls'] = mediaData.map((data) => data['url']).toList();
-        
-        final metadata = mediaData.map((data) => {
-          'asset_uuid': data['assetUuid'] ?? '',
-          'storage_prefix': data['storagePrefix'] ?? '',
-          'mime_type': data['mimeType'] ?? '',
-        }).toList();
-        
+
+        final metadata = mediaData
+            .map((data) => {
+                  'asset_uuid': data['assetUuid'] ?? '',
+                  'storage_prefix': data['storagePrefix'] ?? '',
+                  'mime_type': data['mimeType'] ?? '',
+                })
+            .toList();
+
         tweetData['media_metadata'] = metadata;
       }
 
@@ -270,7 +272,7 @@ class TweetDataSource {
   }
 
   /// ツイート更新
-  /// 
+  ///
   /// [tweetId] 更新対象のツイートID
   /// [userId] 更新実行者のユーザーID
   /// [gymId] 投稿対象のジムID
@@ -278,10 +280,10 @@ class TweetDataSource {
   /// [visitedDate] ジム訪問日
   /// [movieUrl] 動画URL（オプション）
   /// [mediaUrls] 画像URLリスト（オプション）
-  /// 
+  ///
   /// 返り値:
   /// [bool] 更新成功時はtrue、失敗時はfalse
-  /// 
+  ///
   /// 処理フロー:
   /// 1. REST API: PATCH /api/tweets/{tweetId} でツイート更新
   /// 2. APIエラー時は例外を上位に伝播
@@ -301,11 +303,11 @@ class TweetDataSource {
         'tweet_contents': content,
         'visited_date': _formatDate(visitedDate),
       };
-      
+
       if (movieUrl != null) {
         tweetData['movie_url'] = movieUrl;
       }
-      
+
       if (mediaUrls != null && mediaUrls.isNotEmpty) {
         tweetData['media_urls'] = mediaUrls;
       }
@@ -322,13 +324,13 @@ class TweetDataSource {
   }
 
   /// ツイート削除
-  /// 
+  ///
   /// [tweetId] 削除対象のツイートID
   /// [userId] 削除実行者のユーザーID
-  /// 
+  ///
   /// 返り値:
   /// [bool] 削除成功時はtrue、失敗時はfalse
-  /// 
+  ///
   /// 処理フロー:
   /// 1. REST API: DELETE /api/tweets/{tweetId} で認証付きツイート削除
   /// 2. APIエラー時は例外を上位に伝播
@@ -336,7 +338,7 @@ class TweetDataSource {
     try {
       await _apiClient.delete(
         endpoint: '/tweets/$tweetId',
-        requireAuth: true,  // 認証が必要
+        requireAuth: true, // 認証が必要
       );
 
       // バックエンドは204 No Contentを返すため、例外が発生しなければ成功
@@ -347,13 +349,13 @@ class TweetDataSource {
   }
 
   /// ツイートにいいね追加
-  /// 
+  ///
   /// [tweetId] いいね対象のツイートID
   /// [userId] いいね実行者のユーザーID
-  /// 
+  ///
   /// 返り値:
   /// [bool] いいね追加成功時はtrue、失敗時はfalse
-  /// 
+  ///
   /// 処理フロー:
   /// 1. REST API: POST /api/tweets/{tweetId}/likes でいいね追加
   /// 2. APIエラー時は例外を上位に伝播
@@ -371,13 +373,13 @@ class TweetDataSource {
   }
 
   /// ツイートのいいね削除
-  /// 
+  ///
   /// [tweetId] いいね削除対象のツイートID
   /// [userId] いいね削除実行者のユーザーID
-  /// 
+  ///
   /// 返り値:
   /// [bool] いいね削除成功時はtrue、失敗時はfalse
-  /// 
+  ///
   /// 処理フロー:
   /// 1. REST API: DELETE /api/tweets/{tweetId}/likes?user_id={userId} でいいね削除
   /// 2. APIエラー時は例外を上位に伝播
@@ -395,27 +397,30 @@ class TweetDataSource {
   }
 
   /// 投稿メディアファイルアップロード
-  /// 
+  ///
   /// [mediaPath] アップロードするメディアファイルのパス
   /// [mediaType] メディアタイプ（'image', 'video'）
   /// [userId] ユーザーID
   /// [postUuid] 投稿UUID（クライアント側で生成済み）
-  /// 
+  ///
   /// 返り値:
   /// [Map<String, String>?] アップロード成功時は画像情報、失敗時はnull
-  Future<Map<String, String>?> uploadPostMedia(String mediaPath, String mediaType, {required String userId, required String postUuid}) async {
+  Future<Map<String, String>?> uploadPostMedia(
+      String mediaPath, String mediaType,
+      {required String userId, required String postUuid}) async {
     try {
       final mediaFile = File(mediaPath);
-      return await _storageService.uploadPostMedia(mediaFile, mediaType, userId: userId, postUuid: postUuid);
+      return await _storageService.uploadPostMedia(mediaFile, mediaType,
+          userId: userId, postUuid: postUuid);
     } catch (e) {
       throw Exception('メディアアップロードに失敗しました: $e');
     }
   }
 
   /// APIレスポンスからTweetエンティティにマッピング
-  /// 
+  ///
   /// [tweetData] APIから取得したツイートデータ
-  /// 
+  ///
   /// 返り値:
   /// [Tweet] ツイートエンティティ
   Tweet _mapToTweetEntity(Map<String, dynamic> tweetData) {
@@ -424,9 +429,9 @@ class TweetDataSource {
       userId: tweetData['user_id']?.toString() ?? '',
       userName: tweetData['user_name'] ?? '',
       userIconUrl: tweetData['user_icon_url'] ?? '',
-      visitedDate: DateTime.tryParse(tweetData['visited_date'] ?? '') ?? 
+      visitedDate: DateTime.tryParse(tweetData['visited_date'] ?? '') ??
           DateTime(1990, 1, 1),
-      tweetedDate: DateTime.tryParse(tweetData['tweeted_date'] ?? '') ?? 
+      tweetedDate: DateTime.tryParse(tweetData['tweeted_date'] ?? '') ??
           DateTime(1990, 1, 1),
       gymId: tweetData['gym_id'] ?? 0,
       content: tweetData['tweet_contents'] ?? '',
@@ -439,30 +444,30 @@ class TweetDataSource {
   }
 
   /// メディアURLリストをパース
-  /// 
+  ///
   /// [mediaData] メディアURLデータ
-  /// 
+  ///
   /// 返り値:
   /// [List<String>] メディアURLリスト
   List<String> _parseMediaUrls(dynamic mediaData) {
     if (mediaData == null) return [];
-    
+
     if (mediaData is List) {
       return mediaData.map((url) => url.toString()).toList();
     }
-    
+
     if (mediaData is String && mediaData.isNotEmpty) {
       // カンマ区切りの文字列の場合
       return mediaData.split(',').map((url) => url.trim()).toList();
     }
-    
+
     return [];
   }
 
   /// 日付をAPIで使用する形式にフォーマット
-  /// 
+  ///
   /// [date] フォーマット対象の日付
-  /// 
+  ///
   /// 返り値:
   /// [String] YYYY-MM-DD形式の日付文字列
   String _formatDate(DateTime date) {

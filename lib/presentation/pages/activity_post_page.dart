@@ -237,269 +237,319 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
 
   /// ログイン状態の表示
   Widget _buildLoggedState(BuildContext context, user) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading:
-            isEditMode || widget.fromGymDetail, // 編集時またはジム詳細からの遷移時に戻るボタンを表示
-        title: Text(
-          isEditMode ? 'ボル活編集' : 'ボル活投稿',
-          style: const TextStyle(
-            color: Colors.blue,
-            fontWeight: FontWeight.bold,
+    return GestureDetector(
+      // タップでキーボードを閉じる
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading:
+              isEditMode || widget.fromGymDetail, // 編集時またはジム詳細からの遷移時に戻るボタンを表示
+          title: Text(
+            isEditMode ? 'ボル活編集' : 'ボル活投稿',
+            style: const TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
-        leading: (isEditMode || widget.fromGymDetail)
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Navigator.of(context).pop(),
-              )
-            : null,
-        actions: [
-          TextButton(
-            onPressed: _isPosting
-                ? null
-                : () async {
-                    // 投稿(編集)処理開始
-                    setState(() => _isPosting = true);
+          backgroundColor: const Color(0xFFFEF7FF),
+          surfaceTintColor: const Color(0xFFFEF7FF),
+          leading: (isEditMode || widget.fromGymDetail)
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () => Navigator.of(context).pop(),
+                )
+              : null,
+          actions: [
+            TextButton(
+              onPressed: _isPosting
+                  ? null
+                  : () async {
+                      // 投稿(編集)処理開始
+                      setState(() => _isPosting = true);
 
-                    // NGワードチェック（共通化処理を使用）
-                    final isValid = await NGWordValidator.validateWithDialog(
-                      context: context,
-                      ref: ref,
-                      content: _textController.text,
-                      fieldName: '投稿内容',
-                    );
-
-                    if (!isValid) {
-                      setState(() => _isPosting = false);
-                      return; // 投稿処理を中断
-                    }
-
-                    // gymIdは既にGymSelectionPageから取得済み
-                    if (gymId == null) {
-                      // ジム選択を促すメッセージのSnackBarを表示
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('ジムを選択してください')),
+                      // NGワードチェック（共通化処理を使用）
+                      final isValid = await NGWordValidator.validateWithDialog(
+                        context: context,
+                        ref: ref,
+                        content: _textController.text,
+                        fieldName: '投稿内容',
                       );
-                    } else {
-                      try {
-                        final activityPostUseCase =
-                            ref.read(activityPostUseCaseProvider);
 
-                        if (isEditMode && editingTweetId != null) {
-                          // 編集モード
-                          final success =
-                              await activityPostUseCase.updateActivity(
-                            tweetId: editingTweetId!,
-                            userId: user.id,
-                            gymId: gymId!,
-                            visitedDate: _selectedDate,
-                            tweetContents: _textController.text,
-                            mediaFiles: _mediaFiles,
-                            existingUrls: _uploadedUrls,
-                            originalUrls: originalUrls,
-                          );
+                      if (!isValid) {
+                        setState(() => _isPosting = false);
+                        return; // 投稿処理を中断
+                      }
 
-                          if (success) {
-                            // 統計データのキャッシュを無効化して最新データを取得させる
-                            ref.invalidate(statisticsProvider);
+                      // gymIdは既にGymSelectionPageから取得済み
+                      if (gymId == null) {
+                        // ジム選択を促すメッセージのSnackBarを表示
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('ジムを選択してください')),
+                        );
+                      } else {
+                        try {
+                          final activityPostUseCase =
+                              ref.read(activityPostUseCaseProvider);
 
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('編集が完了しました')),
-                              );
-                              Navigator.of(context).pop();
-                            }
-                          } else {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('編集に失敗しました')),
-                              );
-                            }
-                          }
-                        } else {
-                          // 新規投稿モード
-                          final success =
-                              await activityPostUseCase.postActivity(
-                            userId: user.id,
-                            gymId: gymId!,
-                            visitedDate: _selectedDate,
-                            tweetContents: _textController.text,
-                            mediaFiles: _mediaFiles,
-                          );
+                          if (isEditMode && editingTweetId != null) {
+                            // 編集モード
+                            final success =
+                                await activityPostUseCase.updateActivity(
+                              tweetId: editingTweetId!,
+                              userId: user.id,
+                              gymId: gymId!,
+                              visitedDate: _selectedDate,
+                              tweetContents: _textController.text,
+                              mediaFiles: _mediaFiles,
+                              existingUrls: _uploadedUrls,
+                              originalUrls: originalUrls,
+                            );
 
-                          if (success) {
-                            // 統計データのキャッシュを無効化して最新データを取得させる
-                            // これにより「今月のボル活」ウィジェットが自動的に更新される
-                            ref.invalidate(statisticsProvider);
+                            if (success) {
+                              // 統計データのキャッシュを無効化して最新データを取得させる
+                              ref.invalidate(statisticsProvider);
 
-                            // 投稿ページ初期化
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('投稿が完了しました')),
-                              );
-
-                              // ジム詳細ページから来た場合は前画面に戻る
-                              if (widget.fromGymDetail) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('編集が完了しました')),
+                                );
                                 Navigator.of(context).pop();
-                              } else {
-                                // 通常の投稿タブから来た場合は初期化
-                                setState(() {
-                                  _selectedDate = DateTime.now();
-                                  selectedGym = null;
-                                  gymId = null;
-                                  _textController.clear();
-                                  _mediaFiles.clear();
-                                  _uploadedUrls.clear();
-                                });
+                              }
+                            } else {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('編集に失敗しました')),
+                                );
                               }
                             }
                           } else {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('投稿に失敗しました')),
-                              );
+                            // 新規投稿モード
+                            final success =
+                                await activityPostUseCase.postActivity(
+                              userId: user.id,
+                              gymId: gymId!,
+                              visitedDate: _selectedDate,
+                              tweetContents: _textController.text,
+                              mediaFiles: _mediaFiles,
+                            );
+
+                            if (success) {
+                              // 統計データのキャッシュを無効化して最新データを取得させる
+                              // これにより「今月のボル活」ウィジェットが自動的に更新される
+                              ref.invalidate(statisticsProvider);
+
+                              // 投稿ページ初期化
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('投稿が完了しました')),
+                                );
+
+                                // ジム詳細ページから来た場合は前画面に戻る
+                                if (widget.fromGymDetail) {
+                                  Navigator.of(context).pop();
+                                } else {
+                                  // 通常の投稿タブから来た場合は初期化
+                                  setState(() {
+                                    _selectedDate = DateTime.now();
+                                    selectedGym = null;
+                                    gymId = null;
+                                    _textController.clear();
+                                    _mediaFiles.clear();
+                                    _uploadedUrls.clear();
+                                  });
+                                }
+                              }
+                            } else {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('投稿に失敗しました')),
+                                );
+                              }
                             }
                           }
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('エラーが発生しました: $e')),
-                          );
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('エラーが発生しました: $e')),
+                            );
+                          }
                         }
                       }
-                    }
 
-                    // 投稿(編集)処理終了
-                    setState(() => _isPosting = false);
-                  },
-            child: _isPosting
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.blue,
+                      // 投稿(編集)処理終了
+                      setState(() => _isPosting = false);
+                    },
+              child: _isPosting
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.blue,
+                      ),
+                    )
+                  : Text(
+                      isEditMode ? '更新する' : '投稿する',
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  )
-                : Text(
-                    isEditMode ? '更新する' : '投稿する',
-                    style: const TextStyle(
-                      color: Colors.blue,
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ジム選択フィールド
+                TextField(
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    hintText: selectedGym ?? "ジムを選択してください",
+                    hintStyle: const TextStyle(
+                      color: Colors.black,
                       fontWeight: FontWeight.bold,
                     ),
+                    suffixIcon: const Icon(Icons.arrow_drop_down),
                   ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ジム選択フィールド
-              TextField(
-                readOnly: true,
-                decoration: InputDecoration(
-                  hintText: selectedGym ?? "ジムを選択してください",
-                  hintStyle: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  suffixIcon: const Icon(Icons.arrow_drop_down),
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              const GymSelectionPage(selectionMode: true)),
+                    );
+
+                    if (result != null && result is Map<String, dynamic>) {
+                      setState(() {
+                        selectedGym = result['gymName'];
+                        gymId = result['gymId'];
+                      });
+                    }
+                  },
                 ),
-                onTap: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            const GymSelectionPage(selectionMode: true)),
-                  );
+                const SizedBox(height: 16),
 
-                  if (result != null && result is Map<String, dynamic>) {
-                    setState(() {
-                      selectedGym = result['gymName'];
-                      gymId = result['gymId'];
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // 日付選択ボタン
-              Row(
-                children: [
-                  Icon(Icons.calendar_today, color: Colors.grey[600]),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => _selectDate(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        "ジム訪問日：${DateFormat('yyyy.MM.dd').format(_selectedDate)}",
-                        style: const TextStyle(fontSize: 16),
+                // 日付選択ボタン
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today, color: Colors.grey[600]),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => _selectDate(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          "ジム訪問日：${DateFormat('yyyy.MM.dd').format(_selectedDate)}",
+                          style: const TextStyle(fontSize: 16),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // テキスト入力フィールド
-              TextField(
-                controller: _textController,
-                maxLength: 400,
-                maxLines: 10,
-                decoration: const InputDecoration(
-                  hintText: '今日登ったレベル，時間など好きなことを書きましょう。',
-                  border: InputBorder.none,
+                  ],
                 ),
-              ),
+                const SizedBox(height: 16),
 
-              // カウンターと写真追加ボタン
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 写真一覧
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        // 編集モード時：既存画像を表示
-                        if (_uploadedUrls.isNotEmpty)
-                          ..._uploadedUrls
-                              .where((url) =>
-                                  ImageUrlValidator.isValidImageUrl(url))
-                              .map((url) {
-                            final index = _uploadedUrls.indexOf(url);
+                // テキスト入力フィールド
+                TextField(
+                  controller: _textController,
+                  maxLength: 400,
+                  maxLines: 10,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (value) {
+                    // 完了ボタンが押された時にキーボードを閉じる
+                    FocusScope.of(context).unfocus();
+                  },
+                  decoration: const InputDecoration(
+                    hintText: '今日登ったレベル，時間など好きなことを書きましょう。',
+                    border: InputBorder.none,
+                  ),
+                ),
 
+                // カウンターと写真追加ボタン
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 写真一覧
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          // 編集モード時：既存画像を表示
+                          if (_uploadedUrls.isNotEmpty)
+                            ..._uploadedUrls
+                                .where((url) =>
+                                    ImageUrlValidator.isValidImageUrl(url))
+                                .map((url) {
+                              final index = _uploadedUrls.indexOf(url);
+
+                              return Stack(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: Image.network(
+                                      url,
+                                      width: 100,
+                                      height: 100,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Container(
+                                          width: 100,
+                                          height: 100,
+                                          color: Colors.grey[300],
+                                          child: const Icon(Icons.error,
+                                              color: Colors.grey),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _uploadedUrls.removeAt(index);
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.black54,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.close,
+                                            size: 16, color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }),
+
+                          // 新規画像を表示（✗ボタン付き）
+                          ..._mediaFiles.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final file = entry.value;
                             return Stack(
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.only(right: 8.0),
-                                  child: Image.network(
-                                    url,
+                                  child: Image.file(
+                                    file,
                                     width: 100,
                                     height: 100,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        width: 100,
-                                        height: 100,
-                                        color: Colors.grey[300],
-                                        child: const Icon(Icons.error,
-                                            color: Colors.grey),
-                                      );
-                                    },
                                   ),
                                 ),
                                 Positioned(
@@ -508,7 +558,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                   child: GestureDetector(
                                     onTap: () {
                                       setState(() {
-                                        _uploadedUrls.removeAt(index);
+                                        _mediaFiles.removeAt(index);
                                       });
                                     },
                                     child: Container(
@@ -525,89 +575,52 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                               ],
                             );
                           }),
-
-                        // 新規画像を表示（✗ボタン付き）
-                        ..._mediaFiles.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final file = entry.value;
-                          return Stack(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Image.file(
-                                  file,
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Positioned(
-                                top: 0,
-                                right: 0,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _mediaFiles.removeAt(index);
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.black54,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.close,
-                                        size: 16, color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 写真追加ボタン
-                  GestureDetector(
-                    onTap: () {
-                      _pickMultipleImages();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Column(
-                        children: [
-                          Icon(Icons.image, size: 30, color: Colors.grey),
-                          SizedBox(height: 8),
-                          Text(
-                            '写真を追加',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
-                          ),
                         ],
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
 
-                  // 写真枚数カウンター
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      '${_uploadedUrls.length + _mediaFiles.length} / 5枚',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                    // 写真追加ボタン
+                    GestureDetector(
+                      onTap: () {
+                        _pickMultipleImages();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Column(
+                          children: [
+                            Icon(Icons.image, size: 30, color: Colors.grey),
+                            SizedBox(height: 8),
+                            Text(
+                              '写真を追加',
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 12),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+
+                    // 写真枚数カウンター
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        '${_uploadedUrls.length + _mediaFiles.length} / 5枚',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
