@@ -38,17 +38,12 @@ class UserLogoAndName extends StatelessWidget {
                   context: context,
                   imageUrls: [userLogo!],
                   initialIndex: 0,
-                  heroTagPrefix: heroTag ?? 'user_icon_default_${userId ?? userName.hashCode}',
+                  heroTagPrefix: 'profile_icon_${userId ?? userName.hashCode}',
                 );
               }
             },
             child: Hero(
-              // 元の実装（Heroアニメーションが効かない）
-              // tag:
-              //     heroTag ?? 'user_icon_default_${userId ?? userName.hashCode}',
-              // 新しい実装（ImageViewer側と合わせるため_0を付加）
-              tag:
-                  '${heroTag ?? 'user_icon_default_${userId ?? userName.hashCode}'}_0',
+              tag: 'profile_icon_${userId ?? userName.hashCode}_0',
               child: ClipOval(
                 child: (_isValidUrl(userLogo))
                     ? Image.network(

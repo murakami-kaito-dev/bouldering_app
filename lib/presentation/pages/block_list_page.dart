@@ -359,7 +359,7 @@ class _BlockedUserTileState extends ConsumerState<_BlockedUserTile> {
           children: [
             // ユーザーアイコン
             Hero(
-              tag: 'blocked_user_icon_${widget.blockedUser.userId}',
+              tag: 'blocked_icon_${widget.blockedUser.userId}',
               child: ClipOval(
                 child: widget.buildUserIcon(),
               ),
