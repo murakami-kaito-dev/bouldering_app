@@ -22,6 +22,7 @@ class BoulLog extends ConsumerStatefulWidget {
   final List<String>? mediaUrls; // 画像がある場合のみ使用される
   final int? tweetId;
   final VoidCallback? onBlockSuccess; // ブロック成功時のコールバック
+  final String? contextPrefix; // Hero tag用のコンテキストプレフィックス
 
   const BoulLog({
     super.key,
@@ -36,6 +37,7 @@ class BoulLog extends ConsumerStatefulWidget {
     this.mediaUrls, // null許容にすることで未添付もOK
     this.tweetId,
     this.onBlockSuccess, // ブロック成功時の処理を親から受け取る
+    this.contextPrefix, // コンテキストを区別するためのプレフィックス
   });
 
   @override
@@ -383,11 +385,11 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                                 context: context,
                                 imageUrls: _imageUrls,
                                 initialIndex: index,
-                                heroTagPrefix: 'boul_log_${widget.userId}_${widget.tweetId}',
+                                heroTagPrefix: '${widget.contextPrefix ?? 'general'}_tweet_media_${widget.userId}_${widget.tweetId}',
                               );
                             },
                             child: Hero(
-                              tag: 'boul_log_${widget.userId}_${widget.tweetId}_$index',
+                              tag: '${widget.contextPrefix ?? 'general'}_tweet_media_${widget.userId}_${widget.tweetId}_$index',
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
                                 child: CachedNetworkImage(

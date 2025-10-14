@@ -87,6 +87,7 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
             content: generalTweet.content,
             mediaUrls: generalTweet.mediaUrls,
             tweetId: generalTweet.id,
+            contextPrefix: 'general', // 一般ツイート画面用
             // ブロック成功時の処理：ツイート一覧を更新
             onBlockSuccess: () async {
               // ツイート一覧を再取得（ブロックしたユーザーのツイートは除外される）

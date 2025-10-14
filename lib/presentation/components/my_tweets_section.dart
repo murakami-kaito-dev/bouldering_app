@@ -159,6 +159,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                       tweetId: tweet.id,
                       content: tweet.content,
                       mediaUrls: tweet.mediaUrls,
+                      contextPrefix: 'my_tweets', // マイツイート画面用
                     );
                   },
                 ),

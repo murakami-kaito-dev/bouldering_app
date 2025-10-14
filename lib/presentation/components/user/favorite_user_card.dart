@@ -54,7 +54,7 @@ class FavoriteUserCard extends ConsumerWidget {
           children: [
             // ユーザーアイコン
             Hero(
-              tag: 'favorite_user_icon_${user.id}',
+              tag: 'favorite_icon_${user.id}',
               child: ClipOval(
                 child: _buildUserIcon(),
               ),

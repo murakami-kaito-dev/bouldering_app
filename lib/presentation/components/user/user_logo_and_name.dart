@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../common/image_viewer.dart';
 
 /// ■ クラス
 /// - マイページで(他ユーザーも含む),アイコンとユーザー名を表示する
@@ -33,51 +34,16 @@ class UserLogoAndName extends StatelessWidget {
           GestureDetector(
             onTap: () {
               if (_isValidUrl(userLogo)) {
-                showGeneralDialog(
+                ImageViewer.show(
                   context: context,
-                  barrierDismissible: true,
-                  barrierLabel: "ProfileImageDialog",
-                  barrierColor: Colors.white.withOpacity(0.8),
-                  transitionDuration: const Duration(milliseconds: 300),
-                  pageBuilder: (context, _, __) {
-                    return Stack(
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Container(
-                            color: Colors.transparent,
-                          ),
-                        ),
-                        Center(
-                          child: Hero(
-                            tag: heroTag ??
-                                'user_icon_default_${userId ?? userName.hashCode}',
-                            child: InteractiveViewer(
-                              minScale: 1.0,
-                              maxScale: 20.0,
-                              child: Image.network(
-                                userLogo!,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                  transitionBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: child,
-                    );
-                  },
+                  imageUrls: [userLogo!],
+                  initialIndex: 0,
+                  heroTagPrefix: 'profile_icon_${userId ?? userName.hashCode}',
                 );
               }
             },
             child: Hero(
-              tag:
-                  heroTag ?? 'user_icon_default_${userId ?? userName.hashCode}',
+              tag: 'profile_icon_${userId ?? userName.hashCode}_0',
               child: ClipOval(
                 child: (_isValidUrl(userLogo))
                     ? Image.network(

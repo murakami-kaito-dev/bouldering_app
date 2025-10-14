@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 /// 画像拡大表示ウィジェット
-/// 
+///
 /// 役割:
 /// - 複数画像の拡大表示とスワイプ機能
 /// - ピンチズーム機能（1.0x - 5.0x）
 /// - Hero アニメーション対応
 /// - タップして閉じる機能
-/// 
+///
 /// クリーンアーキテクチャにおける位置づけ:
 /// - Presentation層のUIコンポーネント
 /// - 再利用可能なウィジェット
@@ -16,10 +16,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 class ImageViewer extends StatelessWidget {
   /// 表示する画像URLのリスト
   final List<String> imageUrls;
-  
+
   /// 初期表示する画像のインデックス
   final int initialIndex;
-  
+
   /// Heroアニメーション用のタグプレフィックス
   final String heroTagPrefix;
 
@@ -31,7 +31,7 @@ class ImageViewer extends StatelessWidget {
   });
 
   /// 画像拡大表示ダイアログを表示
-  /// 
+  ///
   /// [context] ビルドコンテキスト
   /// [imageUrls] 表示する画像URLのリスト
   /// [initialIndex] 初期表示する画像のインデックス
@@ -67,40 +67,67 @@ class ImageViewer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: PageView.builder(
-        controller: PageController(initialPage: initialIndex),
-        itemCount: imageUrls.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(
-              color: Colors.transparent,
-              child: Center(
-                child: Hero(
-                  tag: '${heroTagPrefix}_$index',
-                  child: InteractiveViewer(
-                    minScale: 1.0,
-                    maxScale: 5.0,
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrls[index],
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: PageController(initialPage: initialIndex),
+            itemCount: imageUrls.length,
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: Hero(
+                      tag: '${heroTagPrefix}_$index',
+                      child: InteractiveViewer(
+                        minScale: 1.0,
+                        maxScale: 5.0,
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrls[index],
+                          fit: BoxFit.contain,
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.error,
+                            color: Colors.white,
+                            size: 48,
+                          ),
                         ),
-                      ),
-                      errorWidget: (context, url, error) => const Icon(
-                        Icons.error,
-                        color: Colors.white,
-                        size: 48,
                       ),
                     ),
                   ),
                 ),
+              );
+            },
+          ),
+          // 閉じるボタン（右上）
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 16,
+            right: 16,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                onPressed: () => Navigator.of(context).pop(),
               ),
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }

@@ -42,7 +42,7 @@ class UserAvatar extends StatelessWidget {
           GestureDetector(
             onTap: onTap ?? (userImageUrl != null ? () => _showImageDialog(context) : null),
             child: Hero(
-              tag: heroTag ?? 'user_avatar_${userName.hashCode}',
+              tag: heroTag ?? 'avatar_icon_${userName.hashCode}',
               child: ClipOval(
                 child: _buildProfileImage(),
               ),
@@ -123,7 +123,7 @@ class UserAvatar extends StatelessWidget {
             ),
             Center(
               child: Hero(
-                tag: heroTag ?? 'user_avatar_${userName.hashCode}',
+                tag: heroTag ?? 'avatar_icon_${userName.hashCode}',
                 child: InteractiveViewer(
                   minScale: 1.0,
                   maxScale: 20.0,
