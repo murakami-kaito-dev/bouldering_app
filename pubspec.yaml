@@ -2,9 +2,9 @@ name: bouldering_app
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.0+5
-#   - 1.0.0 = バージョン番号
-#   - +5 = ビルド番号
+version: 1.0.1+2
+#   - 1.0.1 = バージョン番号
+#   - +2 = ビルド番号
 
 environment:
   sdk: ^3.5.3
