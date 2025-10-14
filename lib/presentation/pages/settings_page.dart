@@ -54,6 +54,7 @@ class SettingsPage extends ConsumerWidget {
         _buildAboutSection(context),
         const SizedBox(height: 24),
         _buildDangerZoneSection(context, ref),
+        const SizedBox(height: 36),
       ],
     );
   }
