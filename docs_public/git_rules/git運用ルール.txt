@@ -1,0 +1,53 @@
+■Github 運用ルール
+・ブランチ構成
+  - mainブランチ：
+    リリースされているものがこのブランチに反映される．
+    直接開発(push)はしない．
+  - topicブランチ：
+    開発用ブランチ(機能開発，バグ酒精，機能削除)．
+    ※ topicブランチは概念名.名前の付け方自体は自由.
+
+    (例)
+    - feature: 機能開発用ブランチ
+      (例)
+        feature/gym-search-filter
+        feature/chat-function
+    - hotfix: リリース後にバグがあった場合の修正用ブランチ
+      (例)
+        hotfix/prod-env-variable
+    - docs: ドキュメント更新，追加
+      (例)
+        docs/update-readme-ja
+
+
+■ Github コミットルール
+・⚠️ "ブランチ名"と”コミット種別"は別物
+  → 「featureブランチ = すべて feature: でコミットする」という分けてはない．
+  → 各コミットの"実際の中身"に合わせてタイプを選ぶのが正解
+
+・書き方テンプレ
+  type：要約(50文字以内)
+  ※ 空行
+  本文：何を/なぜ/影響範囲... など
+
+・(例)fieature/chat-functionsブランチでのコミット例
+  - feature(chat)：DM送受信APIを追加
+  - fix(chat)：既読数がずれる不具合を修正
+  - refactor(chat)：ソケット接続数をフックに分離
+  - chore：firebase-admin を11.11.1に更新
+  - docs：セットアップ手順書をREADMEに追加
+
+・よく使用するtype
+  - feature/feat：機能地下
+  - fix：バグ修正
+  - refactor：仕様不変の整理
+  - perf：性能改善
+  - docs：ドキュメント
+  - chore：付帯作業(依頼更新，設定)
+  - test：テスト追加
+  - build/ci：ビルド/CI変更
+  - revert：取り消し
+
+■ プルリクエスト
+- PRのタイトルは("ブランチ名"のコピーではなく，)そのPRが実際に入れる変更内容を一言で要約したものにする
+  → (ブランチの意図と近くなるが，)実際にマージされる差分をタイトルにする．
