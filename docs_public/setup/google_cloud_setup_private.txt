@@ -1,0 +1,1362 @@
+■ Google Cloud 設定 (開発版：Dev／本番版：Prod)
+Google Cloud の実装手順を順番に（時系列順に）説明する
+
+
+
+■ Google Cloud プロジェクト作成
+1. Google Cloud へサイト訪問
+
+2. ヘッダ部分でプロジェクト名部分を選択する
+
+3. 「新しいプロジェクト」を押下する
+
+4. 新しいプロジェクト で下記を入力して「作成」を押下する
+プロジェクト名：bouldering-app-Prod
+場所：組織なし
+
+∴ 本番版プロジェクト
+名前：[YOUR_GCP_PROJECT_ID_PROD]
+ID：[YOUR_PROJECT_ID_PROD]
+
+
+
+■ 請求先の設定
+1. 左メニュー - 課金(押下)
+2. 「請求先アカウントをリンク」を押下する
+3. 請求先アカウントのプルダウンから，請求先アカウント(自分のプロジェクト：「請求先アカウント」の名前)を選択
+4. 「アカウントを設定」を押下
+
+※ 3の手順で請求先アカウントがない場合(請求先アカウントを登録していない場合)
+1. (手順3,4の間に行う)「請求先アカウントの作成」を押下して作成する
+2. ステップ1/2 アカウント情報
+　国：日本
+→選択後，"同意して続行"を押下する
+3. ステップ2/2
+・連絡先
+- プロファイルの種類：個人
+- 郵便番号：[YOUR_POSTAL_CODE] ← あなたの郵便番号を入力（例：100-0001）
+- 都道府県：[YOUR_PREFECTURE] ← あなたの都道府県を入力（例：東京都）
+- 市区郡：[YOUR_CITY] ← あなたの市区郡を入力（例：千代田区）
+- 住所：[YOUR_ADDRESS] ← あなたの住所を入力（例：千代田1-1-1）
+- 建物名/部屋番号：[YOUR_BUILDING] ← あなたの建物名/部屋番号を入力（例：サンプルビル101）
+- 正式名：[YOUR_FULL_NAME] ← あなたの本名または法人名を入力（例：山田 太郎）
+→　これらを入力後，「保存」を押下
+
+cf. プロファイルの種類
+- 組織：ビジネス，企業，登録済み組織に対して仕様
+- 個人：個人または個人事業に対して使用
+
+cf. 正式名
+- Google Cloud に登録する"自分の本名"，または"法人名"を入力する欄
+  → 請求書や領収書に記載される名前のこと
+
+・お支払い方法
+- 「お支払い方法を追加」を押下
+- 「カードを追加」を押下
+- クレジット/デビットカードの追加
+  - カード番号：[YOUR_CARD_NUMBER] ← あなたのクレジットカード番号を入力（16桁）
+  - 月/年：[MM/YY] ← カードの有効期限を入力（例：12/28）
+  - セキュリティコード：[CVV] ← カード裏面の3桁のセキュリティコードを入力
+  - カードの名義人：[YOUR_NAME_ON_CARD] ← カードに記載されている名義人を入力（例：TARO YAMADA）
+→ これらを入力後，「カードを保存」を押下
+
+・無料で利用開始
+- 「無料で利用開始」を押下する
+※ Google Cloudは最初，無料トライアル期間がある
+- Google Cloudへようこそのアンケートは何も回答せず，「閉じる」を押下する
+
+4. "請求先アカウントが複数あります"の表示画面
+- リンクされた請求先アカウントに移動
+
+
+
+■ APIの有効化
+1. 左メニュー - 「APIとサービス」 - 「ライブラリ」
+2. 以下のAPIを検索して，有効化する("有効にする"を押下する)
+- Cloud Run Admin API
+- Artifact Registry API
+- Compute Engine API
+- Cloud Logging API
+- Cloud SQL Admin API
+- Cloud Build API
+- Cloud Storage API
+- Maps SDK for iOS
+- Secret Manager API
+
+
+
+■ Cloud SQLの設定
+◯ 1.インスタンス作成
+1-1. 左メニュー - 「SQL」
+1-2. 「インスタンスを作成」を押下
+1-3. 「PostgreSQLを選択」を押下
+1-4.  インスタンスの設定
+- 開発版/本番版で設定が異なるため，別個に記載
+
+<開発版>
+・Cloud SQLのエディションの選択
+- エディション：Enterprise
+- エディションのプリセット：サンドボックス（2vCPU, 8GB RAM, 10GBストレージ, シングルゾーン）
+
+・インスタンスの情報
+- データベースのバージョン：PostgreSQL 15
+- インスタンスID：[YOUR_GCP_PROJECT_ID_DEV]
+- パスワード：[YOUR_DB_PASSWORD] ← 強力なパスワードを設定（例：8文字以上、記号含む）
+- パスワードポリシーを有効にする：有効
+- 最小の長さを指定：有効
+- 最小文字数：8
+- 複雑さを要求：有効
+- パスワードの再利用の制限：無効(チェックなし)
+- パスワードにユーザー名を許可しない：有効
+- パスワード変更の間隔を設定：無効
+
+・リージョンとゾーンの可用性の選択
+- リージョン：asia-northeast1(東京)
+- ゾーンの可用性：シングルゾーン
+- プライマリゾーン：任意
+
+◯インスタンスのカスタマイズ
+・マシンの構成
+- 専用コア
+- 2 vCPU, 8 GB
+- データキャッシュを有効にする：無効
+
+・ストレージ
+- ストレージの種類：HDD (理由：コスト削減)
+- ストレージ容量：10 GB
+- ストレージの自動増量を有効にする：無効
+- 暗号化：Googleが管理する暗号鍵
+
+・接続
+- プライベートIP：無効
+- パブリックIP：有効
+- 承認済みネットワーク：
+  - 名前：dev-global-access
+  - IP範囲：0.0.0.0/0
+- プライベートパスを有効にする：無効
+
+・セキュリティ
+- 「Googleが管理する内部認証局」を選択
+
+・データの保護
+- 標準バックアップ
+- 自動日時バックアップ：有効
+- 日数：7日
+- バックアップの時間枠：16:00 - 20:00
+- バックアップの保存先：マルチリージョン（デフォルト）
+- ポイントインタイム リカバリを有効にする：無効
+- インスタンスの削除を防止する：有効
+- インスタンスの削除後もバックアップを保持する：有効
+- インスタンスの削除時の最終バックアップ：有効（保持日数：30日）
+
+・メンテナンス
+- メンテナンスのタイミング：第一週
+- メンテナンスの時間枠：日曜日 3:00-4:00
+- メンテナンス拒否期間：設定不要
+
+・フラグパラメータ
+- データベースフラグ：追加なし
+  → 開発版は追加不要
+- Vertex AIインテグレーションを有効にする：無効
+
+・Query Insights
+- Query Insightsを有効にする：無効（コスト削減）
+
+・ラベル
+- 追加不要
+
+
+<本番版>
+・Cloud SQLのエディションの選択
+- エディション：Enterprise
+- エディションのプリセット：本番（2vCPU, 8GB RAM, 250GBストレージ, 高可用性）
+
+
+cf. マシン構成について
+🎯 容量の目安
+2vCPU, 8GBで対応可能な規模
+- 同時接続: 50-100ユーザー
+- 1日のアクティブユーザー: 500-1000人程度
+- API リクエスト: 数千-数万回/日
+
+⏰️スケールアップのタイミング
+- CPU使用率が継続的に70%以上
+- メモリ使用率が80%以上
+- レスポンス時間の悪化
+- 接続エラーの発生
+
+💡 推奨アプローチ
+Phase 1: 2vCPU, 8GB（開始時）
+Phase 2: 4vCPU, 16GB（ユーザー増加時）
+Phase 3: 8vCPU, 32GB（本格運用時）
+
+⚠️ 変更時の注意
+- 数分のダウンタイム: 変更中はDBアクセス不可
+- メンテナンス窓口: 深夜など利用者の少ない時間帯推奨
+
+∴ 結論: 2vCPU, 8GBで開始して、監視しながら必要に応じてスケールアップが最適
+
+
+・インスタンスの情報
+- データベースのバージョン：PostgreSQL 15
+- インスタンスID：[YOUR_GCP_PROJECT_ID_PROD]
+- パスワード：[YOUR_DB_PASSWORD] ← 強力なパスワードを設定（例：8文字以上、記号含む）
+- パスワードポリシーを有効にする：有効
+- 最小の長さを指定：有効
+- 最小文字数：8
+- 複雑さを要求：有効
+- パスワードの再利用の制限：無効(チェックなし)
+- パスワードにユーザー名を許可しない：有効
+- パスワード変更の間隔を設定：無効
+
+・リージョンとゾーンの可用性の選択
+- リージョン：asia-northeast1(東京)
+- ゾーンの可用性：複数のゾーン（高可用性）
+- プライマリゾーン：任意
+
+◯インスタンスのカスタマイズ
+・マシンの構成
+- 専用コア
+- 2 vCPU, 8 GB
+- データキャッシュを有効にする：無効
+
+・ストレージ
+- ストレージの種類：SSD
+- ストレージ容量：100 GB
+- ストレージの自動増量を有効にする：有効
+- 暗号化：Googleが管理する暗号鍵
+
+・接続
+- プライベートIP：無効
+- パブリックIP：有効
+- 承認済みネットワーク：
+  - 名前：prod-global-access
+  - IP範囲：0.0.0.0/0
+- プライベートパスを有効にする：無効
+
+・セキュリティ
+- 「Googleが管理する内部認証局」を選択
+
+・データの保護
+- 標準バックアップ
+- 自動日時バックアップ：有効
+- 日数：7日
+- バックアップの時間枠：2:00 - 6:00
+- バックアップの保存先：マルチリージョン
+- 場所：デフォルト
+- ポイントインタイム リカバリを有効にする：有効(ログ保持：7日)
+- インスタンスの削除を防止する：有効
+- インスタンスの削除後もバックアップを保持する：有効
+- インスタンスの削除時の最終バックアップ：有効（保持日数：30日）
+
+・メンテナンス
+- メンテナンスのタイミング：第一週
+- メンテナンスの時間枠：日曜日 3:00-4:00
+- メンテナンス拒否期間：設定不要
+
+・フラグパラメータ
+- データベースフラグ：追加なし
+  → 必要に応じて接続数制限の調整等を（今後）行う．現時点，追加なし
+- Vertex AIインテグレーションを有効にする：無効
+
+・Query Insights
+- Query Insightsを有効にする：有効
+- アクティブクエリ分析：有効
+- クライアントIPアドレスを保存する：無効
+- アプリケーションタグを保存：有効
+- クエリの長さをカスタマイズする：有効(1024バイト(デフォルト))
+- 最大サンプリングレートを設定する：有効(3)
+
+cf. Query Insights
+・🔍 機能
+  - SQLクエリのパフォーマンスを監視・分析
+  - 遅いクエリや頻繁に実行されるクエリを特定
+  - リソース使用量の詳∂細分析
+・📊 何が変わるか
+  - パフォーマンス問題の早期発見: 遅いクエリを自動検出
+  - 最適化の指針: どのクエリを改善すべきかが明確に
+  - トラブルシューティング: 障害時の原因特定が容易に
+  - コスト最適化: 無駄なクエリの削減
+・⚠️ 注意点
+  - わずかなオーバーヘッドが発生
+  - ログデータの保存により少し料金増加
+
+・ラベル
+  - キー：env
+  - 値：production
+
+cf. ラベル
+・🏷️ 機能
+  - リソースの分類・管理用のタグ
+  - 請求書での費用分析
+  - 権限管理やポリシー適用
+・💰 何が変わるか
+  - 費用管理: 本番環境の費用を他環境と分離して把握
+  - リソース管理: 「本番用」リソースを一目で識別
+  - 自動化: スクリプトでの環境別処理が可能
+  - 監査: コンプライアンス要件での環境分離証明
+
+→ここまで作成後，「インスタンスを作成」を押下
+
+
+◯ 2.データベース作成
+※ envの値は，開発版：dev, 本盤版：prod
+2-1. インスタンス作成完了後，インスタンス(bouldering-app-{env})をクリック
+2-2. SQL左メニュー - データベース
+2-3. 「データベースの作成」を押下
+2-4. データベース名「bouldering_app_{env}」を入力後，「作成」を押下
+
+
+
+■ データ・テーブルのインポート
+◯ 1.開発版環境データ エクスポート
+1-1. 開発版([YOUR_GCP_PROJECT_ID_DEV])で，Google Cloud Console - 左メニュー SQL
+1-2. 開発版インスタンス[YOUR_GCP_PROJECT_ID_DEV]を選択
+1-3. 概要 - エクスポート
+1-4. 設定：
+・ソース
+- ファイル形式：SQL
+- エクスポートするデータ：[YOUR_DB_NAME_DEV]
+- エクスポートするデータ：無効
+
+・送信先
+- パケット・ファイル名：任意OK
+※ Google Cloud Storageに一時フォルダを作成してそこに格納する．
+※ 名前：temp-bouldering-app-sql-data
+※ 設定はすべてデフォルトを採用する
+※ エクスポート操作終了後，一時フォルダは削除
+- ファイル名：Cloud_SQL_Export_2025-09-10 (00:02:37).sql
+※ Cloud_SQL_Export_YYYY_MM_DD（HH:MM:SS）.sql
+→ ここまで入力後，「エクスポート」を押下
+
+1-5. 左メニュー - Cloud Storage - バケット
+1-6. 1-4で作成したtemp-bouldering-app-sql-dataから作成したSQLファイルを選択して「ダウンロード」
+
+
+◯ 2.本番版にインポート
+2-1. 本番版インスタンス([YOUR_DB_NAME_PROD])を選択
+2-2. SQL - 概要 - インポート
+2-3. 設定
+・ソース
+- ファイル形式：SQL
+- ソースファイルを選択：パソコンからファイルをアップロードする
+  - ローカルファイルの選択：1-6でダウンロードしたファイル
+  - Cloud Storageのロケーションを選択します：
+    - Cloud Storageに一時フォルダを作成し，それを選択
+    - 名前：temp-bouldering-app-sql-data2
+    ※ データインポート操作完了後，一時フォルダは削除する
+    ※ その他の設定はすべてデフォルトを採用する
+  - 「データをアップロード」を押下
+
+・送信先
+  - データベース：[YOUR_DB_NAME_PROD]
+  - ユーザー（オプション）：指定なし
+
+→ここまで入力後，「インポート」を押下
+
+
+◯ 3.データ確認
+3-1. Cloud Shellをアクティブにする
+3-2. 「続行」
+3-3. 「承認」
+3-4. 以下の手順で操作
+・ログイン
+gcloud sql connect [YOUR_GCP_PROJECT_ID_PROD]
+
+・パスワード入力
+[YOUR_DB_PASSWORD]
+
+・データベースの変更
+\c [YOUR_DB_NAME_PROD]
+※ DBインスタンス名：[YOUR_GCP_PROJECT_ID_PROD]
+※ DBデータベース名：[YOUR_DB_NAME_PROD]
+※パスワードは同様「[YOUR_DB_PASSWORD]」
+
+・テーブル確認
+\dt
+
+・(開発版のデータが残っているため)以下のコマンドを入力し，データを削除
+DELETE FROM gym_favorites;
+DELETE FROM tweet_media;
+DELETE FROM tweets;
+DELETE FROM user_favorites;
+DELETE FROM users;
+※ gym_hors, gymsテーブルは削除しないこと．
+  → これらはジムの情報に関するテーブルなので，削除しない
+
+
+
+■ Artifact Registry設定
+envは開発版は「dev」，本番版は「prod」
+1. 左メニュー - Artifact Registry
+2. 「リポジトリの作成」を押下
+3. 以下の設定を適用
+- 名前：bouldering-app-docker-{env}
+- 形式：Docker
+- モード：標準
+- ロケーションタイプ：リージョン/asia-northeast1
+- 説明：Docker images for Bouldering App(Development/Production)
+- ラベル：設定不要
+- 暗号化：Googleが管理する暗号鍵
+
+- 不変のイメージタグ：
+<開発版>無効
+ → 開発中，同じタグで頻繁に更新するため
+<本番版>有効
+ → 本番では一度デプロイしたイメージの変更を防ぐため
+ → デプロイ済みイメージの改ざん防止
+
+cf. 📦Artifact Registry設定の詳細説明：不変のイメージタグ
+意味: 一度プッシュしたタグ（例:  v1.0.0）を上書きできなくする機能
+- 有効時: 同じタグで再プッシュ不可（エラーになる）
+- 無効時: 同じタグで何度でも上書き可能
+
+
+- クリーンアップポリシー：
+<開発版>テストを実行
+ →まず削除対象を確認してから本番適用
+<本番版>アーティファクトを削除
+ → 古いイメージを自動削除してコスト削減（ただし、保持期間は30日以上推奨）
+ → クリーンアップポリシーの設定例
+本番環境の推奨設定:
+  ・ポリシー1：古いイメージを削除
+    - 名前：production-cleanup-delete
+    - ポリシータイプ：条件付き削除
+    - タグの状態：タグなし
+    - バージョン接頭辞：(空欄)
+    - パッケージ接頭辞：(空欄)
+    - アップロード後の期間(最小)：30d
+    - アップロード後の期間(最大)：(空欄)
+    ∴ タグ無しで30日以上経過したイメージを削除
+
+  ・ポリシー2：最新版を保持
+    - 名前：production-keep-latest
+    - ポリシータイプ：最新バージョンを保持
+    - 保持数：10
+    - バージョン接頭辞：(空欄)
+    ∴ 最新10個のイメージは常に保持
+
+  cf. ⚠️ 重要な補足
+  本番タグの保護について：
+  - prod-やrelease-タグの保護は、タグを付けること自体が保護になります
+  - 「条件付き削除」で「タグなし」を選択しているため、タグ付きイメージは削除されません
+
+  cf. 🎯 設定手順
+  1. 1つ目のポリシー作成
+  - 「ポリシーを追加」→「条件付き削除」を選択
+  - 上記の設定値を入力
+  2. 2つ目のポリシー作成
+  - 再度「ポリシーを追加」→「最新バージョンを保持」を選択
+  - 保持数: 10 を設定
+
+  cf. 💡 この組み合わせの効果
+  - ✅ タグ付きイメージ → 永久保持
+  - ✅ 最新10個 → 保持
+  - ❌ タグなし + 30日経過 + 最新10個以外 → 削除
+
+cf. 📦Artifact Registry設定の詳細説明：クリーンアップポリシー
+意味: 古い・未使用のイメージを自動削除してストレージコストを削減
+- テストを実行:  削除対象を表示するだけ（実際には削除しない）
+- アーティファクトを削除: 実際に削除を実行
+
+
+- Artifact Analysis：
+<開発版>有効
+→ 脆弱性スキャンの前提として必須
+<本番版>有効
+→ 脆弱性スキャンの前提として必須
+※ Container Scanning APIを有効化する必要あり
+
+cf. 📦Artifact Registry設定の詳細説明：Artifact Analysis
+意味:イメージ内のパッケージ情報を分析してメタデータを生成
+- 使用しているライブラリ一覧
+- ライセンス情報の収集
+- 脆弱性スキャンの前提条件
+
+- 脆弱性スキャン：
+<開発版>無効
+→ 開発段階から脆弱性を早期発見
+→ (2025.09.18)有効 → 無効へ変更．(理由：コスト低減のため)
+<本番版>有効
+→ 本番環境のセキュリティ確保に必須
+
+cf. 📦Artifact Registry設定の詳細説明：脆弱性スキャン
+意味: セキュリティ脆弱性を自動検出
+- CVE（既知の脆弱性）のチェック
+- 危険度レベルの分類（Critical/High/Medium/Low）
+
+→ここまで入力した後，「作成」を押下
+
+
+
+■ Secret Manager設定
+◯ CLoud SQL設定
+1. 左メニュー - Secret Manager
+2. 「シークレットを作成」を押下
+3. 以下の設定を適用 ※ envの値は，開発版：dev, 本番版：prod
+- 名前：db-password-{env}
+- シークレットの値：[YOUR_DB_PASSWORD]
+- レプリケーションポリシー(このシークレットのロケーションを手動で管理する)：無効
+- 暗号化：Googleが管理する暗号鍵
+- ローテーション(ローテーション期間を設定する)：無効
+- 通知：無効(何も設定しない)
+- 有効期限(有効期限を設定する)：無効
+- シークレットバージョンの破棄の遅延(破棄の遅延期間を設定する)：無効
+- ラベル：無効(何も設定しない)
+- タグ：無効(何も設定しない)
+- アノテーション：無効(何も設定しない)
+→ ここまで入力した後「シークレットを作成」を押下
+
+◯ Firebase Admin SDKキー
+※ 1〜6は，Firebaseプロジェクトの操作 / 7以降がGoogle Cloudの操作
+1. 本番版ボルダリングアプリ([YOUR_GCP_PROJECT_ID_PROD])のFirebaseプロジェクトを押下
+2. 左メニュー - 歯車(設定) - プロジェクトの設定
+3. 「サービスアカウント」タブ
+4. Firebase Admin SDK - Admin SDK 構成スニペット - Node.js を選択
+5. 「新しい秘密鍵を生成」を押下
+6. 「キーを生成」を押下
+→ JSONファイルが自動ダウンロードされる．本番版フォルダに保存する．
+
+7. 左メニュー - Secret Manager
+8. 「シークレットを作成」を押下
+9. 以下の設定を適用 ※ envの値は，開発版：dev, 本番版：prod
+- 名前：firebase-admin-key-{env}
+- シークレットの値：6で生成したJSONファイルを指定・追加
+- レプリケーションポリシー(このシークレットのロケーションを手動で管理する)：無効
+- 暗号化：Googleが管理する暗号鍵
+- ローテーション(ローテーション期間を設定する)：無効
+- 通知：無効(何も設定しない)
+- 有効期限(有効期限を設定する)：無効
+- シークレットバージョンの破棄の遅延(破棄の遅延期間を設定する)：無効
+- ラベル：無効(何も設定しない)
+- タグ：無効(何も設定しない)
+- アノテーション：無効(何も設定しない)
+→ ここまで入力した後「シークレットを作成」を押下
+
+
+
+■ サービスアカウントの設定(Cloud Run用サービスアカウント作成)
+1. 左メニュー - IAMと管理 - サービスアカウント
+2. 「サービスアカウントを作成」を押下
+  1. サービスアカウントの作成（※ envは開発版は「dev」，本番版は「prod」）
+  - サービスアカウント名：cloud-run-backend-{env}
+  - サービスアカウントID：自動生成
+    → 自動生成された値は
+      - 開発版：cloud-run-backend-dev
+      - 本番版：cloud-run-backend-prod
+  - サービスアカウントの説明：Cloud Run Backend Service Account(Development/Production)
+
+  2. 権限
+  - ロール：「Cloud SQL クライアント」
+  - ロール：「Secret Managerのシークレット アクセサー」
+
+  3. アクセス権を持つプリンシパル（省略可）
+  - 設定なし
+→ ここまで入力したら「完了」を押下
+
+
+
+■ Firebase設定の確認
+◯ 1. 既存Firebase プロジェクトとの連携
+1. Firebase コンソールにアクセス
+2. 既存のプロジェクトを選択
+3. プロジェクト設定でGoogle CloudプロジェクトIDを確認
+  - 開発版：[YOUR_GCP_PROJECT_ID_DEV]
+  - 本番版：[YOUR_PROJECT_ID_PROD]
+  ※ 本番版は，名称が少し異なるので注意
+
+◯ 2. Firebase Authentication確認
+1. 「Authentication」押下
+2. 「ログイン方法」タブから，有効な認証方法を確認
+  - メール/パスワードを選択
+  ※ Google は不要
+
+◯ 3. サービスアカウントキーの取得 (※envは開発版でdev, 本番版でprod)
+1. Google Cloud コンソールのSecret Managerで
+「firebase-admin-key-{env}」があることを確認
+
+※ セキュリティのベストプラクティス:
+- JSONファイルはSecret Managerでのみ管理
+- ローカルには保存しない（GitHubへの誤アップロード防止）
+- Cloud RunはSecret Manager経由で安全にアクセス
+
+
+
+■ 環境変数の準備
+- `backenc/.env.dev`ファイルを作成
+◯ 開発環境用
+# Database
+DB_HOST=/cloudsql/[YOUR_GCP_PROJECT_ID_DEV]:asia-northeast1:bouldering-db-dev
+DB_PORT=5432
+DB_NAME=[YOUR_DB_NAME_DEV]
+DB_USER=postgres
+DB_PASSWORD=[YOUR_DB_PASSWORD]
+
+# Firebase
+FIREBASE_PROJECT_ID=[YOUR_GCP_PROJECT_ID_DEV]
+
+# Server
+PORT=8080
+NODE_ENV=development
+
+
+◯ 本番環境用
+- `backend/.env.prod`ファイルを作成
+# Database
+DB_HOST=/cloudsql/[YOUR_PROJECT_ID_PROD]:asia-northeast1:bouldering-db-prod
+DB_PORT=5432
+DB_NAME=[YOUR_DB_NAME_PROD]
+DB_USER=postgres
+DB_PASSWORD=[YOUR_DB_PASSWORD]
+
+# Firebase
+FIREBASE_PROJECT_ID=[YOUR_PROJECT_ID_PROD]
+
+# Server
+PORT=8080
+NODE_ENV=production
+
+
+※ テンプレ
+```
+# Database
+DB_HOST=/cloudsql/[PROJECT_ID]:asia-northeast1:bouldering-db-prod
+DB_PORT=5432
+DB_NAME=[YOUR_DB_NAME_PROD]
+DB_USER=postgres
+DB_PASSWORD=[本番用の強力なパスワード]
+
+# Firebase
+FIREBASE_PROJECT_ID=[Firebase プロジェクトID]
+
+# Server
+PORT=8080
+NODE_ENV=production
+```
+
+
+
+■ Cloud Run デプロイ
+※ 1〜5はターミナルから実行，6はGoogle Cloud Consoleで確認する
+
+1. プロジェクトを設定する
+gcloud config set project [PROJECT_ID]
+- 意味：作業対象のGoogle Cloudプロジェクトを指定する
+- 開発版：gcloud config set project [YOUR_GCP_PROJECT_ID_DEV]
+- 本番版：gcloud config set project [YOUR_PROJECT_ID_PROD]
+→ 上記コマンドの後，「gcloud config list」で現在のプロジェクトを確認する
+
+2. Docker認証設定
+gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+- 意味：Artifact Registryにイメージをプッシュするための認証設定
+- 両環境共通：同じコマンド↑ (リージョンは同じ)
+
+3. Dockerイメージビルド
+- 意味：アプリケーションのコンテナイメージを作成
+・開発版
+cd backend
+docker build --platform linux/amd64 -t asia-northeast1-docker.pkg.dev/[YOUR_GCP_PROJECT_ID_DEV]/[YOUR_DOCKER_REPO_DEV]/backend:latest .
+・本番版
+cd backend
+docker build --platform linux/amd64 -t asia-northeast1-docker.pkg.dev/[YOUR_PROJECT_ID_PROD]/[YOUR_DOCKER_REPO_PROD]/backend:v1.0.0 .
+
+cf.   各部分の詳細説明
+| パート                            | 意味                            |
+| -------------------------------- | ------------------------------ |
+| `docker build`                   | Dockerイメージを作成するコマンド        |
+| `--platform linux/amd64`         | Cloud Run 用の Linux/AMD64 形式を指定 |
+| `-t`                             | イメージにタグ（名前）を付けるオプション  |
+| `asia-northeast1-docker.pkg.dev` | Google Artifact Registry のドメイン  |
+| `/bouldering-app-{env}`          | Google Cloud プロジェクト ID. {env}は開発版 'dev', 本番版'prod-ca5d7'|
+| `/bouldering-app-docker-{env}`   | Artifact Registry のリポジトリ名. {env}は開発版'dev', 本番版'prod'.  |
+| `/backend:latest` or `/backend:v{メジャーver.マイナーver.パッチver}`| イメージ名とタグ                    |
+| `.`                              | 現在のディレクトリの Dockerfile を使用   |
+cf. タグ命名規則
+- v1.0.0 : メジャーバージョン.マイナーバージョン.パッチバージョン
+  - メジャー: 大規模変更、後方互換性なし
+  - マイナー: 新機能追加、後方互換性あり
+  - パッチ: バグ修正
+cf. Docker File
+- backendディレクトリのファイル（backend/Dockerfile）を使用する
+- Dockerfile自体は開発・本番共通で使用する
+- 環境の違いは環境変数で制御する（NODE_ENV等）
+
+4. イメージプッシュ
+- 意味：ビルドしたイメージをArtifact Registryにアップロード
+・開発版
+docker push asia-northeast1-docker.pkg.dev/[YOUR_GCP_PROJECT_ID_DEV]/[YOUR_DOCKER_REPO_DEV]/backend:latest
+・本番版
+docker push asia-northeast1-docker.pkg.dev/[YOUR_PROJECT_ID_PROD]/[YOUR_DOCKER_REPO_PROD]/backend:v1.0.0
+
+cf. Secret Managerから環境変数を取得
+- 下記のコマンドは「値が登録されていることを確認するため」に行うコマンドであり，「デプロイには不要」である．
+・開発版
+# データベースパスワードを取得
+gcloud secrets versions access latest --secret=="db-password-dev"
+# Firebase Admin SDKキーも確認する
+gcloud secrets list
+・本番版
+# データベースパスワードを取得
+gcloud secrets versions access latest --secret=="db-password-prod"
+# Firebase Admin SDKキーも確認する
+gcloud secrets list
+
+
+5. Cloud Runデプロイ
+・開発版
+gcloud run deploy [YOUR_SERVICE_NAME_DEV] \
+  --image asia-northeast1-docker.pkg.dev/[YOUR_GCP_PROJECT_ID_DEV]/[YOUR_DOCKER_REPO_DEV]/backend:latest \
+  --platform managed \
+  --region asia-northeast1 \
+  --allow-unauthenticated \
+  --service-account cloud-run-backend-dev@[YOUR_GCP_PROJECT_ID_DEV].iam.gserviceaccount.com \
+  --set-env-vars NODE_ENV=development \
+  --set-env-vars DB_NAME=[YOUR_DB_NAME_DEV] \
+  --set-env-vars DB_USER=postgres \
+  --set-env-vars DB_HOST=/cloudsql/[YOUR_GCP_PROJECT_ID_DEV]:asia-northeast1:[YOUR_GCP_PROJECT_ID_DEV] \
+  --set-env-vars INSTANCE_CONNECTION_NAME=[YOUR_GCP_PROJECT_ID_DEV]:asia-northeast1:[YOUR_GCP_PROJECT_ID_DEV] \
+  --set-env-vars FIREBASE_PROJECT_ID=[YOUR_GCP_PROJECT_ID_DEV] \
+  --set-env-vars GCS_BUCKET_NAME=[YOUR_GCS_BUCKET_DEV] \
+  --set-env-vars GCP_PROJECT=[YOUR_GCP_PROJECT_ID_DEV] \
+  --set-env-vars TASKS_LOCATION=asia-northeast1 \
+  --set-env-vars TASKS_QUEUE_ID=gcs-delete-queue-dev \
+  --set-env-vars TASKS_HANDLER_URL=[YOUR_DEV_CLOUD_RUN_URL]/internal/tasks/gcs-delete-prefix \
+  --set-env-vars TASKS_SA_EMAIL=tasks-caller-dev@[YOUR_GCP_PROJECT_ID_DEV].iam.gserviceaccount.com \
+  --set-secrets "DB_PASSWORD=db-password-dev:latest" \
+  --set-secrets "FIREBASE_ADMIN_KEY=firebase-admin-key-dev:latest" \
+  --add-cloudsql-instances [YOUR_GCP_PROJECT_ID_DEV]:asia-northeast1:[YOUR_GCP_PROJECT_ID_DEV] \
+  --memory 512Mi \
+  --timeout=900
+
+
+・本番版
+gcloud run deploy [YOUR_SERVICE_NAME_PROD] \
+  --image asia-northeast1-docker.pkg.dev/[YOUR_PROJECT_ID_PROD]/[YOUR_DOCKER_REPO_PROD]/backend:v1.0.0 \
+  --platform managed \
+  --region asia-northeast1 \
+  --allow-unauthenticated \
+  --service-account cloud-run-backend-prod@[YOUR_PROJECT_ID_PROD].iam.gserviceaccount.com \
+  --set-env-vars NODE_ENV=production \
+  --set-env-vars DB_NAME=[YOUR_DB_NAME_PROD] \
+  --set-env-vars DB_USER=postgres \
+  --set-env-vars DB_HOST=/cloudsql/[YOUR_PROJECT_ID_PROD]:asia-northeast1:[YOUR_GCP_PROJECT_ID_PROD] \
+  --set-env-vars INSTANCE_CONNECTION_NAME=[YOUR_PROJECT_ID_PROD]:asia-northeast1:[YOUR_GCP_PROJECT_ID_PROD] \
+  --set-env-vars FIREBASE_PROJECT_ID=[YOUR_PROJECT_ID_PROD] \
+  --set-env-vars GCS_BUCKET_NAME=[YOUR_GCS_BUCKET_PROD] \
+  --set-env-vars GCP_PROJECT=[YOUR_PROJECT_ID_PROD] \
+  --set-env-vars TASKS_LOCATION=asia-northeast1 \
+  --set-env-vars TASKS_QUEUE_ID=gcs-delete-queue-prod \
+  --set-env-vars TASKS_HANDLER_URL=[YOUR_PROD_CLOUD_RUN_URL]/internal/tasks/gcs-delete-prefix \
+  --set-env-vars TASKS_SA_EMAIL=tasks-caller-prod@[YOUR_PROJECT_ID_PROD].iam.gserviceaccount.com \
+  --set-secrets "DB_PASSWORD=db-password-prod:latest" \
+  --set-secrets "FIREBASE_ADMIN_KEY=firebase-admin-key-prod:latest" \
+  --add-cloudsql-instances [YOUR_PROJECT_ID_PROD]:asia-northeast1:[YOUR_GCP_PROJECT_ID_PROD] \
+  --memory 1Gi \
+  --timeout=900
+
+
+・ 意味：コマンドの各オプション説明
+  gcloud run deploy [SERVICE_NAME] \
+  - 意味: Cloud Run サービスを作成/更新
+  - 開発版: [YOUR_SERVICE_NAME_DEV]
+  - 本番版: [YOUR_SERVICE_NAME_PROD]
+
+  --image [IMAGE_URL] \
+  - 意味: 使用する Docker イメージを指定
+  - 開発版: asia-northeast1-docker.pkg.dev/[YOUR_GCP_PROJECT_ID_DEV]/[YOUR_DOCKER_REPO_DEV]/backend:latest
+  - 本番版: asia-northeast1-docker.pkg.dev/[YOUR_PROJECT_ID_PROD]/[YOUR_DOCKER_REPO_PROD]/backend:v1.0.0
+
+  --platform managed \
+  - 意味: フルマネージドの Cloud Run を使用
+
+  --region asia-northeast1 \
+  - 意味: 東京リージョンを指定
+
+  --allow-unauthenticated \
+  - 意味: 認証なしで到達可能にする（アプリ側で Firebase 認証などを実装）
+
+  --service-account [SERVICE_ACCOUNT] \
+  - 意味: サービスが実行時に使うサービスアカウントを指定
+  - 開発版: cloud-run-backend-dev@[YOUR_GCP_PROJECT_ID_DEV].iam.gserviceaccount.com
+  - 本番版: cloud-run-backend-prod@[YOUR_PROJECT_ID_PROD].iam.gserviceaccount.com
+
+  --set-env-vars KEY=VALUE \
+  - 意味: 環境変数を設定（アプリが起動時に参照）
+  - 例（開発）
+  NODE_ENV=development
+  DB_NAME=[YOUR_DB_NAME_DEV]
+  DB_USER=postgres
+  DB_HOST=/cloudsql/[YOUR_GCP_PROJECT_ID_DEV]:asia-northeast1:[YOUR_GCP_PROJECT_ID_DEV]
+  FIREBASE_PROJECT_ID=[YOUR_GCP_PROJECT_ID_DEV]
+  - 例（本番）
+  NODE_ENV=production
+  DB_NAME=[YOUR_DB_NAME_PROD]
+  DB_USER=postgres
+  DB_HOST=/cloudsql/[YOUR_PROJECT_ID_PROD]:asia-northeast1:bouldering-db-prod
+  INSTANCE_CONNECTION_NAME=[YOUR_PROJECT_ID_PROD]:asia-northeast1:bouldering-db-prod（※本番で必須チェック）
+  FIREBASE_PROJECT_ID=[YOUR_PROJECT_ID_PROD]
+
+  --set-secrets "KEY=SECRET_NAME:VERSION" \
+  - 意味: Secret Manager の値を環境変数へ注入
+  - 例（開発）: "DB_PASSWORD=db-password-dev:latest", "FIREBASE_ADMIN_KEY=firebase-admin-key-dev:latest"
+  - 例（本番）: "DB_PASSWORD=db-password-prod:latest", "FIREBASE_ADMIN_KEY=firebase-admin-key-prod:latest"
+
+  --add-cloudsql-instances [INSTANCE] \
+  - 意味: Cloud SQL インスタンスへの接続（Unix ソケットを有効化）
+  - 開発版: [YOUR_GCP_PROJECT_ID_DEV]:asia-northeast1:[YOUR_GCP_PROJECT_ID_DEV]
+  - 本番版: [YOUR_PROJECT_ID_PROD]:asia-northeast1:bouldering-db-prod
+
+  --memory 1Gi \
+  - 意味: メモリ割り当て（例：開発 512Mi / 本番 1Gi）
+
+  --timeout 900 \
+  - 意味: リクエストの最大処理時間（秒）。バッチ/画像処理など重めの処理なら長めに
+
+  --min-instances 0 \
+  --max-instances 10 \
+  - 意味: オートスケーリングの下限/上限
+  - 開発例: 最小 0（コスト削減）、最大 10
+  - 本番例: 最小 1（常時ウォーム）、最大 100 など
+
+  --port 8080（必要な場合のみ）
+  - 意味: コンテナがリッスンするポート。
+  - Cloud Run は PORT 環境変数を渡すのでアプリ側が process.env.PORT で受ける実装があれば明示不要
+
+
+cf. なぜ開発版では INSTANCE_CONNECTION_NAME が不要だったか
+・A. コードの条件分岐が原因
+- environment.ts（44–58行目）で、本番だけ必須チェックに含めています。
+export function validateEnvironment(): void {
+  const required = ['FIREBASE_PROJECT_ID'];
+
+  if (config.server.isProduction) {  // ← ここがポイント
+    required.push('DB_PASSWORD', 'INSTANCE_CONNECTION_NAME');
+  }
+
+  const missing = required.filter(key => !process.env[key]);
+
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+}
+
+- 環境別の必須チェック
+環境	NODE_ENV	必須チェック
+開発	development	FIREBASE_PROJECT_ID のみ
+本番	production	FIREBASE_PROJECT_ID, DB_PASSWORD, INSTANCE_CONNECTION_NAME
+
+∴ 開発版では NODE_ENV=development のため、INSTANCE_CONNECTION_NAME のチェックがスキップされていた
+
+
+6. デプロイ確認
+  1. Google Cloud Console - 左メニュー - Cloud Run
+  2. デプロイされたサービスをクリック
+  3. デプロイされたことを"リビジョン"で確認する
+    → (問題なく)デプロイされていることを確認する
+
+
+
+■ Google Map APIの有効化
+◯ 1.Google Cloud プロジェクトの確認
+1-1. プロジェクト準備
+  - 画面上部のプロジェクト選択ボタンで{開発版/本番版}を選択する
+
+1-2. Maps SDK for iOSの有効化
+  - 左メニュー - APIとサービス - ライブラリ
+  - Maps SDK for iOSを選択
+  - 「有効化」ボタンをクリック
+
+◯2. APIキー作成
+2-1. APIキーの作成
+  - 左メニュー APIとサービス - 認証情報
+  - 「+ 認証情報を作成」 - APIキー
+  - 作成されたAPIキーの中で，「APIキーを編集」
+
+2-2. APIキーの認定・制限
+  - 名前：「iOS Maps API Key - {Dev/Prod}」
+  - サービスアカウントを介してAPI呼び出しを認証する：無効
+  - アプリケーションの制限：iOSアプリ
+  - iOSの制限：
+    - 「+ Add」を押下
+    - iOSアプリの追加
+      - バンドルID：
+        - 開発版：com.km.boulderingapp.dev
+        - 本番版：com.km.boulderingapp
+        ※ 本番版のバンドルIDには末尾に「prod」をつけない
+  - APIキーの制限：
+    -「キーを制限」
+    -「Select APIs」から「Maps SDK for iOS」にチェック
+→ ここまで入力で「作成」を押下
+
+∴ APIキー(開発版APIキー)：[YOUR_DEV_API_KEY] ← Google Cloud Consoleで生成されたAPIキーを記録
+∴ APIキー(本番版APIキー)：[YOUR_PROD_API_KEY] ← Google Cloud Consoleで生成されたAPIキーを記録
+
+
+
+■ Flutterプロジェクト設定(iOS版)
+◯ 1. 依存関係の確認
+```yaml
+# pubspec.yaml - 既に設定済みを確認
+dependencies:
+  google_maps_flutter: ^2.10.1
+  geolocator: ^11.0.0
+
+dependency_overrides:
+  geolocator_android: 4.5.5
+```
+
+◯ 2. iOS設定
+・1. APIキーの設定(google_maps_api_setup_guide.md - 方法2を採用)
+1-1. ios/Runner/Config.plist を作成し，以下を記載
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+APIキー管理ファイル
+- このファイルはGit管理対象外（.gitignoreに登録済み）
+- 新メンバーには安全な方法で共有
+- Bundle IDに応じてAppDelegate.swiftが自動選択
+-->
+<plist version="1.0">
+<dict>
+	<!-- 開発環境用 (Bundle ID: com.km.boulderingapp.dev) -->
+	<key>GOOGLE_MAPS_IOS_DEV_API_KEY</key>
+	<string>[YOUR_DEV_API_KEY]</string> <!-- ← あなたの開発環境用APIキーを入力 -->
+
+	<!-- 本番環境用 (Bundle ID: com.km.boulderingapp) -->
+	<key>GOOGLE_MAPS_IOS_PROD_API_KEY</key>
+	<string>[YOUR_PROD_API_KEY]</string> <!-- ← あなたの本番環境用APIキーを入力 -->
+</dict>
+</plist>
+
+1-2. XcodeにConfig．plistを追加する
+  1. Xcode でプロジェクトを開く
+    open ios/Runner.xcworkspace
+  2. Xcodeでファイルを追加
+    1. 左側のProject Navigatorで「Runner」フォルダを右クリック
+    2. 「Add Files to ”Runner"」
+    3. Config.plistを選択する
+    4. 「Add」を押下
+    5. Action：「Reference files in place」
+      Targets：「Runner」を押下
+
+
+・2.Info．plist設定(位置情報権限)
+  - (google_maps_api_setup_guide.md参考)iOS/Runner/Info.plist に実装する
+  - ※ 開発/本番 共通
+<!-- ios/Runner/Info.plist -->
+<!-- Google Maps用の位置情報権限設定 -->
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>ジムの位置情報を地図上に表示するため、現在地を使用します</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>ジムの位置情報を地図上に表示するため、現在地を使用します</string>
+
+- 説明：
+  - 位置情報を取得する際に、ユーザーに表示される許可ダイアログの説明文を設定
+  - この設定がないと、位置情報の取得でアプリがクラッシュする可能性があります
+
+- 注意： NSAppTransportSecurityの設定は不要。
+  すべてのAPI通信（Cloud Run、Google Maps、Firebase、GCS）がHTTPS通信のため。
+
+・3. Podfile確認・更新
+  - ios/Podfile を編集
+# ios/Podfile - 既存設定の確認
+platform :ios, '13.0'  # 13.0以上であることを確認
+
+# 必要に応じて追加（パフォーマンス最適化）
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+    end
+  end
+end
+
+  - bouldering_app/iosへ移動
+      cd ios
+  → "pod install"実行
+      pod install
+  → 依存関係のインストールが実行される
+
+
+
+■ エイリアス設定
+・長い起動コマンドを打つのが煩わしいため，エイリアスを設定する
+◯ 開発版
+alias fdev='flutter run --flavor "Runner Dev" --dart-define=ENVIRONMENT=dev --target lib/main_dev.dart'
+alias fbdev='flutter build ios --flavor "Runner Dev" --dart-define=ENVIRONMENT=dev --target lib/main_dev.dart'
+
+◯ 本番版
+alias fprod='flutter run --flavor "Runner Prod" --dart-define=ENVIRONMENT=prod --target lib/main_prod.dart'
+alias fbprod='flutter build ios --flavor "Runner Prod" --dart-define=ENVIRONMENT=prod --target lib/main_prod.dart'
+
+
+cf. エイリアス設定方法
+1. 使用しているシェルの確認
+echo $SHELL
+
+2. 設定ファイルの編集
+# .zshrcファイルを開く
+vi ~/.zshrc
+
+3. エイリアスを追加
+上述のエイリアス設定を行う
+
+4. 設定を反映
+# zshの場合
+source ~/.zshrc
+
+
+cf. 環境変数 FLAVOR
+※ 下記のコマンドがエイリアスに設定されているとして，説明を続ける(注意：実際のエイリアスはこのエイリアスではない．あくまでも説明のため記載している)
+alias fprod='flutter run --flavor "Runner Prod" --dart-define=ENVIRONMENT=prod --dart-define=FLAVOR=prod --target lib/main_prod.dart'
+
+・FLAVOR
+- 手動で設定した値
+- --dart-define=FLAVOR=prod としてエイリアスで明示的に設定した値
+- 値：prod(本番版) / dev(開発版)
+- 用途：Dartコード内で環境を識別するために利用できる
+
+・FLUTTER_APP_FLAVOR
+- Flutter自動生成： --flavor "Runner Prod"からFlutterが自動的に生成する
+- 値："Runner Prod"(本番版) / "Runner Dev"(開発版)
+- 用途：iOS/AndroidのネイティブFlavorシステムとDartの橋渡し
+
+・(結果)コード内で出力される値：
+- FLAVOR = "prod" （手動設定）
+- FLUTTER_APP_FLAVOR = "Runner Prod" （Flutter自動生成）
+
+∴ FLAVOR：自分で意図的に設定した値
+∴ FLUTTER_APP_FLAVOR： --flavorオプションの値をFlutterが自動的にDart環境変数として提供
+
+
+
+■ Cloud Storage実装
+<1. Cloud Storageパケットの作成>
+◯ 1. Google Cloud Consoleへアクセス
+
+◯ 2. Cloud Storageへ移動
+2-1. 左メニュー - 「Cloud Storage」 - バケット
+2-２．「作成」を押下
+
+◯ 3. バケット作成  (※envは 開発：dev/ 本番:prod)
+- 名前：bouldering-app-media-{env}
+- ラベル：省略（設定なし）
+- ロケーションタイプ：リージョン
+  - ロケーション：asia-northeast1(東京)
+  ※ Storage Transfer：チェック不要
+- データの保存方法：「デフォルトのクラス」-「Standard」
+  ※ このバケットで名前空間...：チェック不要
+- オブジェクトへのアクセスを制御する方法を選択する：
+  - 開発版：
+    - このバケットに対する公開アクセス...：チェックを入れる
+    - アクセス制御：きめ細かい管理
+  - 本番版：
+    - このバケットに対する公開アクセス...：チェックを入れる
+    - アクセス制御：きめ細かい管理  (2025.09.12編集：均一 → きめ細かい管理へ切り替え)
+- オブジェクトデータを保護する方法を選択する：
+  - 開発版：
+    - 削除(復元可能)ポリシー(データ復旧時)：有効
+      → デフォルトの保持期間を使用する(7日)
+    - オブジェクトのバージョニング(バージョン管理用)：無効
+    - 保持（コンプライアンス用）：無効
+    - データ暗号化：Google が管理する暗号鍵
+
+  - 本番版：
+    - 削除(復元可能)ポリシー(データ復旧時)：有効
+      → デフォルトの保持期間を使用する(7日)
+    - オブジェクトのバージョニング(バージョン管理用)：有効
+      →理由：ユーザー画像の誤削除対策
+      - バージョン上限数：3
+      - 非現行バージョンの有効期限：7日
+    - 保持(コンプライアンス用)：無効
+    - データ暗号化：Google が管理する暗号鍵
+→ ここまで入力したら，「作成」を押下
+→ メッセージの「公開アクセスの防止」では，「このバケットに対する後悔アクセス禁止を適用する」のチェックを”外す"
+  → このStorageに保存した写真を公開する必要があるので，チェックを外す
+  → 「確認」を押下
+
+
+<2. サービスアカウントの作成>
+◯ 1. IAMと管理に移動
+1-1. 左メニュー - 「IAMと管理」- 「サービスアカウント」を選択
+1-2. 「サービスアカウントを作成」を押下
+
+◯ 2. サービスアカウントの作成 (※ envの値は，開発版：dev/ 本番版：prod)
+- サービスアカウント名：[YOUR_STORAGE_SA]-{env}
+- サービスアカウントID：[YOUR_STORAGE_SA]-{env}  (※ 自動生成)
+- サービスアカウントの説明：「Flutterアプリからの画像アップロード用(開発環境/本番環境)」
+※ 権限(省略可) ，アクセス権を持つプリンシパル（省略可）は，何もせず省略
+→ ここまで入力したら「完了」を押下
+
+
+<3. 権限の設定>
+◯1. {開発 / 本番}環境用 サービスアカウントの権限設定
+1-1. 左メニュー - IAMと管理 - IAM
+1-2. アクセスを許可
+1-3. 新しいプリンシパル欄：
+  [YOUR_STORAGE_SA]-{env}@{ [YOUR_GCP_PROJECT_ID_DEV] / [YOUR_PROJECT_ID_PROD] }.iam.gserviceaccount.com
+1-4. ロールを選択：Storage オブジェクト管理者
+1-5. 保存
+※ おそらくこの.◯1. {開発 / 本番}環境用 サービスアカウントの権限設定
+は設定しなくて問題ない（が，開発版も演っていたので一応設定しておく）
+
+◯ 2.バケット固有の権限設定
+2-1. 左メニュー - Cloud Storage - バケット
+2-2. bouldering-app-media-{env} を選択
+2-3. 「権限」タブ押下
+2-4. 「アクセスを許可」を押下
+2-5. ダイアログが表示されたら
+  - 新しいメンバー：[YOUR_STORAGE_SA]-{env}@{[YOUR_GCP_PROJECT_ID_DEV] / [YOUR_PROJECT_ID_PROD]}.iam.gserviceaccount.com
+  - ロール：Storage オブジェクト管理者
+2-6. 保存
+
+
+<4. サービスアカウントキーの生成>
+◯ 1. キーファイルの作成
+1-1. 左メニュー - IAMと管理 - サービスアカウント
+1-2. '[YOUR_STORAGE_SA]-{env}' サービスアカウントを選択
+1-3. 「鍵」タブをクリック
+1-4. 「キーを追加」 - 「新しいカギを作成」
+1-5. 「JSON」を選ぶ
+1-6. 作成
+
+◯ 2. 開発 / 本番 環境用キーをダウンロード
+- ◯1. キーファイルの作成の手順で，ファイルがダウンロードされる
+  →「gcs_storage_{env}.json」として保存
+  → assets/keys ディレクトリに保存する
+  → pubspec.yamlに下記の設定を加える
+    flutter:
+      assets:
+        - assets/keys/gcs_storage_dev.json
+        - assets/keys/gcs_storage_prod.json
+  → flutter pub get
+
+
+
+■ Cloud Storage 設定変更
+★ 目的：写真の公開アクセス設定を"公開"にする ★
+◯1. Google Cloud Consoleへアクセス
+1-1. Google Cloud Consoleヘアクセス
+1-2. プロジェクト bouldering-app-{env} を選択する
+
+◯2. Cloud Storageパケットの設定の変更
+2-1. 左メニュー - Cloud Storage - ブラウザ
+2-2. バケット bouldering-app-media-{env} を選択
+2-3. "権限"タブを選択
+2-4. パブリックアクセスの防止セクションで「公開アクセス防止を削除」する
+→ ⚠️この ◯2. Cloud Storageバケットの設定の変更 は，開発版で演ったが，本番版ではやらなかった⚠️
+  → おそらく,
+    ■ Cloud Storage実装
+    <1. Cloud Storageパケットの作成>
+    ◯ 1. Google Cloud Consoleへアクセス
+  で開発/本番 で最後少し手順が変わったため．
+    →最終的に ◯確認 で公開されていることを確認できればいい．
+
+◯ 3. パケットレベルでの公開設定
+3-1. "権限"タブ
+3-2. "プリンシパル別に表示" - "アクセスを許可"を押下
+3-3. 新しいプリンシパルに「allUsers」を入力
+3-4. ロールを選択で「Storage オブジェクト管理者」を選択する
+3-5. 保存
+3-6. 「このリソースを一般公開してもいいですか？」を表示される
+  → 「一般公開アクセスを許可」を押下
+
+◯ 確認
+・パケットの"権限"タブで「公開」と表示される
+・アップロード済みファイルのURLに直接アクセスして画像が表示される
+
+
+
+■ Cloud Tasks APIの有効化
+◯1. Cloud Task APIの有効化
+1-1. Google Cloud Console にアクセス
+1-2. 画面上部のプロジェクト選択ボタンで対象プロジェクトを選択
+  - 開発版：[YOUR_GCP_PROJECT_ID_DEV] (ID:[YOUR_GCP_PROJECT_ID_DEV])
+  - 本番版：[YOUR_GCP_PROJECT_ID_PROD] (ID：[YOUR_PROJECT_ID_PROD])
+1-3. 左メニュー - 「APIとサービス」 - 「ライブラリ」
+1-4. 検索ボックスに「Cloud Tasks API」と入力
+1-5. 「Cloud Tasks API」を選択
+1-6. 「有効にする」を押下
+
+※ 既に有効になっている場合は「管理」と表示されます
+
+
+◯ 2. Cloud Tasks キューの作成
+2-1. 左メニュー - 「Cloud Tasks」を選択
+2-2. 「キューを作成」を押下
+2-3. キューの設定
+  - キュー名：gcs-delete-queue-{env}
+    開発版：gcs-delete-queue-dev
+    本番版：gcs-delete-queue-prod
+  - タイプ：HTTP
+  - リージョン：asia-northeast1（Cloud Runと同じリージョン）
+  - AppEngine ルーティングのオーバーライド：無効
+  - タスクディスパッチのレートに関する上限
+    - 最大ディスパッチ数
+      - 開発版：5/秒
+      - 本番版：10/秒
+    - 最大同時ディスパッチ数
+      - 開発版：5同時タスク
+      - 本番版：10同時タスク
+  - 再試行の構成
+    - 最大試行回数
+      - 開発版：3
+      - 本番版：5
+    - 最大試行時間
+      - 開発版：1800s(30分)
+      - 本番版：21600s(6時間)
+    - 最小バックオフ
+      - 開発版：5秒
+      - 本番版：10秒
+    - 最大バックオフ
+      - 開発版：300秒(5分)
+      - 本番版：3600秒(1時間)
+    - 最大倍増回数
+      - 開発版：3
+      - 本番版：5
+  - ロギング構成
+    - Loggingを有効にする：
+      - 開発版：有効
+      - 本番版：有効
+→ ここまで入力後，「作成」を押下
+
+
+◯ 3. サービスアカウントの作成と権限設定
+・3-1. Cloud Tasks実行用サービスアカウントの作成
+1. 左メニュー - 「IAMと管理」 - 「サービスアカウント」
+2. 「サービスアカウントを作成」を押下
+3. サービスアカウントの詳細
+  - サービスアカウント名：tasks-caller-{env}
+    開発版：tasks-caller-dev
+    本番版：tasks-caller-prod
+  - サービスアカウントID：tasks-caller-{env}（自動入力）
+  - 説明：Cloud Tasks caller for GCS deletion (Dev/Prod)
+4. 「作成して続行」を押下
+5. 「省略可」と書かれた権限設定はスキップ
+6. 「省略可」と書かれたプリンシパルはスキップ
+7. 「完了」を押下
+
+・3-2. 既存サービスアカウントへのCloud Tasks権限付与
+1. 左メニュー - 「IAMと管理」 - 「IAM」
+2. 既存のCloud Run サービスアカウントを検索
+  - 開発版：cloud-run-backend-dev@[YOUR_GCP_PROJECT_ID_DEV].iam.gserviceaccount.com
+  - 本番版：cloud-run-backend-prod@[YOUR_PROJECT_ID_PROD].iam.gserviceaccount.com
+3. 該当サービスアカウントの「編集」（鉛筆アイコン）を押下
+4. 「別のロールを追加」を押下
+5. ロールを選択：「クラウドタスクへのデータ追加（ベータ版）」を選択
+  ※ このロール名のIDは「roles/cloudtasks.enqueuer」
+6. 「保存」を押下
+
+・3-3. メインのAPIのサービスアカウント(cloud-run-backend-{env})に,
+CLoud Tasks実行用サービスアカウント(tasks-caller-{env})を使用する権限を与える方法
+1. 左メニュー → 「IAMと管理」 → 「IAM」
+2. メインAPIサービスアカウントを検索
+  開発版：cloud-run-backend-dev@[YOUR_GCP_PROJECT_ID_DEV].iam.gserviceaccount.com
+  本番版：cloud-run-backend-prod@[YOUR_PROJECT_ID_PROD].iam.gserviceaccount.com
+3. 「編集」(鉛筆アイコン)をクリック
+4. 「別のロールを追加」をクリック
+5. ロールを選択：
+  「Service Account ユーザー」(Service Account User) または「サービス アカウント ユーザー」
+6. 「保存」をクリック
+
+
+◯ 4. メインAPIサービスアカウントへのGCS権限付与（既存サービスに追加）
+・4-1. メインAPIサービスアカウントへのGCS権限付与
+1. 左メニュー - 「Cloud Storage」
+2. 対象バケットを選択
+  - 開発版：[YOUR_GCS_BUCKET_DEV]
+  - 本番版：[YOUR_GCS_BUCKET_PROD]
+3. 「権限」タブを選択
+4. 「アクセスを許可」を押下
+5. プリンシパルの追加  - 新しいプリンシパル：
+    開発版：cloud-run-backend-dev@[YOUR_GCP_PROJECT_ID_DEV].iam.gserviceaccount.com
+    本番版：cloud-run-backend-prod@[YOUR_PROJECT_ID_PROD].iam.gserviceaccount.com
+  - ロール：「Storage オブジェクト管理者」
+6. 「保存」を押下
+
+・4-2. 既存のメインAPIサービスアカウントにGFCS削除権限を追加
+1. 左メニュー - 「Cloud Storage」
+2. バケットを選択
+  - 開発版：[YOUR_GCS_BUCKET_DEV]
+  - 本番版：[YOUR_GCS_BUCKET_PROD]
+3. 「権限」タブを確認
+4. 「Storage オブジェクト管理者」を持っているか確認
+  - 開発版：cloud-run-backend-dev@[YOUR_GCP_PROJECT_ID_DEV].iam.gserviceaccount.com
+  - 本番版：cloud-run-backend-prod@[YOUR_PROJECT_ID_PROD].iam.gserviceaccount.com
+
+・4-3. Cloud Tasks からメインAPIへのアクセス権限設定
+1. 左メニュー - 「Cloud Run」
+2. メインAPIサービスを選択(※ 名前の頭にある✓をつけて出てくる「権限」を押下する)
+  - 開発版：[YOUR_SERVICE_NAME_DEV]
+  - 本番版：[YOUR_SERVICE_NAME_PROD]
+3. 「権限」タブを選択
+4. 「プリンシパルを追加」を押下
+5. プリンシパルの設定
+  - 新しいプリンシパル：
+    開発版：tasks-caller-dev@[YOUR_GCP_PROJECT_ID_DEV].iam.gserviceaccount.com
+    本番版：tasks-caller-prod@[YOUR_PROJECT_ID_PROD].iam.gserviceaccount.com
+  - ロール：「Cloud Run 起動元」
+  ※ 「Cloud Run サービス起動元」ではないことに注意
+6. 「保存」を押下
+
+・4-4. メインAPIサービスに環境変数を追加してデプロイ
+→ この手順は，■ Cloud Run デプロイ の 1〜6 を試す.
+
+
+
+■ Cloud SQL 削除手順
+・Cloud SQL(開発版)は高額のため，削除/停止する
+→ 使わないときは基本的に「停止」する．
+→ (「削除」するときは)次回本番版デプロイ前のテスト実行の時に，
+  再度開発版Cloud SQLを運用稼働して，テストする．
+  それまではインスタンスを削除して，料金発生を抑える．
+※ Cloud SQLには，真の意味で100%「中断・停止する」という選択肢がない
+  （理由：常に稼働させて監視する必要があるため）
+
+・削除/停止 前に，本番版デプロイ最新版のCloud SQLのテーブル構造，データをエクスポートしておき，
+「Cloud Storage(リモート)」「ローカルPC環境」の２つに保存しておく．
+→ 保管方法は任意だが，わかるようにしておくこと．
+→ 既存のフォルダ・ファイル名がすでに作成してあるので(2025.09.19)，踏襲して保存・補完する．
+
+◯ 削除時
+1. Google Cloud Consoleにログイン
+2. 左メニュー - Cloud SQL
+3. 対象のインスタンスを選択
+  - 開発用(削除したい)Cloud SQLインスタンスをクリック
+4. 削除を実行
+  - 上部メニュー「削除」をクリック
+  - 確認画面で，インスタンス名を入力して削除を確定する．
+  ⚠️ 削除すると、このインスタンスとストレージが完全に消える。復元はできない。
+
+◯ 停止時
+1. Google Cloud Consoleにログイン
+2. 左メニュー - Cloud SQL
+3. 対象のインスタンスを選択
+  - 開発用(削除したい)Cloud SQLインスタンスをクリック
+4. 削除を実行
+  - 上部メニュー「停止」をクリック
+
+
+cf. ✅ Cloud SQL の課金内訳（ざっくり）
+・CPU / メモリ（マシン稼働代）
+  → インスタンスが動いている限り課金される。
+  → 停止するとゼロになる。
+・ストレージ代（ディスク容量）
+  → インスタンスが停止中でも必ずかかる。
+  → 100GB SSD ならおおよそ 月数百円〜千円。
+・バックアップ代
+  → バックアップ保持日数 × ストレージに依存。
+  → 数十円〜数百円/月程度。
+
+cf. ✅ 停止 vs 削除 の削減率イメージ
+・現在 (2vCPU / 8GB RAM / 100GB SSD)
+  → 毎月の料金の 大半（70〜90%）が CPU/RAM の利用料。
+  → 残りの 10〜30%がストレージ代・バックアップ代。
+・停止した場合
+  → CPU/RAM 代がゼロになるので 全体の70〜90% 削減できる。
+  → ただしストレージ代は残るので 10〜30% は課金が続く。
+・削除した場合
+  → 100% 削減。
+
+
