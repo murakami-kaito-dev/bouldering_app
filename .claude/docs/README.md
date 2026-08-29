@@ -12,7 +12,8 @@ Claude Code 用のプロジェクト情報集約場所（2026-08-21 全ファイ
 | [release-log.md](release-log.md) | バージョン・配信履歴（復元分含む） |
 | [deployment-log.md](deployment-log.md) | バックエンド・インフラの修正/デプロイログ（修正→検証→記録の運用ルール含む） |
 | [secrets-map.md](secrets-map.md) | 秘密情報の**所在**マップ（値は不記載）・既知のセキュリティ問題 |
-| [refactor-candidates.md](refactor-candidates.md) | バグ・未使用・重複・冗長コードの候補メモ（**削除はユーザー許可後**） |
+| [action-items.md](action-items.md) | **未対応の課題台帳**（優先度別。完了で除去・新規発見で追加する運用） |
+| [refactor-candidates.md](refactor-candidates.md) | バグ・未使用・重複・冗長コードの詳細な根拠メモ（action-itemsの参照先） |
 
 ## 関連ルール（.claude/rules/）
 

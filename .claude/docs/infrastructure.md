@@ -22,6 +22,11 @@
 | リージョン | asia-northeast1（共通） | 同左 |
 
 - Supabase: Organization `Murakami Company`、Tokyoリージョン。2026-01-07 に Compute を MEDIUM→FREE にダウングレード（コスト最適化）。
+- **Supabase接続方式（2026-08-29 実接続で確認。dev/prodで方式が異なる）**:
+  - dev: **共有プーラー** `aws-1-ap-northeast-1.pooler.supabase.com:6543`、ユーザー `postgres.<プロジェクトref>`、`sslmode=require`
+  - prod: **専用プーラー** `db.<プロジェクトref>.supabase.co:6543`、ユーザー `postgres`、`sslmode=disable`
+  - どちらも稼働・接続確認済み（各 public_tables=9）。**両方とも正常**（プーラー種別が違うだけ。共有プーラーはユーザー名にref必須、専用プーラーはホストがrefを含むためユーザーは`postgres`でよい）。
+  - 差異メモ: prodが`sslmode=disable`、devが`require`。dev/prodでプーラー種別とSSL設定が不統一（動作はするが、将来揃える検討余地）。
 - Cloud SQL: Supabase移行済み。移行ガイドのチェックリストに「Cloud SQL停止」あり（実際に停止済みかは要確認）。コード上は `DB_PROVIDER=cloudsql` でロールバック可能な分岐が残る。
 - Apple: Team ID `XX24WCN326`。審査メタデータは `docs/deployment/app_store_submission.md` に一式。
 
