@@ -9,6 +9,23 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
+## イメージタグ付けルール（2026-08-29 制定）
+
+- **prod（既存ルールを維持）**: `supabase-vX.Y.Z`（アプリのマーケティングバージョンと一致させる）。App Storeリジェクト時は `-rejected1, -rejected2, …` を採番し、承認後に正規タグへ付け替える。
+- **dev（新規制定）**: push するたびに **`dev-YYYYMMDD-<gitの短縮SHA>`** でタグ付けする（例: `dev-20260829-c1c6294`）。`:latest` やタグなしでの push は行わない。デプロイもこの明示タグを指定する。
+  - 理由: 従来のタグなし運用では62イメージの中身が一切追跡できなくなった。日付+SHAなら「そのイメージにどのコミットが入っているか」を後から確実に特定できる。
+- push 後は必ず `gcloud artifacts docker images list … --include-tags` でタグが意図どおり付いたかを確認し、このログに記録する。
+
+---
+
+## 2026-08-29 — backend ローカル起動修復（tsconfig-paths死に参照の削除）
+
+- **修正**: `backend/nodemon.json`（`-r tsconfig-paths/register` 削除）と `backend/tsconfig.json`（`ts-node` ブロック削除）。未インストールのパッケージへの参照が残っており `npm run dev` が起動時にクラッシュしていた（refactor-candidates A-9）
+- **ブランチ/PR**: `fix/remove-tsconfig-paths` → **PR #24**（コミット c1c6294）
+- **検証**: ① `tsc --noEmit` 通過 ② `npm run dev` 起動→ `/health` 200・DB接続OK（**修正前は起動不可**）③ `docker build`+起動→ `/health` 200（ビルド経路デグレなし）
+- **デプロイ**: なし。Artifact Registry 変化なし（dev: 2025-09-15 / prod: supabase-v1.0.0-rejected2 2025-10-12 のまま＝意図どおり）
+- **付随作業**: ローカル起動用に `backend/.env`（Git管理外）を `.env.dev` からコピー作成（ドキュメント記載の手順どおり）
+
 ---
 
 ## 2026-08-29 — backend/.env.dev の接続情報修正（デプロイなし）
