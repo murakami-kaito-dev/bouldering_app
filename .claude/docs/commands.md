@@ -51,8 +51,31 @@ curl https://bouldering-api-prod-3cjechiypq-an.a.run.app/health
 gcloud run services logs read bouldering-api-dev --limit=50
 ```
 
-- イメージタグ運用: 本番は `supabase-v1.0.0` 形式。App Storeリジェクト時は `-reject1`, `-reject2` と採番し、承認後に通常タグへ戻す。
-- ローカル開発: `cd backend && npm run dev`（nodemon + ts-node）。`npm run build`（tsc）/ `npm start` / `npm test`（テスト0件）/ `npm run lint` / `npm run format`
+### イメージタグ運用ルール（2026-08-29 制定。詳細と経緯は deployment-log.md）
+
+- **prod**: `supabase-vX.Y.Z` 形式（アプリのバージョンと一致）。App Storeリジェクト時は `-rejected1`, `-rejected2` と採番し、承認後に正規タグへ付け替える。
+- **dev**: push のたびに **`dev-YYYYMMDD-<git短縮SHA>`**（例: `dev-20260829-c1c6294`）。タグなし・`:latest` での push は禁止。デプロイもこの明示タグを指定する。
+  ```bash
+  TAG="dev-$(date +%Y%m%d)-$(git rev-parse --short HEAD)"
+  docker build --platform linux/amd64 -t asia-northeast1-docker.pkg.dev/bouldering-app-dev/bouldering-app-docker-dev/backend:$TAG .
+  docker push asia-northeast1-docker.pkg.dev/bouldering-app-dev/bouldering-app-docker-dev/backend:$TAG
+  ```
+- push 後はタグ付与を確認し、`deployment-log.md` に記録する:
+  ```bash
+  gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/bouldering-app-dev/bouldering-app-docker-dev --include-tags --sort-by=~UPDATE_TIME | head -3
+  ```
+
+### バックエンドのローカル起動（必要なときだけ）
+
+```bash
+cd backend
+cp .env.dev .env     # devの接続設定で .env を上書き（唯一 .env.dev が使われる場面）
+npm run dev          # nodemon + ts-node で起動 → http://localhost:8080/health で確認
+```
+
+- `.env` 系ファイルが関与するのは**このローカル起動だけ**。Dockerビルド・Cloud Runデプロイには一切使われない（デプロイ時の環境変数は `--set-env-vars` で注入）。
+- `.env.prod` は**意図的に未使用**（本番をローカルで動かす運用は無い。誤って本番DBに繋がない安全弁として現状維持）。
+- その他: `npm run build`（tsc）/ `npm start` / `npm test`（テスト0件）/ `npm run lint` / `npm run format`
 
 ## リリースビルド（iOS）
 
