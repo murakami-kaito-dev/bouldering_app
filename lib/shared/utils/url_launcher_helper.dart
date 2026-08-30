@@ -5,13 +5,13 @@ import 'package:url_launcher/url_launcher.dart';
 ///
 /// アプリ全体で使用される外部URLへの遷移処理を共通化
 class UrlLauncherHelper {
-  /// 利用規約のURL
+  /// 利用規約のURL（GitHub Pages: リポジトリ iwanoboritai-legal で管理）
   static const String _termsOfServiceUrl =
-      'https://spiral-menu-66b.notion.site/268acc8f8f00801398e2f1d368322f4b';
+      'https://murakami-kaito-dev.github.io/iwanoboritai-legal/terms/';
 
-  /// プライバシーポリシーのURL
+  /// プライバシーポリシーのURL（GitHub Pages: リポジトリ iwanoboritai-legal で管理）
   static const String _privacyPolicyUrl =
-      'https://spiral-menu-66b.notion.site/268acc8f8f0080caad6ed16c046baa9d';
+      'https://murakami-kaito-dev.github.io/iwanoboritai-legal/privacy/';
 
   /// フィードバックフォームのURL
   static const String _feedbackUrl = 'https://forms.gle/oMGHSeEtHs8HAPkc9';
