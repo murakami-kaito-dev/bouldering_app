@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'topics/01_infinite_scroll/infinite_scroll_page.dart';
 import 'topics/02_clean_architecture/presentation/gym_list_page.dart';
 import 'topics/03_riverpod_basics/riverpod_basics_page.dart';
+import 'topics/03_riverpod_basics/riverpod_deep_dive_page.dart';
 import 'topics/04_auth_flow/auth_flow_page.dart';
 import 'topics/05_env_switching/env_switching_page.dart';
 import 'topics/06_optimistic_update/optimistic_update_page.dart';
@@ -47,6 +48,8 @@ final topics = <Topic>[
       (_) => const GymListPage()),
   Topic('03', 'Riverpod 状態管理入門', '「状態管理に何を使い、なぜですか？」',
       (_) => const RiverpodBasicsPage()),
+  Topic('03+', 'Riverpod 深掘りデモ', 'autoDispose/familyの挙動を体験（本体PR #27の題材）',
+      (_) => const RiverpodDeepDivePage()),
   Topic('04', '認証フローとトークン管理', '「トークン失効をどう検知しますか？」',
       (_) => const AuthFlowPage()),
   Topic('05', '環境切替（dev/prod）', '「開発と本番をどう分離しますか？」',

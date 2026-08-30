@@ -21,7 +21,7 @@ flutter run          # シミュレータでランチャーが起動し、10ト�
 |---|---|---|---|
 | [01](lib/topics/01_infinite_scroll/README.md) | 無限スクロール & Pull-to-Refresh | 無限スクロールはどう実装しますか？ | `general_tweets_provider.dart` |
 | [02](lib/topics/02_clean_architecture/README.md) | Clean Architecture 最小構成 | 層と依存の向きを説明してください | `lib/` 全体の構造 |
-| [03](lib/topics/03_riverpod_basics/README.md) | Riverpod 状態管理入門 | 状態管理に何を使い、なぜですか？ | `providers/` 22ファイル |
+| [03](lib/topics/03_riverpod_basics/README.md) | Riverpod 状態管理入門（+[深掘り](lib/topics/03_riverpod_basics/riverpod_deep_dive.md): autoDispose/family/create関数） | 状態管理に何を使い、なぜですか？ | `providers/` 22ファイル |
 | [04](lib/topics/04_auth_flow/README.md) | 認証フローとトークン管理 | トークン失効をどう検知しますか？ | `api_client.dart`, `auth_provider.dart` |
 | [05](lib/topics/05_env_switching/README.md) | 環境切替（dev/prod） | 開発と本番をどう分離しますか？ | `main_dev/prod.dart`, `environment_config.dart` |
 | [06](lib/topics/06_optimistic_update/README.md) | 楽観的UI更新とロールバック | いいねの即時反映はどう実装しますか？ | `favorite_user_provider.dart` |
