@@ -8,6 +8,7 @@ Claude Code 用のプロジェクト情報集約場所（2026-08-21 全ファイ
 | [architecture.md](architecture.md) | 全体構成・フロント/バックエンドの層構造・環境切替の仕組み・機能一覧・docsとコードの乖離 |
 | [infrastructure.md](infrastructure.md) | dev/prod対応表（GCP/Firebase/Supabase/Cloud Run/GCS）・環境変数・iOSビルド構成・重要な要注意点 |
 | [commands.md](commands.md) | fdev系エイリアス・Dockerビルド/Cloud Runデプロイ・リリースビルド手順 |
+| [backend-dev-workflow.md](backend-dev-workflow.md) | バックエンド開発の標準ワークフロー知見（インナー/アウターループ、デバッグ手法） |
 | [development-history.md](development-history.md) | 開発経緯（全コミット+PR履歴から再構成） |
 | [release-log.md](release-log.md) | バージョン・配信履歴（復元分含む） |
 | [deployment-log.md](deployment-log.md) | バックエンド・インフラの修正/デプロイログ（修正→検証→記録の運用ルール含む） |
