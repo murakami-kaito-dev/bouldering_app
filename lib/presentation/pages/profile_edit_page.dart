@@ -9,6 +9,7 @@ import '../providers/gym_provider.dart';
 import '../providers/dependency_injection.dart';
 import '../components/common/loading_widget.dart';
 import '../components/common/error_widget.dart';
+import '../components/gym/gym_photo_strip.dart';
 import '../../shared/utils/navigation_helper.dart';
 import '../../shared/utils/ng_word_validator.dart';
 
@@ -260,27 +261,19 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
+            // ホームジムのサムネイル（自前写真 or Google Places API。旧photoUrls経路から置換）
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: _selectedHomeGym!.photoUrls.isNotEmpty
-                  ? Image.network(
-                      _selectedHomeGym!.photoUrls.first,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: 60,
-                        height: 60,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.fitness_center),
-                      ),
-                    )
-                  : Container(
-                      width: 60,
-                      height: 60,
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.fitness_center),
-                    ),
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child: GymPhotoStrip(
+                  gymId: _selectedHomeGym!.id,
+                  height: 60,
+                  photoWidth: 60,
+                  maxPhotos: 1,
+                ),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -377,7 +370,6 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         isLeadGym: false,
         isSpeedGym: false,
         hours: const GymHours(), // 空のGymHoursオブジェクト
-        photoUrls: const [],
       );
 
       setState(() {
