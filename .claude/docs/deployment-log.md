@@ -18,6 +18,17 @@
 
 ---
 
+## 2026-08-30 — ジム写真機能 Phase 1-2: Places API 導入（**devのみ・prod未変更**）
+
+- **インフラ（dev）**: `bouldering-app-dev` で Places API (New) を有効化。専用APIキーを新規作成（Places APIのみに制限。キー文字列は `.local/places_api_key_dev.txt`、Git管理外）
+- **DB（dev Supabase）**: `gyms` に `google_place_id TEXT` 列を追加し、**431/431件** の place_id をバッチ解決・格納（未ヒット0・エラー0。副産物としてジムマスタの重複登録1組を発見 → action-items I-9）
+- **課金**: Text Search 計436回（PoC 5 + バッチ431）→ 無料枠内（0円）
+- **関連**: 利用規約・プライバシーポリシーを GitHub Pages（`iwanoboritai-legal` リポジトリ）へ移設し、Google Maps Platform 条項を追記。アプリ内リンク切替は PR #30。App Store Connect のURL変更は公開中バージョンでは不可（Apple仕様・409）のため**次回申請時に実施**（action-items I-10）
+- **App Store Connect APIキー**: `manage_subscription` から `.local/asc/` へ複製（所在は `.local/credentials-locations.md`）
+- **次**: Phase 3（バックエンド写真解決+キャッシュ+GCS優先分岐、フロント帰属表示）→ Phase 4（prod展開）
+
+---
+
 ## 2026-08-29 — backend ローカル起動修復（tsconfig-paths死に参照の削除）
 
 - **修正**: `backend/nodemon.json`（`-r tsconfig-paths/register` 削除）と `backend/tsconfig.json`（`ts-node` ブロック削除）。未インストールのパッケージへの参照が残っており `npm run dev` が起動時にクラッシュしていた（refactor-candidates A-9）
