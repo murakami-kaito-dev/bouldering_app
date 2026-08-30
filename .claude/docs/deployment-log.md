@@ -29,6 +29,16 @@
 
 ---
 
+## 2026-08-30 — ジム写真機能 Phase 3: 実装＋devデプロイ（**prod未変更**）
+
+- **実装**: バックエンド `placesService.ts`（自前写真優先→Places APIフォールバック、7日サーバキャッシュ）＋ `GET /api/gyms/:id/photos`。フロント `GymPhotoStrip`（Google帰属バッジ付き）を詳細/検索カード/イキタイカード/地図カードに組込み（ブランチ feature/gym-photos、コミット ba4782f）
+- **DB(dev)**: `gym_photos` テーブル新設（自前写真の将来受け皿・現在空）
+- **ビルド/デプロイ**: イメージ **`dev-20260830-ba4782f`**（新タグ運用ルール初適用）を push → dev Cloud Run **rev 00063** へデプロイ。env に `PLACES_API_KEY` を追加
+- **検証**: レジストリのタグ付与確認済み。dev実環境で /health 200、/api/gyms/1/photos → source=google・5枚・撮影者付き、既存の一覧API 430件正常（デグレなし）
+- **次**: ユーザーの fdev 実機確認 → 問題なければ Phase 4（prod展開: API有効化/キー/DB反映/デプロイ）
+
+---
+
 ## 2026-08-29 — backend ローカル起動修復（tsconfig-paths死に参照の削除）
 
 - **修正**: `backend/nodemon.json`（`-r tsconfig-paths/register` 削除）と `backend/tsconfig.json`（`ts-node` ブロック削除）。未インストールのパッケージへの参照が残っており `npm run dev` が起動時にクラッシュしていた（refactor-candidates A-9）

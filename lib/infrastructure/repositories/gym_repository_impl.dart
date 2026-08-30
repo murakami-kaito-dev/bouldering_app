@@ -1,4 +1,5 @@
 import '../../domain/entities/gym.dart';
+import '../../domain/entities/gym_photo.dart';
 import '../../domain/repositories/gym_repository.dart';
 import '../datasources/gym_datasource.dart';
 
@@ -43,13 +44,22 @@ class GymRepositoryImpl implements GymRepository {
     }
   }
 
+  /// ジム写真セット取得
+  ///
+  /// 出どころ（自前GCS写真 or Google Places API）の判定はバックエンドが行う。
+  /// 失敗時はデータソース側で空セットに丸められる（写真は補助情報のため）。
+  @override
+  Future<GymPhotoSet> getGymPhotos(int gymId) {
+    return _dataSource.getGymPhotos(gymId);
+  }
+
   /// ジムID指定による単一ジム情報取得
-  /// 
+  ///
   /// [gymId] 取得対象のジムID
-  /// 
+  ///
   /// 返り値:
   /// [Gym?] ジムエンティティ、存在しない場合はnull
-  /// 
+  ///
   /// ビジネスルール:
   /// - ジムIDは正の整数のみ許可
   @override

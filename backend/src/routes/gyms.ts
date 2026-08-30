@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { optionalAuthenticate } from '../middleware/auth';
 import { handleValidationErrors } from '../middleware/validation';
 import { getGymService } from '../infrastructure/setup/dependencies';
+import { getGymPhotos } from '../services/placesService';
 import { validatePagination } from '../utils/validation';
 import { ApiError } from '../middleware/error';
 import { param } from 'express-validator';
@@ -77,6 +78,27 @@ router.get(
       res.json({
         success: true,
         data: tweets,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// 26-2. Get gym photos（自前写真 or Google Places API。詳細は services/placesService.ts）
+router.get(
+  '/:gym_id/photos',
+  optionalAuthenticate,
+  param('gym_id').isInt({ min: 1 }).withMessage('Valid gym ID is required'),
+  handleValidationErrors,
+  async (req, res, next) => {
+    try {
+      const { gym_id } = req.params;
+      const result = await getGymPhotos(parseInt(gym_id));
+
+      res.json({
+        success: true,
+        data: result,
       });
     } catch (error) {
       next(error);

@@ -296,6 +296,12 @@ final getGymDetailsUseCaseProvider = Provider<GetGymDetailsUseCase>((ref) {
   return GetGymDetailsUseCase(gymRepository);
 });
 
+final getGymPhotosUseCaseProvider = Provider<GetGymPhotosUseCase>((ref) {
+  final gymRepository = ref.read(gymRepositoryProvider);
+
+  return GetGymPhotosUseCase(gymRepository);
+});
+
 /// ツイート関連ユースケースProvider
 final getTweetsUseCaseProvider = Provider<GetTweetsUseCase>((ref) {
   final tweetRepository = ref.read(tweetRepositoryProvider);

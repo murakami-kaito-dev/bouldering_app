@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import '../services/api_client.dart';
 import '../../domain/entities/gym.dart';
+import '../../domain/entities/gym_photo.dart';
 // TODO: 本番環境では以下のインポートをコメントアウトする
 // import '../../shared/data/mock_data.dart';
 
@@ -23,11 +24,34 @@ class GymDataSource {
   /// [_apiClient] API通信クライアント
   GymDataSource(this._apiClient);
 
+  /// ジム写真セット取得
+  ///
+  /// 処理フロー:
+  /// 1. REST API: GET /api/gyms/{gymId}/photos
+  ///    バックエンドが「自前写真（GCS） or Google Places API」を判定して返す
+  /// 2. 取得失敗時は「写真なし」として扱う（写真は補助情報のため画面全体は壊さない）
+  Future<GymPhotoSet> getGymPhotos(int gymId) async {
+    try {
+      final response = await _apiClient.get(
+        endpoint: '/gyms/$gymId/photos',
+        requireAuth: false,
+      );
+      final data = response['data'];
+      if (data is Map<String, dynamic>) {
+        return GymPhotoSet.fromJson(data);
+      }
+      return GymPhotoSet.empty;
+    } catch (e) {
+      // 写真は必須情報ではないので、失敗しても空セットで継続する
+      return GymPhotoSet.empty;
+    }
+  }
+
   /// 全ジム情報取得
-  /// 
+  ///
   /// 返り値:
   /// [List<Gym>] 全ジムのリスト
-  /// 
+  ///
   /// 処理フロー:
   /// 1. REST API: GET /api/gyms で全ジム情報取得（基本情報+イキタイ数+投稿数含む）
   Future<List<Gym>> getAllGyms() async {
