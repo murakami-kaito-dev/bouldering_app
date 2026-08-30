@@ -41,6 +41,12 @@ export const config = {
     projectId: process.env.FIREBASE_PROJECT_ID || '',
   },
 
+  // Google Places API（ジム写真取得用）
+  // 未設定の場合、写真機能は静かに無効化される（photosは空で返る）
+  places: {
+    apiKey: process.env.PLACES_API_KEY || '',
+  },
+
   // CORS
   cors: {
     origins: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],

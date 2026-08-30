@@ -6,6 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../../domain/entities/gym.dart';
 import '../providers/gym_provider.dart';
 import '../components/common/loading_widget.dart';
+import '../components/gym/gym_photo_strip.dart';
 import '../components/common/error_widget.dart';
 import '../components/common/gym_category.dart';
 import '../../shared/utils/gym_hours_utils.dart';
@@ -375,19 +376,8 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                         ),
                         const SizedBox(height: 8),
 
-                        // プレースホルダー画像
-                        Container(
-                          width: double.infinity,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Center(
-                            child: Text('写真なし',
-                                style: TextStyle(color: Colors.grey)),
-                          ),
-                        ),
+                        // ジム写真（自前写真 or Google Places API）
+                        GymPhotoStrip(gymId: gym.id, height: 100),
                         const SizedBox(height: 8),
 
                         // 料金と営業状態

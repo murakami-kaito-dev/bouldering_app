@@ -7,6 +7,7 @@ import '../providers/gym_provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/dependency_injection.dart';
 import '../components/tweet/gym_tweets_section.dart';
+import '../components/gym/gym_photo_strip.dart';
 import '../../domain/entities/gym.dart';
 import 'activity_post_page.dart';
 
@@ -244,19 +245,8 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
           ),
           const SizedBox(height: 12),
 
-          // ギャラリー（写真なし）
-          SizedBox(
-            height: 100,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: const [
-                Padding(
-                  padding: EdgeInsets.only(right: 8),
-                  child: _PlaceholderImage(),
-                ),
-              ],
-            ),
-          ),
+          // ギャラリー（自前写真 or Google Places API。出どころはバックエンドが判定）
+          GymPhotoStrip(gymId: gymInfo.id, height: 100),
           const SizedBox(height: 16),
 
           // 基本情報
@@ -553,28 +543,6 @@ class GymIkitaiBoullogCount extends StatelessWidget {
                 color: Colors.blue, fontWeight: FontWeight.bold),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// 写真プレースホルダー
-class _PlaceholderImage extends StatelessWidget {
-  const _PlaceholderImage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 150,
-      height: 100,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      alignment: Alignment.center,
-      child: const Text(
-        '写真なし',
-        style: TextStyle(color: Colors.black54, fontSize: 16),
       ),
     );
   }

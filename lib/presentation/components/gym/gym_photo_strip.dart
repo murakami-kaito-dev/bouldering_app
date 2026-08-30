@@ -1,0 +1,123 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../providers/gym_photos_provider.dart';
+
+/// ジム写真の横スクロール表示（一覧カード・地図カード・詳細画面で共用）
+///
+/// 役割:
+/// - gymPhotosProvider(gymId) を watch して写真を表示する
+/// - 写真の出どころが Google（Places API）の場合、規約で必須の帰属表示を写真上に重ねる
+/// - 写真なし・読み込み中はプレースホルダーを表示する
+class GymPhotoStrip extends ConsumerWidget {
+  const GymPhotoStrip({
+    super.key,
+    required this.gymId,
+    this.height = 100,
+    this.photoWidth = 132,
+    this.maxPhotos = 5,
+  });
+
+  final int gymId;
+  final double height;
+  final double photoWidth;
+  final int maxPhotos;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final photosAsync = ref.watch(gymPhotosProvider(gymId));
+
+    return SizedBox(
+      height: height,
+      child: photosAsync.when(
+        loading: () => _placeholder(label: null, showSpinner: true),
+        error: (_, __) => _placeholder(label: '写真なし'),
+        data: (set) {
+          if (set.isEmpty) return _placeholder(label: '写真なし');
+          final photos = set.photos.take(maxPhotos).toList();
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: photos.length,
+            itemBuilder: (context, i) => Padding(
+              padding: EdgeInsets.only(
+                  right: i != photos.length - 1 ? 8.0 : 0.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Stack(
+                  children: [
+                    CachedNetworkImage(
+                      imageUrl: photos[i].url,
+                      width: photoWidth,
+                      height: height,
+                      fit: BoxFit.cover,
+                      // 表示サイズ相当で縮小デコードし、メモリキャッシュに乗せ続ける
+                      // （原寸デコードによるキャッシュ追い出し=毎回ローディングを防ぐ）
+                      memCacheWidth: 400,
+                      placeholder: (context, url) => Container(
+                        width: photoWidth,
+                        height: height,
+                        color: Colors.grey[300],
+                        child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2)),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        width: photoWidth,
+                        height: height,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.broken_image,
+                            color: Colors.grey),
+                      ),
+                    ),
+                    // Google写真の帰属表示（Places API規約で必須）
+                    if (set.isFromGoogle)
+                      Positioned(
+                        right: 4,
+                        bottom: 4,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.55),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'Google',
+                            style: TextStyle(
+                                color: Colors.white, fontSize: 9),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _placeholder({String? label, bool showSpinner = false}) {
+    return Row(
+      children: [
+        Container(
+          width: photoWidth,
+          height: height,
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: showSpinner
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2))
+                : Text(label ?? '',
+                    style: TextStyle(color: Colors.grey[700], fontSize: 14)),
+          ),
+        ),
+      ],
+    );
+  }
+}

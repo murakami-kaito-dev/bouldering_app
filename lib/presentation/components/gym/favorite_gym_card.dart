@@ -3,6 +3,7 @@ import '../../../shared/utils/navigation_helper.dart';
 import '../../../shared/utils/gym_hours_utils.dart';
 import '../common/gym_category.dart';
 import '../../../domain/entities/gym.dart';
+import 'gym_photo_strip.dart';
 
 /// イキタイジム専用カードコンポーネント
 ///
@@ -90,72 +91,8 @@ class FavoriteGymCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // ジム写真
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: (gym.photoUrls.isNotEmpty)
-                  ? gym.photoUrls
-                      .map((photoUrl) => Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                photoUrl,
-                                width: 132,
-                                height: 100,
-                                fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return const SizedBox(
-                                    width: 132,
-                                    height: 100,
-                                    child: Center(
-                                        child: CircularProgressIndicator()),
-                                  );
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 132,
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[300],
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        '写真なし',
-                                        style: TextStyle(
-                                            color: Colors.grey[700],
-                                            fontSize: 14),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ))
-                      .toList()
-                  : [
-                      Container(
-                        width: 132,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '写真なし',
-                            style: TextStyle(
-                                color: Colors.grey[700], fontSize: 14),
-                          ),
-                        ),
-                      )
-                    ],
-            ),
-          ),
+          // ジム写真（自前写真 or Google Places API）
+          GymPhotoStrip(gymId: gym.id),
           const SizedBox(height: 8),
 
           // ジム利用情報
@@ -163,7 +100,7 @@ class FavoriteGymCard extends StatelessWidget {
             children: [
               const Icon(Icons.currency_yen, size: 18),
               const SizedBox(width: 4),
-              Text('${gym.minimumFee ?? 0}〜'),
+              Text('${gym.minimumFee}〜'), // minimumFeeはnon-nullable（?? は不要のため削除）
               const SizedBox(width: 16),
               const Icon(Icons.access_time, size: 18),
               const SizedBox(width: 4),

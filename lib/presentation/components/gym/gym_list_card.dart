@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/entities/gym.dart';
 import '../common/gym_category.dart';
 import '../../../shared/utils/gym_hours_utils.dart';
+import 'gym_photo_strip.dart';
 
 /// ジムリストカードコンポーネント
 ///
@@ -87,44 +88,8 @@ class GymListCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // ジム写真
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: gym.photoUrls.isNotEmpty
-                    ? gym.photoUrls
-                        .take(3) // 最大3枚まで表示
-                        .map((photoUrl) => Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  photoUrl,
-                                  width: 132,
-                                  height: 100,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Container(
-                                      width: 132,
-                                      height: 100,
-                                      color: Colors.grey[300],
-                                      child: const Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return _buildPhotoPlaceholder();
-                                  },
-                                ),
-                              ),
-                            ))
-                        .toList()
-                    : [_buildPhotoPlaceholder()],
-              ),
-            ),
+            // ジム写真（自前写真 or Google Places API）
+            GymPhotoStrip(gymId: gym.id, maxPhotos: 3),
             const SizedBox(height: 8),
 
             // ジム利用情報
@@ -207,24 +172,4 @@ class GymListCard extends StatelessWidget {
     );
   }
 
-  /// 写真プレースホルダー
-  Widget _buildPhotoPlaceholder() {
-    return Container(
-      width: 132,
-      height: 100,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(
-          '写真なし',
-          style: TextStyle(
-            color: Colors.grey[700],
-            fontSize: 14,
-          ),
-        ),
-      ),
-    );
-  }
 }

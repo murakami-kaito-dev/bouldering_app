@@ -1,7 +1,11 @@
 import '../entities/gym.dart';
+import '../entities/gym_photo.dart';
 
 abstract class GymRepository {
   Future<List<Gym>> getAllGyms();
+
+  /// ジムの写真セットを取得する（出どころの判定はバックエンド側で行う）
+  Future<GymPhotoSet> getGymPhotos(int gymId);
   Future<Gym?> getGymById(int gymId);
   Future<List<Gym>> searchGyms({
     String? prefecture,
