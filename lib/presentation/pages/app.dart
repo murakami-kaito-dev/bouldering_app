@@ -165,6 +165,14 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
     // アプリライフサイクルの監視を開始（トークン失効検知のため）
     WidgetsBinding.instance.addObserver(this);
     debugPrint('[APP LIFECYCLE] ライフサイクル監視開始');
+
+    // 【重要】起動時にログインセッションを復元する。
+    // authProvider は生成時に Firebase の保存済みセッションを確認し、
+    // ログイン済みなら userProvider へユーザー情報を読み込む（_checkLoginStatus）。
+    // ただし Riverpod のプロバイダは「最初に watch/read されるまで生成されない」ため、
+    // ここで一度 read して生成しておかないと、マイページを開くまで復元処理が走らず、
+    // 投稿ページ等が「未ログイン」表示のままになる不具合があった。
+    ref.read(authProvider);
   }
 
   @override
