@@ -80,11 +80,16 @@ class _BoulLogState extends ConsumerState<BoulLog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ユーザーアイコン
+              // CachedNetworkImageProvider: ディスクキャッシュ付き（NetworkImageは毎回再ダウンロードしうる）
+              // ResizeImage: 表示サイズ相当まで縮小してデコードし、メモリキャッシュに乗せ続ける
               CircleAvatar(
                 radius: 24,
                 backgroundColor: Colors.grey[200],
                 backgroundImage: ImageUrlValidator.isValidImageUrl(widget.userIconUrl)
-                    ? NetworkImage(widget.userIconUrl!)
+                    ? ResizeImage(
+                        CachedNetworkImageProvider(widget.userIconUrl!),
+                        width: 144, // 表示48px × 最大DPR3
+                      )
                     : null,
                 child: ImageUrlValidator.isValidImageUrl(widget.userIconUrl)
                     ? null
@@ -167,7 +172,8 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                         ),
                       );
                       
-                      if (shouldDelete == true && myUserId != null) {
+                      // myUserId はこのブロックの外側で null チェック済みのため再チェック不要
+                      if (shouldDelete == true) {
                         try {
                           final deleteTweetUseCase = ref.read(deleteTweetUseCaseProvider);
                           final success = await deleteTweetUseCase.execute(widget.tweetId!, myUserId);
@@ -397,6 +403,11 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                                   width: 200,
                                   height: 160,
                                   fit: BoxFit.cover,
+                                  // memCacheWidth: 原寸(数MB級)をフルデコードするとメモリキャッシュから
+                                  // 即座に追い出され、画面を開き直すたびに再デコード＝ローディング表示になる。
+                                  // 表示200px×最大DPR3相当に縮小デコードしてキャッシュに乗せ続ける。
+                                  // （拡大表示のImageViewerは原寸デコードのままで別管理）
+                                  memCacheWidth: 600,
                                   placeholder: (context, url) => const Center(
                                       child: CircularProgressIndicator()),
                                   errorWidget: (context, url, error) =>
