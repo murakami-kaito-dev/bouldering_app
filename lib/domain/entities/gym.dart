@@ -17,7 +17,6 @@ class Gym {
   final bool isLeadGym;
   final bool isSpeedGym;
   final GymHours hours;
-  final List<String> photoUrls;
 
   const Gym({
     required this.id,
@@ -38,7 +37,6 @@ class Gym {
     required this.isLeadGym,
     required this.isSpeedGym,
     required this.hours,
-    this.photoUrls = const [],
   });
 
   String get fullAddress => '$prefecture$city$addressLine';
@@ -123,7 +121,6 @@ class Gym {
     bool? isLeadGym,
     bool? isSpeedGym,
     GymHours? hours,
-    List<String>? photoUrls,
   }) {
     return Gym(
       id: id ?? this.id,
@@ -144,7 +141,6 @@ class Gym {
       isLeadGym: isLeadGym ?? this.isLeadGym,
       isSpeedGym: isSpeedGym ?? this.isSpeedGym,
       hours: hours ?? this.hours,
-      photoUrls: photoUrls ?? this.photoUrls,
     );
   }
 
@@ -199,9 +195,6 @@ class Gym {
         satOpen: json['sat_open'],
         satClose: json['sat_close'],
       ),
-      photoUrls: json['photo_urls'] != null 
-          ? List<String>.from(json['photo_urls']) 
-          : [],
     );
   }
 

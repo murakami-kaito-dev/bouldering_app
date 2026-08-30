@@ -88,9 +88,6 @@ class MockData {
       isLeadGym: true,
       isSpeedGym: false,
       hours: _defaultHours,
-      photoUrls: [
-        'https://via.placeholder.com/400x300/FF6B6B/FFFFFF?text=Gym+Photo+1'
-      ],
     ),
     2: const Gym(
       id: 2,
@@ -119,9 +116,6 @@ class MockData {
         friOpen: '9:00', friClose: '23:00',
         satOpen: '9:00', satClose: '23:00',
       ),
-      photoUrls: [
-        'https://via.placeholder.com/400x300/4ECDC4/FFFFFF?text=Gym+Photo+2'
-      ],
     ),
     3: const Gym(
       id: 3,
@@ -150,9 +144,6 @@ class MockData {
         friOpen: '11:00', friClose: '21:00',
         satOpen: '11:00', satClose: '21:00',
       ),
-      photoUrls: [
-        'https://via.placeholder.com/400x300/45B7D1/FFFFFF?text=Gym+Photo+3'
-      ],
     ),
     4: const Gym(
       id: 4,
@@ -181,9 +172,6 @@ class MockData {
         friOpen: '10:00', friClose: '22:00',
         satOpen: '10:00', satClose: '22:00',
       ),
-      photoUrls: [
-        'https://via.placeholder.com/400x300/96CEB4/FFFFFF?text=Gym+Photo+4'
-      ],
     ),
     5: const Gym(
       id: 5,
@@ -212,9 +200,6 @@ class MockData {
         friOpen: '10:00', friClose: '22:00',
         satOpen: '10:00', satClose: '22:00',
       ),
-      photoUrls: [
-        'https://via.placeholder.com/400x300/F8B500/FFFFFF?text=Gym+Photo+5'
-      ],
     ),
   };
 

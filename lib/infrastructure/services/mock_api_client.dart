@@ -164,7 +164,6 @@ class MockApiClient {
       'isBoulderingGym': gym.isBoulderingGym,
       'isLeadGym': gym.isLeadGym,
       'isSpeedGym': gym.isSpeedGym,
-      'photoUrls': gym.photoUrls,
     }).toList();
 
     return {
@@ -301,7 +300,6 @@ class MockApiClient {
       'isBoulderingGym': gym.isBoulderingGym,
       'isLeadGym': gym.isLeadGym,
       'isSpeedGym': gym.isSpeedGym,
-      'photoUrls': gym.photoUrls,
     }).toList();
 
     return {

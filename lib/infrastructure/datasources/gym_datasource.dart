@@ -264,7 +264,6 @@ class GymDataSource {
       isLeadGym: gymData['is_lead_gym'] ?? false,
       isSpeedGym: gymData['is_speed_gym'] ?? false,
       hours: _mapToGymHours(gymData),
-      photoUrls: _parsePhotoUrls(gymData['gym_photos']),
     );
   }
 
@@ -291,20 +290,6 @@ class GymDataSource {
       satOpen: gymData['sat_open'],
       satClose: gymData['sat_close'],
     );
-  }
-
-  /// 写真URLリストをパース
-  /// 
-  /// [photoData] 写真データ
-  /// 
-  /// 返り値:
-  /// [List<String>] 写真URLリスト
-  List<String> _parsePhotoUrls(dynamic photoData) {
-    if (photoData == null) return [];
-    if (photoData is List) {
-      return photoData.map((url) => url.toString()).toList();
-    }
-    return [];
   }
 
   /// 文字列をintに安全に変換

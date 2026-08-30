@@ -246,7 +246,19 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
           const SizedBox(height: 12),
 
           // ギャラリー（自前写真 or Google Places API。出どころはバックエンドが判定）
-          GymPhotoStrip(gymId: gymInfo.id, height: 100),
+          // 写真1.7枚分が見える幅にし、タップでツイート写真と同じ拡大ビューアを開く
+          Builder(builder: (context) {
+            // 画面幅 - 左右padding(16×2) を1.7枚分のストライドで割り、写真間の隙間8pxを引く
+            final photoWidth =
+                (MediaQuery.of(context).size.width - 32) / 1.7 - 8;
+            return GymPhotoStrip(
+              gymId: gymInfo.id,
+              photoWidth: photoWidth,
+              height: photoWidth * 0.75, // 既存カードと同じ4:3比率
+              enableViewer: true,
+              heroTagPrefix: 'gym_detail_photo_${gymInfo.id}',
+            );
+          }),
           const SizedBox(height: 16),
 
           // 基本情報
