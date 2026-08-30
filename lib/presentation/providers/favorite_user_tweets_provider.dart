@@ -125,8 +125,11 @@ class FavoriteUserTweetsNotifier
 }
 
 /// お気に入りユーザーのツイート一覧Provider
-final favoriteUserTweetsProvider = StateNotifierProvider.family
-    .autoDispose<FavoriteUserTweetsNotifier, FavoriteUserTweetsState, String>(
+///
+/// autoDispose は意図的に付けていない（generalTweetsProvider と同じ理由）。
+/// タブを開くたびの再取得を避け、DB アクセスは「初回取得」と「Pull-refresh」のときだけに限定する。
+final favoriteUserTweetsProvider = StateNotifierProvider.family<
+    FavoriteUserTweetsNotifier, FavoriteUserTweetsState, String>(
         (ref, userId) {
   final getFavoriteTweetsUseCase = ref.read(getFavoriteTweetsUseCaseProvider);
   return FavoriteUserTweetsNotifier(userId, getFavoriteTweetsUseCase);

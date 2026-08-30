@@ -85,8 +85,6 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
         );
       }
     } catch (error) {
-      // エラーログ出力(開発環境で出力)
-      // print('Error fetching general tweets: $error');
       state = GeneralTweetsState(
         generalTweets: state.generalTweets,
         hasMore: false,
@@ -119,7 +117,12 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
 }
 
 /// 全体ツイート一覧Provider
-final generalTweetsProvider = StateNotifierProvider.autoDispose<
+///
+/// autoDispose は意図的に付けていない。
+/// タブを開くたびに Notifier が再生成され、コンストラクタで毎回 DB 取得されるのを防ぐため、
+/// 状態をアプリ生存期間中保持する。DB アクセスは「アプリ起動後の初回取得」と
+/// 「Pull-refresh（refreshTweets）」のときだけに限定される。
+final generalTweetsProvider = StateNotifierProvider<
     GeneralTweetsNotifier, GeneralTweetsState>((ref) {
   final getTweetsUseCase = ref.read(getTweetsUseCaseProvider);
   return GeneralTweetsNotifier(getTweetsUseCase);
