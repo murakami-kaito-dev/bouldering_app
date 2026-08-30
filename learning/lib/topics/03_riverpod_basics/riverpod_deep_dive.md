@@ -138,5 +138,6 @@ autoDisposeありだと「タブを離れる→破棄→戻る→create関数再
 ---
 
 ## 関連
+- **このノートの体験デモ**: 同フォルダ `riverpod_deep_dive_page.dart`（ランチャー「03+」。autoDisposeあり/なしを画面の出入りで比較、familyの独立状態を確認）
 - 動く最小デモ: 同フォルダ `riverpod_basics_page.dart`（(1)〜(6)の Provider 種別）
 - 上位トピック: `README.md`（Riverpod入門）

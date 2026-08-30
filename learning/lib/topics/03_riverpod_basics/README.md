@@ -30,6 +30,7 @@
 - riverpod_generator / freezed（本体も未使用。手書き copyWith が本体の流儀）
 - ref.listen による副作用（スナックバー表示等）
 
-## 深掘りノート
+## 深掘りノート＋体験デモ
 
 - [riverpod_deep_dive.md](riverpod_deep_dive.md) — 本体の実プロバイダ（generalTweetsProvider / favoriteUserTweetsProvider）で読む **autoDispose / family / create関数（コールバック）** の分解解説
+- `riverpod_deep_dive_page.dart` — 上記を**動かして体験するミニアプリ**（ランチャーの「03+」）。autoDisposeあり/なしのカウンターを画面の出入りで比較、familyの引数ごと独立状態を確認
