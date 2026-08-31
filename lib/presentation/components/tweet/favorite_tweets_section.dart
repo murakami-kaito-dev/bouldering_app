@@ -208,7 +208,22 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(child: CircularProgressIndicator()),
+      // ユーザー情報の取得失敗（オフライン起動など）。
+      // 以前はスピナーを出し続けて回復不能に見えたため、再読み込み動線を出す
+      error: (_, __) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('読み込みに失敗しました'),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () =>
+                  ref.read(authProvider.notifier).retryUserLoadIfNeeded(),
+              child: const Text('再読み込み'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

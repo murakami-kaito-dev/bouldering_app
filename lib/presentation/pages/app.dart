@@ -298,6 +298,10 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
         try {
           await ref.read(authProvider.notifier).checkAuthRevoked();
           debugPrint('[APP LIFECYCLE] トークン失効チェック完了');
+
+          // オフライン起動などでユーザー情報が未取得のままなら取得し直す
+          // （通信回復後にアプリへ戻ってきたタイミングで自己回復させる）
+          await ref.read(authProvider.notifier).retryUserLoadIfNeeded();
         } catch (e) {
           debugPrint('[APP LIFECYCLE ERROR] トークン失効チェックエラー: $e');
         }
