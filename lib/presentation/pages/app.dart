@@ -221,7 +221,8 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
   final List<Widget> _pages = [
     const HomePage(),
     const BoulLogPage(),
-    const ActivityPostPage(),
+    // 投稿はモーダルシートで開くためタブ本体は使わない（onTapでシートを表示）
+    const SizedBox.shrink(),
     const MyPage(),
   ];
 
@@ -253,6 +254,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getInt(_lastTabIndexKey);
       if (!mounted || saved == null) return;
+      if (saved == 2) return; // 投稿タブは実体が無いため復元しない（保存もしていない）
       if (saved >= 0 && saved < _pages.length && saved != _currentIndex) {
         setState(() => _currentIndex = saved);
       }
@@ -311,6 +313,13 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: (int index) {
+          // 投稿タブはタブ切替ではなくモーダルシートとして開く
+          // （×で閉じる明確な動線＝キーボードも確実に閉じられる。
+          //   投稿完了時はシートが閉じ、完了したことがユーザーに伝わる）
+          if (index == 2) {
+            showActivityPostSheet(context);
+            return;
+          }
           setState(() {
             _currentIndex = index;
           });

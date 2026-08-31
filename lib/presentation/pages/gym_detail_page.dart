@@ -388,15 +388,10 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                // ボル活投稿ページに遷移（ジムが事前選択された状態）
-                Navigator.push(
+                // ボル活投稿をモーダルシートで開く（ジムが事前選択された状態）
+                showActivityPostSheet(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => ActivityPostPage(
-                      preSelectedGymId: gymInfo.id,
-                      fromGymDetail: true,
-                    ),
-                  ),
+                  preSelectedGymId: gymInfo.id,
                 );
               },
               style: ElevatedButton.styleFrom(

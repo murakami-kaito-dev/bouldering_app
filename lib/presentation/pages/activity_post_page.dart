@@ -17,6 +17,37 @@ import '../../shared/utils/ng_word_validator.dart';
 /// - ボル活(ツイート)を投稿するページ
 /// - StatefulWidget
 /// - 状態：テキストの長さ、写真、ジム選択状態
+/// 投稿・編集ページをモーダルボトムシートとして開く共通入口
+///
+/// 目的（UX）:
+/// - 「×で閉じる」という明確な動線を用意し、シートを閉じればキーボードも確実に閉じる
+///   （全画面表示では余白タップが難しくキーボードを閉じにくかった問題への対策）
+/// - 投稿/編集の完了時にシートが閉じることで「完了した」ことが視覚的に伝わる
+///   （従来は同じ画面のまま入力が消えるだけで、完了が分かりにくかった）
+Future<void> showActivityPostSheet(
+  BuildContext context, {
+  int? preSelectedGymId,
+  Map<String, dynamic>? initialData,
+}) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true, // 全画面に近い高さまで伸ばすために必須
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => FractionallySizedBox(
+      heightFactor: 0.97, // 画面の97%（後ろの画面が上部にわずかに見える＝シートらしさ）
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        child: ActivityPostPage(
+          asModalSheet: true,
+          preSelectedGymId: preSelectedGymId,
+          initialData: initialData,
+        ),
+      ),
+    ),
+  );
+}
+
 class ActivityPostPage extends ConsumerStatefulWidget {
   // ツイートを編集するとき，すでにあるデータを受け取るための変数
   final Map<String, dynamic>? initialData;
@@ -25,11 +56,16 @@ class ActivityPostPage extends ConsumerStatefulWidget {
   // ジム詳細ページから遷移したかどうかのフラグ
   final bool fromGymDetail;
 
+  // モーダルボトムシートとして表示されているか
+  // （trueのとき: 閉じる×ボタンを表示し、投稿完了時にシートを閉じる）
+  final bool asModalSheet;
+
   const ActivityPostPage({
     Key? key,
     this.initialData,
     this.preSelectedGymId,
     this.fromGymDetail = false,
+    this.asModalSheet = false,
   }) : super(key: key);
 
   @override
@@ -246,8 +282,9 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          automaticallyImplyLeading:
-              isEditMode || widget.fromGymDetail, // 編集時またはジム詳細からの遷移時に戻るボタンを表示
+          automaticallyImplyLeading: isEditMode ||
+              widget.fromGymDetail ||
+              widget.asModalSheet, // 編集/ジム詳細遷移/モーダル時に左上ボタンを表示
           title: Text(
             isEditMode ? 'ボル活編集' : 'ボル活投稿',
             style: const TextStyle(
@@ -257,12 +294,18 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
           ),
           backgroundColor: const Color(0xFFFEF7FF),
           surfaceTintColor: const Color(0xFFFEF7FF),
-          leading: (isEditMode || widget.fromGymDetail)
+          leading: widget.asModalSheet
+              // モーダル表示時は「閉じる」を明示（シートを閉じればキーボードも閉じる）
               ? IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
+                  icon: const Icon(Icons.close, color: Colors.black),
                   onPressed: () => Navigator.of(context).pop(),
                 )
-              : null,
+              : (isEditMode || widget.fromGymDetail)
+                  ? IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.black),
+                      onPressed: () => Navigator.of(context).pop(),
+                    )
+                  : null,
           actions: [
             TextButton(
               onPressed: _isPosting
@@ -348,8 +391,9 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                   const SnackBar(content: Text('投稿が完了しました')),
                                 );
 
-                                // ジム詳細ページから来た場合は前画面に戻る
-                                if (widget.fromGymDetail) {
+                                // モーダル/ジム詳細からの場合は画面を閉じる
+                                // → シートが閉じる動きで「投稿できた」ことが伝わる
+                                if (widget.asModalSheet || widget.fromGymDetail) {
                                   Navigator.of(context).pop();
                                 } else {
                                   // 通常の投稿タブから来た場合は初期化
