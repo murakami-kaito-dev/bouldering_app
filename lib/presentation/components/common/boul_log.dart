@@ -200,21 +200,17 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                         }
                       }
                     } else if (value == 'edit' && widget.tweetId != null) {
-                      // 編集ページへ遷移
-                      Navigator.push(
+                      // 編集をモーダルシートで開く（×で閉じる動線・完了時はシートが閉じる）
+                      showActivityPostSheet(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => ActivityPostPage(
-                            initialData: {
-                              'tweetId': widget.tweetId,
-                              'tweetContents': widget.content,
-                              'gymId': widget.gymId.toString(),
-                              'gymName': widget.gymName,
-                              'visitedDate': widget.visitedDate,
-                              'mediaUrls': widget.mediaUrls ?? [],
-                            },
-                          ),
-                        ),
+                        initialData: {
+                          'tweetId': widget.tweetId,
+                          'tweetContents': widget.content,
+                          'gymId': widget.gymId.toString(),
+                          'gymName': widget.gymName,
+                          'visitedDate': widget.visitedDate,
+                          'mediaUrls': widget.mediaUrls ?? [],
+                        },
                       );
                     } else if (value == 'block') {
                       // ブロック確認ダイアログを表示
