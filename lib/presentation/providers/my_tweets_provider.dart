@@ -39,12 +39,17 @@ class MyTweetsState {
   final bool isFirstFetch;
   final String? error;
 
+  /// 次ページ取得用カーソル（＝取得済み最後のツイートの投稿日時ISO8601）。
+  /// nullなら先頭から取得。リフレッシュ時は新規stateを作ることでnullに戻る。
+  final String? nextCursor;
+
   const MyTweetsState({
     required this.tweets,
     required this.isLoading,
     required this.hasMore,
     required this.isFirstFetch,
     this.error,
+    this.nextCursor,
   });
 
   MyTweetsState copyWith({
@@ -53,6 +58,7 @@ class MyTweetsState {
     bool? hasMore,
     bool? isFirstFetch,
     String? error,
+    String? nextCursor,
   }) {
     return MyTweetsState(
       tweets: tweets ?? this.tweets,
@@ -60,6 +66,7 @@ class MyTweetsState {
       hasMore: hasMore ?? this.hasMore,
       isFirstFetch: isFirstFetch ?? this.isFirstFetch,
       error: error ?? this.error,
+      nextCursor: nextCursor ?? this.nextCursor,
     );
   }
 }
@@ -92,7 +99,7 @@ class MyTweetsNotifier extends StateNotifier<MyTweetsState> {
     try {
       final tweets = await _getUserTweetsUseCase.execute(
         userId,
-        offset: state.tweets.length,
+        cursor: state.nextCursor,
         limit: _pageSize,
       );
 
@@ -110,6 +117,8 @@ class MyTweetsNotifier extends StateNotifier<MyTweetsState> {
           hasMore: newTweetsList.length >= _pageSize,
           isFirstFetch: false,
           error: null,
+          // 次ページは「今回取得した最後のツイートより前」を取りに行く
+          nextCursor: newTweetsList.last.tweetedDate.toIso8601String(),
         );
       }
     } catch (error) {

@@ -2,7 +2,8 @@ import '../entities/tweet.dart';
 
 abstract class TweetRepository {
   Future<List<Tweet>> getAllTweets({int limit = 20, String? cursor});
-  Future<List<Tweet>> getTweetsByUserId(String userId, {int limit = 20, int offset = 0});
+  Future<List<Tweet>> getTweetsByUserId(String userId,
+      {int limit = 20, String? cursor});
   Future<List<Tweet>> getTweetsByGymId(int gymId, {int limit = 20, int offset = 0});
   Future<List<Tweet>> getFavoriteTweets(String userId, {int limit = 20, String? cursor});
   Future<Tweet?> getTweetById(int tweetId);

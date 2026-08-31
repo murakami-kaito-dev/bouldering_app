@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../domain/entities/user.dart';
 import '../providers/user_provider.dart';
 import '../providers/auth_provider.dart';
@@ -305,17 +306,24 @@ class SettingsPage extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('アプリ情報'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('イワノボリタイ'),
-            SizedBox(height: 8),
-            Text('バージョン: 1.0.0'), // リリースごとに手動更新
-            SizedBox(height: 8),
-            SizedBox(height: 16),
-            Text('© 2025 イワノボリタイ開発チーム'),
-          ],
+        // バージョンはビルド情報から動的取得（旧実装はハードコードで実際の版とズレていた）
+        content: FutureBuilder<PackageInfo>(
+          future: PackageInfo.fromPlatform(),
+          builder: (context, snapshot) {
+            final version = snapshot.data?.version ?? '-';
+            final build = snapshot.data?.buildNumber ?? '-';
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('イワノボリタイ'),
+                const SizedBox(height: 8),
+                Text('バージョン: $version ($build)'),
+                const SizedBox(height: 16),
+                const Text('© 2025 イワノボリタイ開発チーム'),
+              ],
+            );
+          },
         ),
         actions: [
           TextButton(
