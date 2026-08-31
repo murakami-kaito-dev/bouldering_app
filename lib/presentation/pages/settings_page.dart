@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../domain/entities/user.dart';
@@ -78,7 +79,9 @@ class SettingsPage extends ConsumerWidget {
                   radius: 30,
                   backgroundImage:
                       (user.userIconUrl != null && user.userIconUrl!.isNotEmpty)
-                          ? NetworkImage(user.userIconUrl!)
+                          ? ResizeImage(
+                              CachedNetworkImageProvider(user.userIconUrl!),
+                              width: 180)
                           : null,
                   child: (user.userIconUrl == null || user.userIconUrl!.isEmpty)
                       ? const Icon(Icons.person, size: 30)

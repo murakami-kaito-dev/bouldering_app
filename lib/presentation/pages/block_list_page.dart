@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/block.dart';
 import '../providers/block_provider.dart';
@@ -121,8 +122,12 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
   Widget _buildUserIcon(BlockedUser blockedUser) {
     if (blockedUser.userIconUrl != null &&
         blockedUser.userIconUrl!.isNotEmpty) {
-      return Image.network(
-        blockedUser.userIconUrl!,
+      // 縮小デコード+ディスクキャッシュ（原寸デコードによるメモリ肥大を防ぐ）
+      return Image(
+        image: ResizeImage(
+          CachedNetworkImageProvider(blockedUser.userIconUrl!),
+          width: 144,
+        ),
         width: 48,
         height: 48,
         fit: BoxFit.cover,

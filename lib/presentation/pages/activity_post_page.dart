@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
@@ -498,8 +499,12 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                 children: [
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8.0),
-                                    child: Image.network(
-                                      url,
+                                    // 縮小デコード+ディスクキャッシュ
+                                    child: Image(
+                                      image: ResizeImage(
+                                        CachedNetworkImageProvider(url),
+                                        width: 300,
+                                      ),
                                       width: 100,
                                       height: 100,
                                       fit: BoxFit.cover,

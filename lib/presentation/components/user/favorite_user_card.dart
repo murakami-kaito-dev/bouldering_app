@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/user.dart';
 import '../../../shared/utils/navigation_helper.dart';
@@ -112,8 +113,12 @@ class FavoriteUserCard extends ConsumerWidget {
 
   Widget _buildUserIcon() {
     if (user.userIconUrl != null && user.userIconUrl!.isNotEmpty) {
-      return Image.network(
-        user.userIconUrl!,
+      // 縮小デコード+ディスクキャッシュ（原寸デコードによるメモリ肥大を防ぐ）
+      return Image(
+        image: ResizeImage(
+          CachedNetworkImageProvider(user.userIconUrl!),
+          width: 144,
+        ),
         width: 48,
         height: 48,
         fit: BoxFit.cover,

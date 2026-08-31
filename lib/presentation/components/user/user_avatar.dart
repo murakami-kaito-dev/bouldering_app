@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../shared/utils/image_url_validator.dart';
 
 /// ユーザーアバターコンポーネント
@@ -69,8 +70,12 @@ class UserAvatar extends StatelessWidget {
   /// プロフィール画像の構築
   Widget _buildProfileImage() {
     if (ImageUrlValidator.isValidImageUrl(userImageUrl)) {
-      return Image.network(
-        userImageUrl!,
+      // 縮小デコード+ディスクキャッシュ（原寸デコードによるメモリ肥大を防ぐ）
+      return Image(
+        image: ResizeImage(
+          CachedNetworkImageProvider(userImageUrl!),
+          width: 200,
+        ),
         width: 72,
         height: 72,
         fit: BoxFit.cover,

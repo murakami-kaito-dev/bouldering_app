@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../common/image_viewer.dart';
 
 /// ■ クラス
@@ -46,8 +47,12 @@ class UserLogoAndName extends StatelessWidget {
               tag: 'profile_icon_${userId ?? userName.hashCode}_0',
               child: ClipOval(
                 child: (_isValidUrl(userLogo))
-                    ? Image.network(
-                        userLogo!,
+                    // 縮小デコード+ディスクキャッシュ
+                    ? Image(
+                        image: ResizeImage(
+                          CachedNetworkImageProvider(userLogo!),
+                          width: 200,
+                        ),
                         width: 72,
                         height: 72,
                         fit: BoxFit.cover,
