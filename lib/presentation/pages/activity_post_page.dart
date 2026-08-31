@@ -35,7 +35,7 @@ Future<void> showActivityPostSheet(
     useSafeArea: true,
     backgroundColor: Colors.transparent,
     builder: (context) => FractionallySizedBox(
-      heightFactor: 0.94, // 画面の94%（後ろの画面が上部に少し見える＝シートらしさ）
+      heightFactor: 0.97, // 画面の97%（後ろの画面が上部にわずかに見える＝シートらしさ）
       child: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         child: ActivityPostPage(
