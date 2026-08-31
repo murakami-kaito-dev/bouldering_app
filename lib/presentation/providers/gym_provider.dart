@@ -81,15 +81,33 @@ class GymListNotifier extends StateNotifier<AsyncValue<List<Gym>>> {
   /// 
   /// アプリ起動時や更新時に実行
   Future<void> loadAllGyms() async {
-    state = const AsyncValue.loading();
+    // 既にデータ表示中の再読込では loading に落とさない。
+    // 落とすと gymListProvider / gymMapProvider を watch する全画面
+    // （地図・検索・マイページのホームジム名など）が一斉にローディングへ
+    // 戻ってしまうため、静かに差し替える。
+    if (!state.hasValue) {
+      state = const AsyncValue.loading();
+    }
 
     try {
       final gyms = await _searchGymsUseCase.execute();
       state = AsyncValue.data(gyms);
       _currentFilter = const GymSearchFilter(); // フィルタをリセット
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+      // 表示中データがあるなら保持し、エラーで画面を壊さない
+      if (!state.hasValue) {
+        state = AsyncValue.error(e, stackTrace);
+      }
     }
+  }
+
+  /// データ未取得・エラー時のみ再読込する
+  ///
+  /// 画面を開くたびに全431件を強制再取得していた問題の対策。
+  /// error状態からの自己回復も兼ねる。
+  Future<void> loadIfNeeded() async {
+    if (state.hasValue) return;
+    await loadAllGyms();
   }
 
   /// ジム検索実行
@@ -195,7 +213,7 @@ class GymDetailNotifier extends StateNotifier<AsyncValue<Gym?>> {
   /// [gymId] 取得対象のジムID
   /// 
   /// 指定されたジムの詳細情報を取得
-  Future<void> loadGymDetail(int gymId) async {
+  Future<void> loadGymDetail(int gymId, {Gym? seed}) async {
     if (gymId <= 0) {
       state = AsyncValue.error(
         ArgumentError('無効なジムIDです'),
@@ -204,13 +222,22 @@ class GymDetailNotifier extends StateNotifier<AsyncValue<Gym?>> {
       return;
     }
 
-    state = const AsyncValue.loading();
+    if (seed != null) {
+      // 全件キャッシュ由来のデータで即描画し、
+      // 個別APIで最新値（イキタイ/ボル活数）に上書きする
+      state = AsyncValue.data(seed);
+    } else {
+      state = const AsyncValue.loading();
+    }
 
     try {
       final gym = await _getGymDetailsUseCase.execute(gymId);
       state = AsyncValue.data(gym);
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+      // seed表示中ならエラーで上書きせず表示を維持する
+      if (seed == null) {
+        state = AsyncValue.error(e, stackTrace);
+      }
     }
   }
 

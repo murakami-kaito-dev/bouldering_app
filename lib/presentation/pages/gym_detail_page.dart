@@ -46,11 +46,11 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
     super.initState();
     _scrollController.addListener(_onScroll);
 
-    // ジム詳細情報を取得
+    // ジム詳細情報を取得（全件キャッシュにあれば即表示し、個別APIで最新値に上書き）
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(gymDetailProvider.notifier)
-          .loadGymDetail(int.parse(widget.gymId));
+      final gymId = int.parse(widget.gymId);
+      final seed = ref.read(gymMapProvider)[gymId];
+      ref.read(gymDetailProvider.notifier).loadGymDetail(gymId, seed: seed);
     });
 
     Future.microtask(() async {

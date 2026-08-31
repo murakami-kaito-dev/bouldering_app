@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math' as math;
 import '../services/api_client.dart';
+import '../services/gym_cache_service.dart';
 import '../../domain/entities/gym.dart';
 import '../../domain/entities/gym_photo.dart';
 // TODO: 本番環境では以下のインポートをコメントアウトする
@@ -19,10 +21,15 @@ import '../../domain/entities/gym_photo.dart';
 class GymDataSource {
   final ApiClient _apiClient;
 
+  /// ジム全件の永続キャッシュ（null なら常にAPI取得＝従来動作）
+  final GymCacheService? _cacheService;
+
   /// コンストラクタ
-  /// 
+  ///
   /// [_apiClient] API通信クライアント
-  GymDataSource(this._apiClient);
+  /// [cacheService] ジム全件データの永続キャッシュ
+  GymDataSource(this._apiClient, {GymCacheService? cacheService})
+      : _cacheService = cacheService;
 
   /// ジム写真セット取得
   ///
@@ -55,33 +62,62 @@ class GymDataSource {
   /// 処理フロー:
   /// 1. REST API: GET /api/gyms で全ジム情報取得（基本情報+イキタイ数+投稿数含む）
   Future<List<Gym>> getAllGyms() async {
+    // 永続キャッシュ優先（cache-first + stale-while-revalidate）。
+    // ジム情報の大半（名前・住所・座標・営業時間・料金）は数日で変わらないため、
+    // 431件×約1MBの取得を毎回行わない。イキタイ/ボル活数の鮮度は
+    // 詳細画面の個別API（getGymById）が担保する。
+    final cached = await _cacheService?.read();
+    if (cached != null) {
+      if (!cached.isFresh) {
+        // TTL超過: キャッシュを即返しつつ、裏でファイルだけ更新（次回起動で反映）
+        unawaited(_refreshCacheInBackground());
+      }
+      return _mapRawGymList(cached.data);
+    }
+
+    // キャッシュなし: APIから取得して保存
+    return _fetchAndCacheAllGyms();
+  }
+
+  /// APIから全ジムを取得し、成功時に生JSONを永続キャッシュへ保存する
+  Future<List<Gym>> _fetchAndCacheAllGyms() async {
     try {
       // REST APIで全ジム情報を取得（認証不要）
       final response = await _apiClient.get(
         endpoint: '/gyms',
         requireAuth: false,
       );
-      
-      // APIレスポンスからジムデータを抽出
+
       final List<dynamic> gymsData = response['data'] ?? [];
-      
       if (gymsData.isEmpty) {
         return [];
       }
-      
-      // APIレスポンスをGymエンティティに変換
-      final gyms = gymsData
-          .where((item) => item != null)
-          .map((item) => _mapToGymEntity(
-                item,
-                ikitaiCount: _parseInt(item['ikitai_count']) ?? 0,
-                boulCount: _parseInt(item['boul_count']) ?? 0,
-              ))
-          .toList();
-      
-      return gyms;
+
+      await _cacheService?.write(gymsData);
+      return _mapRawGymList(gymsData);
     } catch (e) {
       throw Exception('ジム一覧の取得に失敗しました: $e');
+    }
+  }
+
+  /// 生JSONリスト→Gymエンティティ変換（API直・キャッシュ読み出しの共通処理）
+  List<Gym> _mapRawGymList(List<dynamic> gymsData) {
+    return gymsData
+        .where((item) => item != null)
+        .map((item) => _mapToGymEntity(
+              item,
+              ikitaiCount: _parseInt(item['ikitai_count']) ?? 0,
+              boulCount: _parseInt(item['boul_count']) ?? 0,
+            ))
+        .toList();
+  }
+
+  /// stale時の裏更新。失敗してもUIに影響させない（オフライン耐性）
+  Future<void> _refreshCacheInBackground() async {
+    try {
+      await _fetchAndCacheAllGyms();
+    } catch (_) {
+      // 裏更新の失敗は無視（キャッシュ表示は継続、次回また試行される）
     }
   }
 
@@ -260,7 +296,9 @@ class GymDataSource {
       equipmentRentalFee: gymData['equipment_rental_fee'] ?? '-',
       ikitaiCount: ikitaiCount,
       boulCount: boulCount,
-      isBoulderingGym: gymData['is_bouldering_type'] ?? true,
+      // 注意: APIの実キーは is_bouldering_gym（旧実装は存在しない 'is_bouldering_type' を
+      // 読んでおり、?? true により全ジムがボルダリング可と誤判定されていた）
+      isBoulderingGym: gymData['is_bouldering_gym'] ?? true,
       isLeadGym: gymData['is_lead_gym'] ?? false,
       isSpeedGym: gymData['is_speed_gym'] ?? false,
       hours: _mapToGymHours(gymData),

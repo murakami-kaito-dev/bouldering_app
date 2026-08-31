@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 import 'gym_selection_page.dart';
@@ -47,7 +48,8 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadCurrentUserData();
-      ref.read(gymListProvider.notifier).loadAllGyms();
+      // データ未取得時のみ読込（開くたびの全件再取得をやめる）
+      ref.read(gymListProvider.notifier).loadIfNeeded();
     });
   }
 
@@ -155,7 +157,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                 backgroundImage: _selectedProfileImage != null
                     ? FileImage(_selectedProfileImage!)
                     : (user.userIconUrl != null && user.userIconUrl!.isNotEmpty)
-                        ? NetworkImage(user.userIconUrl!)
+                        ? ResizeImage(
+                            CachedNetworkImageProvider(user.userIconUrl!),
+                            width: 360)
                         : null,
                 child: _selectedProfileImage == null &&
                         (user.userIconUrl == null || user.userIconUrl!.isEmpty)

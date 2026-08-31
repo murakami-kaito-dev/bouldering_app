@@ -22,6 +22,10 @@ void main() async {
   // Flutter フレームワークの初期化
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 画像メモリキャッシュ上限を明示（既定100MB→50MB）。
+  // バックグラウンド時にiOSへプロセスを終了されにくくするためのメモリ削減策
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 50 << 20;
+
   // 環境設定の整合性チェック（ENVIRONMENTとFLUTTER_APP_FLAVORの一致確認）
   AppEnv.validateConsistency();
 

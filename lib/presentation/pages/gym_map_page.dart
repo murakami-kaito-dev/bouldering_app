@@ -47,7 +47,8 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
     super.initState();
     _initializeMap();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(gymListProvider.notifier).loadAllGyms();
+      // データ未取得時のみ読込（開くたびの全件再取得をやめ、キャッシュを活かす）
+      ref.read(gymListProvider.notifier).loadIfNeeded();
     });
   }
 

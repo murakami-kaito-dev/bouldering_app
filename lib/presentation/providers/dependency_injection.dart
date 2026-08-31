@@ -10,6 +10,7 @@ import '../../domain/services/image_picker_service.dart';
 
 // Infrastructure
 import '../../infrastructure/services/api_client.dart';
+import '../../infrastructure/services/gym_cache_service.dart';
 import '../../infrastructure/services/storage_service.dart';
 import '../../infrastructure/services/firebase_auth_service.dart';
 import '../../infrastructure/services/image_picker_service_impl.dart';
@@ -134,10 +135,16 @@ final userDataSourceProvider = Provider<UserDataSource>((ref) {
 /// ジムデータソースProvider
 ///
 /// 統合APIクライアントを使用（全てのAPIが同じCloud Runサービスで提供されるため）
+/// ジム全件データの永続キャッシュサービスProvider
+final gymCacheServiceProvider = Provider<GymCacheService>((ref) {
+  return GymCacheService();
+});
+
 final gymDataSourceProvider = Provider<GymDataSource>((ref) {
   final apiClient = ref.read(apiClientProvider);
+  final cacheService = ref.read(gymCacheServiceProvider);
 
-  return GymDataSource(apiClient);
+  return GymDataSource(apiClient, cacheService: cacheService);
 });
 
 /// ツイートデータソースProvider

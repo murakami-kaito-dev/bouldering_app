@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../shared/config/environment_config.dart';
 import '../../shared/constants/app_routes.dart';
 import '../providers/auth_provider.dart';
+import '../providers/gym_provider.dart';
+import '../../domain/entities/gym.dart';
 import '../providers/terms_acceptance_provider.dart';
 import 'home_page.dart';
 import 'gym_detail_page.dart';
@@ -17,6 +22,7 @@ import 'boul_log_page.dart';
 import 'my_page.dart';
 import 'other_user_profile_page.dart';
 import 'terms_agreement_page.dart';
+import 'splash_page.dart';
 import 'block_list_page.dart';
 import 'blocked_user_page.dart';
 
@@ -35,21 +41,13 @@ class BoulderingApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final termsState = ref.watch(termsAcceptanceProvider);
-
     return MaterialApp(
       title: 'ボルダリングアプリ${EnvironmentConfig.appVersionSuffix}',
       theme: _buildTheme(),
       debugShowCheckedModeBanner:
           EnvironmentConfig.isDevelopment, // 開発環境でのみデバッグバナー表示
-      home: termsState.isLoading
-          ? const Scaffold(
-              backgroundColor: Color(0xFFFEF7FF),
-              body: Center(child: CircularProgressIndicator()),
-            )
-          : termsState.hasAccepted
-              ? const ScaffoldWithNavBar()
-              : const TermsAgreementPage(),
+      // 起動ゲート: スプラッシュ表示とジムデータ先行読込を担う（Issue #21）
+      home: const AppRoot(),
       routes: _buildRoutes(),
     );
   }
@@ -138,6 +136,74 @@ class BoulderingApp extends ConsumerWidget {
   }
 }
 
+/// 起動ゲート（スプラッシュ）
+///
+/// 役割:
+/// - 起動直後にスプラッシュを表示しつつ、ジム全件データを先行読込する（Issue #21）
+/// - 「最低表示時間」かつ「ジム読込完了 or タイムアウト」かつ「規約状態の読込完了」で本体へ
+/// - ネットワークで起動をブロックしない設計（タイムアウトで必ず先へ進む。
+///   永続キャッシュがあれば読込は通常数百msで完了する）
+class AppRoot extends ConsumerStatefulWidget {
+  const AppRoot({super.key});
+
+  @override
+  ConsumerState<AppRoot> createState() => _AppRootState();
+}
+
+class _AppRootState extends ConsumerState<AppRoot> {
+  bool _splashDone = false;
+
+  /// スプラッシュの最低表示時間（チラつき防止 + ブランド表示）
+  static const Duration _minSplashDuration = Duration(milliseconds: 1000);
+
+  /// ジム読込の待ち上限（オフライン等でもこれ以上は起動を待たせない）
+  static const Duration _gymLoadTimeout = Duration(seconds: 4);
+
+  @override
+  void initState() {
+    super.initState();
+    _runStartupSequence();
+  }
+
+  Future<void> _runStartupSequence() async {
+    // gymListProvider を購読開始＝生成トリガ（コンストラクタが読込を開始する）
+    final gymReady = Completer<void>();
+    final subscription = ref.listenManual<AsyncValue<List<Gym>>>(
+      gymListProvider,
+      (previous, next) {
+        if ((next.hasValue || next.hasError) && !gymReady.isCompleted) {
+          gymReady.complete();
+        }
+      },
+      fireImmediately: true,
+    );
+
+    await Future.wait([
+      Future.delayed(_minSplashDuration),
+      // 読込完了かタイムアウトの早い方。オフラインでも必ず先へ進む
+      gymReady.future.timeout(_gymLoadTimeout, onTimeout: () {}),
+    ]);
+    subscription.close();
+
+    if (mounted) {
+      setState(() => _splashDone = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final termsState = ref.watch(termsAcceptanceProvider);
+
+    if (!_splashDone || termsState.isLoading) {
+      return const SplashPage();
+    }
+
+    return termsState.hasAccepted
+        ? const ScaffoldWithNavBar()
+        : const TermsAgreementPage();
+  }
+}
+
 /// ボトムナビゲーション付きのメインスキャフォールド
 ///
 /// アプリライフサイクルを監視してトークン失効を検知
@@ -173,6 +239,38 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
     // ここで一度 read して生成しておかないと、マイページを開くまで復元処理が走らず、
     // 投稿ページ等が「未ログイン」表示のままになる不具合があった。
     ref.read(authProvider);
+
+    // 前回選択タブの復元（コールドスタート後も元いた場所に戻れるように）
+    _restoreLastTab();
+  }
+
+  /// タブ復元用の保存キー
+  static const String _lastTabIndexKey = 'last_tab_index';
+
+  /// 前回選択タブを復元する
+  Future<void> _restoreLastTab() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getInt(_lastTabIndexKey);
+      if (!mounted || saved == null) return;
+      if (saved >= 0 && saved < _pages.length && saved != _currentIndex) {
+        setState(() => _currentIndex = saved);
+      }
+    } catch (_) {
+      // 復元失敗時はホームタブのまま（起動を妨げない）
+    }
+  }
+
+  /// 選択タブを保存する。投稿タブ(index 2)は保存しない
+  /// （復帰直後にいきなり投稿フォームが開くのは違和感があり、入力内容は復元できないため）
+  Future<void> _saveLastTab(int index) async {
+    if (index == 2) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_lastTabIndexKey, index);
+    } catch (_) {
+      // 保存失敗は無視（次回はホームタブから始まるだけ）
+    }
   }
 
   @override
@@ -216,6 +314,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
           setState(() {
             _currentIndex = index;
           });
+          _saveLastTab(index); // fire-and-forget（UIを待たせない）
         },
         items: [
           const BottomNavigationBarItem(
