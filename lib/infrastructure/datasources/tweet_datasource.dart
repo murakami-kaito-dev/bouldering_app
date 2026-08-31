@@ -68,31 +68,28 @@ class TweetDataSource {
   ///
   /// [userId] ユーザーID
   /// [limit] 取得件数の上限
-  /// [offset] 取得開始位置
+  /// [cursor] 前ページ最後のツイートの投稿日時（ISO8601）。nullで先頭から
   ///
   /// 返り値:
   /// [List<Tweet>] 指定ユーザーのツイートリスト
   ///
   /// 処理フロー:
-  /// 1. REST API: GET /api/users/{userId}/tweets?limit={limit}&offset={offset} でユーザーツイート取得
+  /// 1. REST API: GET /api/tweets/users/{userId}?limit={limit}&cursor={cursor} でユーザーツイート取得
   /// 2. APIエラー時は例外を上位に伝播
   Future<List<Tweet>> getTweetsByUserId(
     String userId, {
     int limit = 20,
-    int offset = 0,
+    String? cursor,
   }) async {
     try {
-      // cursorは初回取得時（offset=0）は送信せず、ページネーション時のみ使用
+      // カーソル方式ページネーション（バックエンド仕様に一致）。
+      // cursor = 前ページ最後のツイートの投稿日時(ISO8601)。初回はnullで最新から取得。
+      // 旧実装はoffset引数を受け取りながらAPIに何も送っておらず、
+      // 21件目以降が取得できないバグがあった（Issue台帳G-4）。
       final parameters = <String, String>{
         'limit': limit.toString(),
+        if (cursor != null && cursor.isNotEmpty) 'cursor': cursor,
       };
-
-      // offsetが0より大きい場合のみcursorパラメータを追加
-      // 実際のカーソル値はバックエンドのレスポンスから取得する必要がある
-      if (offset > 0) {
-        // TODO: 実際のカーソル値を使用する実装が必要
-        // 現在は簡易実装として省略
-      }
 
       final response = await _apiClient.get(
         endpoint: '/tweets/users/$userId',

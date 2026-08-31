@@ -45,10 +45,10 @@ class GetUserTweetsUseCase {
   GetUserTweetsUseCase(this._tweetRepository);
 
   Future<List<Tweet>> execute(String userId,
-      {int limit = 20, int offset = 0}) async {
+      {int limit = 20, String? cursor}) async {
     try {
       return await _tweetRepository.getTweetsByUserId(userId,
-          limit: limit, offset: offset);
+          limit: limit, cursor: cursor);
     } catch (e) {
       throw DataFetchException(
         message: 'マイツイート取得に失敗しました',

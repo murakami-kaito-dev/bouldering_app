@@ -63,12 +63,12 @@ class TweetRepositoryImpl implements TweetRepository {
   /// 
   /// ビジネスルール:
   /// - ユーザーIDは空文字不可
-  /// - 取得件数とオフセットは全ツイート取得と同じ制限
+  /// - 取得件数は全ツイート取得と同じ制限
   @override
   Future<List<Tweet>> getTweetsByUserId(
     String userId, {
     int limit = 20,
-    int offset = 0,
+    String? cursor,
   }) async {
     if (userId.trim().isEmpty) {
       throw ArgumentError('ユーザーIDは必須です');
@@ -78,15 +78,11 @@ class TweetRepositoryImpl implements TweetRepository {
       throw ArgumentError('取得件数は1〜100件の範囲で指定してください');
     }
 
-    if (offset < 0) {
-      throw ArgumentError('オフセットは0以上で指定してください');
-    }
-
     try {
       final tweets = await _dataSource.getTweetsByUserId(
         userId,
         limit: limit,
-        offset: offset,
+        cursor: cursor,
       );
       
       // 投稿日時の降順でソート
