@@ -238,7 +238,8 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   /// ログイン状態の表示
   Widget _buildLoggedState(BuildContext context, user) {
     return GestureDetector(
-      // タップでキーボードを閉じる
+      // タップでキーボードを閉じる（opaque指定で余白部分のタップも確実に検知する）
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         FocusScope.of(context).unfocus();
       },
@@ -464,11 +465,12 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                   controller: _textController,
                   maxLength: 400,
                   maxLines: 10,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (value) {
-                    // 完了ボタンが押された時にキーボードを閉じる
-                    FocusScope.of(context).unfocus();
-                  },
+                  // 改行を入力できるようにする（Issue #14）。
+                  // 旧実装は textInputAction: done によりリターンキーが「完了」になり、
+                  // 改行を入力する手段が無かった。キーボードを閉じる操作は
+                  // ページ余白のタップ（_buildLoggedState の GestureDetector）が担う。
+                  keyboardType: TextInputType.multiline,
+                  textInputAction: TextInputAction.newline,
                   decoration: const InputDecoration(
                     hintText: '今日登ったレベル，時間など好きなことを書きましょう。',
                     border: InputBorder.none,
