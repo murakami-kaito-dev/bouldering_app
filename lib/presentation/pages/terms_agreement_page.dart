@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/terms_acceptance_provider.dart';
 import '../components/common/app_logo.dart';
+import '../theme/app_tokens.dart';
 import '../../shared/utils/url_launcher_helper.dart';
 
 /// 利用規約同意画面
@@ -29,7 +30,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
     final termsState = ref.watch(termsAcceptanceProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
@@ -45,7 +46,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
                 '利用規約をご確認の上、\n同意してください',
                 style: TextStyle(
                   fontSize: 26,
-                  color: Colors.black87,
+                  color: AppColors.chalk,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -62,7 +63,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
                         '利用規約を開く',
                         style: TextStyle(
                           fontSize: 18,
-                          color: Color(0xFF0056FF),
+                          color: AppColors.kabeBlue,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -70,7 +71,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
                       Container(
                         height: 1,
                         width: 120,
-                        color: const Color(0xFF0056FF),
+                        color: AppColors.kabeBlue,
                       ),
                     ],
                   ),
@@ -88,14 +89,14 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
                         _isAgreed = value ?? false;
                       });
                     },
-                    activeColor: const Color(0xFF0056FF),
+                    activeColor: AppColors.kabeBlue,
                   ),
                   const Expanded(
                     child: Text(
                       '利用規約に同意します',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.black87,
+                        color: AppColors.chalk,
                       ),
                     ),
                   ),
@@ -112,8 +113,8 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        _isAgreed ? const Color(0xFF0056FF) : Colors.grey[400],
-                    foregroundColor: Colors.white,
+                        _isAgreed ? AppColors.kabeBlue : AppColors.wareme,
+                    foregroundColor: AppColors.onKabeBlue,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -124,7 +125,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                            color: Colors.white,
+                            color: AppColors.onKabeBlue,
                             strokeWidth: 2,
                           ),
                         )
@@ -144,7 +145,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
                 '※ 利用規約に同意いただかないと\nアプリをご利用いただけません',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: AppColors.sunabokori,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -175,7 +176,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: Colors.red[400],
+          backgroundColor: AppColors.holdRed,
         ),
       );
     }

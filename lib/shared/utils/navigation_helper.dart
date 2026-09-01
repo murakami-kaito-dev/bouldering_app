@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_routes.dart';
 import '../../domain/exceptions/app_exceptions.dart';
+import '../../presentation/theme/app_tokens.dart';
 
 /// ナビゲーションヘルパークラス
 ///
@@ -272,7 +273,7 @@ class NavigationHelper {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.setsuri,
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: builder(context),

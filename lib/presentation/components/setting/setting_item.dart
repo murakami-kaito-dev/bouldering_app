@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_tokens.dart';
 
 /// 設定項目ウィジェット
 /// 
@@ -34,7 +35,7 @@ class SettingItem extends StatelessWidget {
         decoration: const BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: Color(0xFFE0E0E0),
+              color: AppColors.wareme,
               width: 1,
             ),
           ),
@@ -45,7 +46,7 @@ class SettingItem extends StatelessWidget {
             Text(
               text,
               style: TextStyle(
-                color: textColor ?? Colors.black,
+                color: textColor ?? AppColors.chalk,
                 fontSize: 16,
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w500,
@@ -54,7 +55,7 @@ class SettingItem extends StatelessWidget {
             if (showArrow)
               Icon(
                 Icons.arrow_forward_ios,
-                color: textColor ?? Colors.grey,
+                color: textColor ?? AppColors.sunabokori,
                 size: 16,
               ),
           ],

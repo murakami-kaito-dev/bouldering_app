@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../presentation/theme/app_tokens.dart';
 
 /// URL遷移関連のユーティリティクラス
 ///
@@ -87,7 +88,7 @@ class UrlLauncherHelper {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.holdRed,
       ),
     );
   }

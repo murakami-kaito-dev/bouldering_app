@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../theme/app_tokens.dart';
 
 class AppLogo extends StatelessWidget {
   const AppLogo({super.key});
@@ -19,7 +20,7 @@ class AppLogo extends StatelessWidget {
           'イワノボリタイ',
           textAlign: TextAlign.center,
           style: GoogleFonts.rocknRollOne(
-            color: Colors.black,
+            color: AppColors.chalk,
             fontSize: 28,
             fontWeight: FontWeight.w400,
             height: 1.2,

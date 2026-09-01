@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_tokens.dart';
 
 /// エラー表示ウィジェット
 /// 
@@ -31,7 +32,7 @@ class AppErrorWidget extends StatelessWidget {
             Icon(
               icon ?? Icons.error_outline,
               size: 64,
-              color: Colors.red[400],
+              color: AppColors.holdRed,
             ),
             const SizedBox(height: 16),
             Text(
@@ -97,13 +98,13 @@ class EmptyDataWidget extends StatelessWidget {
             Icon(
               icon ?? Icons.inbox_outlined,
               size: 64,
-              color: Colors.grey[400],
+              color: AppColors.sunabokori,
             ),
             const SizedBox(height: 16),
             Text(
               message,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
+                color: AppColors.sunabokori,
               ),
               textAlign: TextAlign.center,
             ),

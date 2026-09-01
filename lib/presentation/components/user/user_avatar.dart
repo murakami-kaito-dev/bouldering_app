@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../shared/utils/image_url_validator.dart';
+import '../../theme/app_tokens.dart';
 
 /// ユーザーアバターコンポーネント
 /// 
@@ -55,7 +56,7 @@ class UserAvatar extends StatelessWidget {
           Text(
             displayUserName,
             style: const TextStyle(
-              color: Colors.black,
+              color: AppColors.chalk,
               fontSize: 24,
               fontWeight: FontWeight.w500,
               height: 1.2,
@@ -98,12 +99,12 @@ class UserAvatar extends StatelessWidget {
       width: 72,
       height: 72,
       decoration: const BoxDecoration(
-        color: Color(0xFFEEEEEE),
+        color: AppColors.wareme,
         shape: BoxShape.circle,
       ),
       child: const Icon(
         Icons.person,
-        color: Colors.grey,
+        color: AppColors.sunabokori,
         size: 40,
       ),
     );
@@ -117,7 +118,7 @@ class UserAvatar extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: "ProfileImageDialog",
-      barrierColor: Colors.white.withOpacity(0.8),
+      barrierColor: AppColors.setsuri.withOpacity(0.8),
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (context, _, __) {
         return Stack(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../components/user/other_user_profile_section.dart';
 import '../components/user/other_user_tweets_section.dart';
 import '../components/user/other_user_favorite_gyms_section.dart';
+import '../theme/app_tokens.dart';
 
 /// 他ユーザープロフィールページ
 ///
@@ -27,13 +28,13 @@ class OtherUserProfilePage extends ConsumerWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
         appBar: AppBar(
-          backgroundColor: const Color(0xFFFEF7FF),
-          surfaceTintColor: const Color(0xFFFEF7FF),
+          backgroundColor: AppColors.iwa,
+          surfaceTintColor: AppColors.iwa,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
@@ -50,7 +51,7 @@ class OtherUserProfilePage extends ConsumerWidget {
                   pinned: true,
                   delegate: _SliverAppBarDelegate(
                     Container(
-                      color: const Color(0xFFFEF7FF),
+                      color: AppColors.iwa,
                       child: const TabBar(
                         tabs: [
                           Tab(text: 'ボル活'),
@@ -60,9 +61,9 @@ class OtherUserProfilePage extends ConsumerWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
-                        labelColor: Color(0xFF0056FF),
-                        unselectedLabelColor: Colors.grey,
-                        indicatorColor: Color(0xFF0056FF),
+                        labelColor: AppColors.kabeBlue,
+                        unselectedLabelColor: AppColors.sunabokori,
+                        indicatorColor: AppColors.kabeBlue,
                       ),
                     ),
                   ),

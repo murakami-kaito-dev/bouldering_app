@@ -8,6 +8,7 @@ import '../../../shared/utils/image_url_validator.dart';
 import '../../../shared/utils/navigation_helper.dart';
 import '../../pages/activity_post_page.dart';
 import '../../pages/report_page.dart';
+import '../../theme/app_tokens.dart';
 import 'image_viewer.dart';
 
 class BoulLog extends ConsumerStatefulWidget {
@@ -84,7 +85,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
               // ResizeImage: 表示サイズ相当まで縮小してデコードし、メモリキャッシュに乗せ続ける
               CircleAvatar(
                 radius: 24,
-                backgroundColor: Colors.grey[200],
+                backgroundColor: AppColors.wareme,
                 backgroundImage: ImageUrlValidator.isValidImageUrl(widget.userIconUrl)
                     ? ResizeImage(
                         CachedNetworkImageProvider(widget.userIconUrl!),
@@ -93,7 +94,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                     : null,
                 child: ImageUrlValidator.isValidImageUrl(widget.userIconUrl)
                     ? null
-                    : const Icon(Icons.person, color: Colors.grey, size: 24),
+                    : const Icon(Icons.person, color: AppColors.sunabokori, size: 24),
               ),
               const SizedBox(width: 12),
 
@@ -118,7 +119,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                       widget.visitedDate,
                       style: const TextStyle(
                         fontSize: 14,
-                        color: Colors.grey,
+                        color: AppColors.sunabokori,
                       ),
                     ),
                   ],
@@ -149,7 +150,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           ),
                           content: const Text(
                             "一度削除すると戻すことはできません．本当にこのボル活を削除しますか？\n",
-                            style: TextStyle(fontSize: 14, color: Colors.black),
+                            style: TextStyle(fontSize: 14, color: AppColors.chalk),
                             textAlign: TextAlign.center,
                           ),
                           actionsAlignment: MainAxisAlignment.spaceBetween,
@@ -158,14 +159,14 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                               onPressed: () => Navigator.of(context).pop(false),
                               child: const Text(
                                 "キャンセル",
-                                style: TextStyle(color: Colors.black),
+                                style: TextStyle(color: AppColors.chalk),
                               ),
                             ),
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(true),
                               child: const Text(
                                 "削除",
-                                style: TextStyle(color: Colors.red),
+                                style: TextStyle(color: AppColors.holdRed),
                               ),
                             ),
                           ],
@@ -230,7 +231,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           ),
                           content: const Text(
                             "このユーザーについて\n本当にブロックしてよろしいですか？\n",
-                            style: TextStyle(fontSize: 14, color: Colors.black),
+                            style: TextStyle(fontSize: 14, color: AppColors.chalk),
                             textAlign: TextAlign.center,
                           ),
                           actionsAlignment: MainAxisAlignment.spaceBetween,
@@ -239,14 +240,14 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                               onPressed: () => Navigator.of(context).pop(false),
                               child: const Text(
                                 "キャンセル",
-                                style: TextStyle(color: Colors.black),
+                                style: TextStyle(color: AppColors.chalk),
                               ),
                             ),
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(true),
                               child: const Text(
                                 "ブロックする",
-                                style: TextStyle(color: Colors.red),
+                                style: TextStyle(color: AppColors.holdRed),
                               ),
                             ),
                           ],
@@ -301,7 +302,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           value: 'delete',
                           child: Text(
                             '削除する',
-                            style: TextStyle(color: Colors.red),
+                            style: TextStyle(color: AppColors.holdRed),
                           ),
                         ),
                       ],
@@ -341,7 +342,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           text: widget.gymName,
                           style: const TextStyle(
                             fontSize: 16,
-                            color: Colors.blue,
+                            color: AppColors.kabeBlue,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -349,7 +350,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           text: ' [${widget.prefecture}]',
                           style: const TextStyle(
                             fontSize: 14,
-                            color: Colors.grey,
+                            color: AppColors.sunabokori,
                           ),
                         ),
                       ],
@@ -425,7 +426,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
           Container(
             width: MediaQuery.of(context).size.width - 16,
             height: 1,
-            color: const Color(0xFFB1B1B1),
+            color: AppColors.sunabokori,
           ),
         ],
       ),

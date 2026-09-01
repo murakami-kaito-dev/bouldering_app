@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../shared/constants/prefecture_constants.dart';
+import '../../theme/app_tokens.dart';
 
 /// 都道府県選択UIコンポーネント
 /// 
@@ -69,17 +70,17 @@ class PrefectureSelector extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.white,
+          color: isSelected ? AppColors.kabeBlue : AppColors.setsuri,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey,
+            color: isSelected ? AppColors.kabeBlue : AppColors.wareme,
           ),
         ),
         child: Text(
           prefecture,
           style: TextStyle(
             fontSize: 16,
-            color: isSelected ? Colors.white : Colors.black,
+            color: isSelected ? AppColors.onKabeBlue : AppColors.chalk,
             fontWeight: FontWeight.bold,
           ),
         ),

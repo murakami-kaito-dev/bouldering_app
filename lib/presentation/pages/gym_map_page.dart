@@ -9,6 +9,7 @@ import '../components/common/loading_widget.dart';
 import '../components/gym/gym_photo_strip.dart';
 import '../components/common/error_widget.dart';
 import '../components/common/gym_category.dart';
+import '../theme/app_tokens.dart';
 import '../../shared/utils/gym_hours_utils.dart';
 import '../../shared/utils/navigation_helper.dart';
 import '../../shared/utils/prefecture_order_utils.dart';
@@ -86,7 +87,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () => Navigator.of(context).pop(),
         ),
         // TODO：現在位置取得機能の実装は不要の可能性あり，API実装後必要か否か確認
@@ -136,8 +137,8 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
           child: FloatingActionButton(
             mini: true,
             heroTag: 'gym_map_my_location',
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black87,
+            backgroundColor: AppColors.setsuri,
+            foregroundColor: AppColors.chalk,
             onPressed: _moveToCurrentLocation,
             child: const Icon(Icons.my_location),
           ),
@@ -288,7 +289,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   Widget _buildGymCardList(List<Gym> gyms) {
     return Container(
       height: 280,
-      color: Colors.white,
+      color: AppColors.setsuri,
       child: Column(
         children: [
           // ハンドルバー
@@ -297,7 +298,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: AppColors.wareme,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -346,11 +347,11 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: _focusedGymIndex == index
-                        ? Colors.blue[50]
-                        : Colors.white,
+                        ? AppColors.wareme
+                        : AppColors.setsuri,
                     borderRadius: BorderRadius.circular(12),
                     border: _focusedGymIndex == index
-                        ? Border.all(color: Colors.blue, width: 2)
+                        ? Border.all(color: AppColors.kabeBlue, width: 2)
                         : null,
                     boxShadow: const [
                       BoxShadow(
@@ -392,27 +393,27 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                         Row(
                           children: [
                             if (gym.isBoulderingGym)
-                              const Padding(
-                                padding: EdgeInsets.only(right: 8.0),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'ボルダリング',
-                                  colorCode: 0xFFFF0F00,
+                                  colorCode: AppColors.holdRed.value,
                                 ),
                               ),
                             if (gym.isLeadGym)
-                              const Padding(
-                                padding: EdgeInsets.only(right: 8.0),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'リード',
-                                  colorCode: 0xFF00A24C,
+                                  colorCode: AppColors.holdGreen.value,
                                 ),
                               ),
                             if (gym.isSpeedGym)
-                              const Padding(
-                                padding: EdgeInsets.only(right: 8.0),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'スピード',
-                                  colorCode: 0xFF0057FF,
+                                  colorCode: AppColors.holdCyan.value,
                                 ),
                               ),
                           ],
@@ -437,7 +438,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                               isOpen ? 'OPEN' : 'CLOSE',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isOpen ? Colors.green : Colors.red,
+                                color: isOpen ? AppColors.holdGreen : AppColors.holdRed,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

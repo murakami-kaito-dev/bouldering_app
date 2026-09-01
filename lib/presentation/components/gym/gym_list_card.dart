@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/entities/gym.dart';
 import '../common/gym_category.dart';
 import '../../../shared/utils/gym_hours_utils.dart';
+import '../../theme/app_tokens.dart';
 import 'gym_photo_strip.dart';
 
 /// ジムリストカードコンポーネント
@@ -44,7 +45,7 @@ class GymListCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: AppColors.chalk,
                     ),
                   ),
                   const TextSpan(text: ' '),
@@ -52,7 +53,7 @@ class GymListCard extends StatelessWidget {
                     text: '[${gym.prefecture}]',
                     style: const TextStyle(
                       fontSize: 14,
-                      color: Colors.grey,
+                      color: AppColors.sunabokori,
                     ),
                   ),
                 ],
@@ -68,7 +69,7 @@ class GymListCard extends StatelessWidget {
                     padding: EdgeInsets.only(right: 8.0),
                     child: GymCategory(
                       category: 'ボルダリング',
-                      colorCode: 0xFFFF0F00,
+                      colorCode: 0xFFFF7264,
                     ),
                   ),
                 if (gym.isLeadGym)
@@ -76,13 +77,13 @@ class GymListCard extends StatelessWidget {
                     padding: EdgeInsets.only(right: 8.0),
                     child: GymCategory(
                       category: 'リード',
-                      colorCode: 0xFF00A24C,
+                      colorCode: 0xFF3FCF8E,
                     ),
                   ),
                 if (gym.isSpeedGym)
                   const GymCategory(
                     category: 'スピード',
-                    colorCode: 0xFF0057FF,
+                    colorCode: 0xFF3EC6E0,
                   ),
               ],
             ),
@@ -104,7 +105,7 @@ class GymListCard extends StatelessWidget {
                 Text(
                   isOpen ? 'OPEN' : 'CLOSE',
                   style: TextStyle(
-                    color: isOpen ? Colors.green : Colors.red,
+                    color: isOpen ? AppColors.holdGreen : AppColors.holdRed,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -122,7 +123,7 @@ class GymListCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: AppColors.chalk,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -131,7 +132,7 @@ class GymListCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                    color: AppColors.kabeBlue,
                     height: 1.25,
                   ),
                 ),
@@ -143,7 +144,7 @@ class GymListCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: AppColors.chalk,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -152,7 +153,7 @@ class GymListCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                    color: AppColors.kabeBlue,
                     height: 1.25,
                   ),
                 ),
@@ -164,7 +165,7 @@ class GymListCard extends StatelessWidget {
             Container(
               width: double.infinity,
               height: 1,
-              color: const Color(0xFFB1B1B1),
+              color: AppColors.sunabokori,
             ),
           ],
         ),

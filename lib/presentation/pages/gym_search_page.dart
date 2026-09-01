@@ -6,6 +6,7 @@ import '../components/gym/prefecture_selector.dart';
 import '../components/gym/gym_type_selector.dart';
 import 'gym_selection_page.dart';
 import 'gym_search_result_page.dart';
+import '../theme/app_tokens.dart';
 
 /// ジム検索ページ
 ///
@@ -36,13 +37,13 @@ class GymSearchPage extends ConsumerWidget {
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       appBar: AppBar(
         elevation: 0.0,
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -127,7 +128,7 @@ class GymSearchPage extends ConsumerWidget {
           hintText: '施設名',
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(32),
-            borderSide: const BorderSide(color: Colors.grey),
+            borderSide: const BorderSide(color: AppColors.wareme),
           ),
           prefixIcon: const Icon(Icons.search),
         ),
@@ -156,9 +157,9 @@ class GymSearchPage extends ConsumerWidget {
             child: ref.read(gymSearchFilterProvider.notifier).hasActiveFilter
                 ? Text(
                     '${ref.read(gymSearchFilterProvider.notifier).selectedConditionCount}個の条件で絞り込み中',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: AppColors.sunabokori,
                     ),
                   )
                 : const SizedBox.shrink(),
@@ -200,8 +201,8 @@ class GymSearchPage extends ConsumerWidget {
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: filterState.filteredGyms.isEmpty
-                        ? Colors.grey
-                        : Colors.blue,
+                        ? AppColors.sunabokori
+                        : AppColors.kabeBlue,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -211,7 +212,7 @@ class GymSearchPage extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white,
+                      color: AppColors.onKabeBlue,
                     ),
                   ),
                 ),

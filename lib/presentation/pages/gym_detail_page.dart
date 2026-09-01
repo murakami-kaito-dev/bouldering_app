@@ -10,6 +10,7 @@ import '../components/tweet/gym_tweets_section.dart';
 import '../components/gym/gym_photo_strip.dart';
 import '../../domain/entities/gym.dart';
 import 'activity_post_page.dart';
+import '../theme/app_tokens.dart';
 
 // Mock実装（テスト時のみ使用）
 // Mock環境用の簡単な表示コンポーネントをここにインポート
@@ -122,31 +123,31 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
 
   Widget _buildLoadingScaffold() {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: const Center(
-        child: CircularProgressIndicator(color: Colors.purple),
+        child: CircularProgressIndicator(color: AppColors.kabeBlue),
       ),
     );
   }
 
   Widget _buildErrorScaffold() {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -158,13 +159,13 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: const Color(0xFFFEF7FF),
-          surfaceTintColor: const Color(0xFFFEF7FF),
+          backgroundColor: AppColors.iwa,
+          surfaceTintColor: AppColors.iwa,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -177,7 +178,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
               child: SwitcherTab(
                 leftTabName: "施設情報",
                 rightTabName: "ボル活",
-                colorCode: 0xFFFEF7FF,
+                colorCode: 0xFF15171B, // AppColors.iwa（int型パラメータのため同値リテラル）
               ),
             ),
             Padding(
@@ -215,7 +216,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'ボルダリング',
-                    colorCode: 0xFFFF0F00,
+                    colorCode: 0xFFFF7264, // AppColors.holdRed（int型パラメータのため同値リテラル）
                   ),
                 ),
               if (gymInfo.isLeadGym)
@@ -223,7 +224,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'リード',
-                    colorCode: 0xFF00A24C,
+                    colorCode: 0xFF3FCF8E, // AppColors.holdGreen（int型パラメータのため同値リテラル）
                   ),
                 ),
               if (gymInfo.isSpeedGym)
@@ -231,7 +232,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'スピード',
-                    colorCode: 0xFF0057FF,
+                    colorCode: 0xFF3EC6E0, // AppColors.holdCyan（int型パラメータのため同値リテラル）
                   ),
                 ),
             ],
@@ -373,16 +374,16 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
               },
               style: OutlinedButton.styleFrom(
                 backgroundColor:
-                    _isFavoriteRegistered ? Colors.blue : Colors.white,
+                    _isFavoriteRegistered ? AppColors.kabeBlue : AppColors.setsuri,
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 side: BorderSide(
-                  color: _isFavoriteRegistered ? Colors.blue : Colors.grey,
+                  color: _isFavoriteRegistered ? AppColors.kabeBlue : AppColors.sunabokori,
                 ),
               ),
               child: Text(
                 'イキタイ',
                 style: TextStyle(
-                  color: _isFavoriteRegistered ? Colors.white : Colors.blue,
+                  color: _isFavoriteRegistered ? AppColors.onKabeBlue : AppColors.kabeBlue,
                 ),
               ),
             ),
@@ -396,9 +397,9 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
-                backgroundColor: Colors.blue,
+                backgroundColor: AppColors.kabeBlue,
               ),
-              child: const Text('ボル活投稿', style: TextStyle(color: Colors.white)),
+              child: const Text('ボル活投稿', style: TextStyle(color: AppColors.onKabeBlue)),
             ),
           ],
         ),
@@ -496,7 +497,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
               onTap: isLink ? onTap : null,
               child: Text(
                 value,
-                style: TextStyle(color: isLink ? Colors.blue : Colors.black),
+                style: TextStyle(color: isLink ? AppColors.kabeBlue : AppColors.chalk),
               ),
             ),
           ),
@@ -528,7 +529,7 @@ class GymIkitaiBoullogCount extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
+        border: Border.all(color: AppColors.sunabokori),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -538,16 +539,16 @@ class GymIkitaiBoullogCount extends StatelessWidget {
           Text(
             ikitaiCount,
             style: const TextStyle(
-                color: Colors.blue, fontWeight: FontWeight.bold),
+                color: AppColors.kabeBlue, fontWeight: FontWeight.bold),
           ),
           const SizedBox(width: 8),
-          Container(width: 1, height: 16, color: Colors.grey),
+          Container(width: 1, height: 16, color: AppColors.wareme),
           const SizedBox(width: 8),
           const Text('ボル活 ', style: TextStyle(fontWeight: FontWeight.bold)),
           Text(
             boullogCount,
             style: const TextStyle(
-                color: Colors.blue, fontWeight: FontWeight.bold),
+                color: AppColors.kabeBlue, fontWeight: FontWeight.bold),
           ),
         ],
       ),

@@ -22,10 +22,12 @@ class GymTypeSelector extends StatelessWidget {
   final ValueChanged<Map<String, bool>> onTypeChanged;
 
   /// ジムタイプとカラーのマッピング
+  /// （GymCategoryがint型を受けるため、AppColorsのホールド3色と同値のhexで指定。
+  ///   holdRed=0xFFFF7264 / holdGreen=0xFF3FCF8E / holdCyan=0xFF3EC6E0）
   static const Map<String, int> _typeColorMap = {
-    'ボルダリング': 0xFFFF0F00,
-    'リード': 0xFF00A24C,
-    'スピード': 0xFF0057FF,
+    'ボルダリング': 0xFFFF7264,
+    'リード': 0xFF3FCF8E,
+    'スピード': 0xFF3EC6E0,
   };
 
   @override

@@ -5,6 +5,7 @@ import '../../../domain/entities/user.dart';
 import '../../../shared/utils/navigation_helper.dart';
 import '../../providers/gym_provider.dart';
 import '../../providers/favorite_user_provider.dart';
+import '../../theme/app_tokens.dart';
 
 /// お気に入りユーザーカードコンポーネント
 /// 
@@ -79,7 +80,7 @@ class FavoriteUserCard extends ConsumerWidget {
                     homeGymName,
                     style: const TextStyle(
                       fontSize: 14,
-                      color: Colors.grey,
+                      color: AppColors.sunabokori,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -92,7 +93,7 @@ class FavoriteUserCard extends ConsumerWidget {
               onPressed: onFavoriteToggle,
               style: OutlinedButton.styleFrom(
                 side: BorderSide(
-                  color: isFavorite ? const Color(0xFF0056FF) : Colors.grey,
+                  color: isFavorite ? AppColors.kabeBlue : AppColors.sunabokori,
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 minimumSize: const Size(0, 36),
@@ -100,7 +101,7 @@ class FavoriteUserCard extends ConsumerWidget {
               child: Text(
                 isFavorite ? 'お気に入り解除' : 'お気に入り登録',
                 style: TextStyle(
-                  color: isFavorite ? const Color(0xFF0056FF) : Colors.grey[700],
+                  color: isFavorite ? AppColors.kabeBlue : AppColors.sunabokori,
                   fontSize: 12,
                 ),
               ),
@@ -140,9 +141,9 @@ class FavoriteUserCard extends ConsumerWidget {
       height: 48,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        color: Color(0xFFE0E0E0),
+        color: AppColors.wareme,
       ),
-      child: const Icon(Icons.person, size: 28, color: Colors.grey),
+      child: const Icon(Icons.person, size: 28, color: AppColors.sunabokori),
     );
   }
 }

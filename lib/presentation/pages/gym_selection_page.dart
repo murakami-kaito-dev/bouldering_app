@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/gym_name_search_provider.dart';
 import '../providers/gym_provider.dart';
+import '../theme/app_tokens.dart';
 import '../../shared/services/navigation_service.dart';
 
 /// ジム名検索ページ
@@ -108,10 +109,10 @@ class _GymSelectionPageState extends ConsumerState<GymSelectionPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ジム検索', style: TextStyle(color: Colors.black)),
+        title: const Text('ジム検索', style: TextStyle(color: AppColors.chalk)),
         elevation: 0.0,
-        backgroundColor: const Color(0x00FEF7FF),
-        iconTheme: const IconThemeData(color: Colors.black),
+        backgroundColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: AppColors.chalk),
       ),
       body: Column(
         children: [
@@ -128,7 +129,7 @@ class _GymSelectionPageState extends ConsumerState<GymSelectionPage> {
                       hintText: '施設名',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(32),
-                        borderSide: const BorderSide(color: Colors.grey),
+                        borderSide: const BorderSide(color: AppColors.sunabokori),
                       ),
                       prefixIcon: const Icon(Icons.search),
                     ),
@@ -137,7 +138,7 @@ class _GymSelectionPageState extends ConsumerState<GymSelectionPage> {
                 ),
                 TextButton(
                   onPressed: _onClearSearch,
-                  child: const Text('クリア', style: TextStyle(color: Colors.blue)),
+                  child: const Text('クリア', style: TextStyle(color: AppColors.kabeBlue)),
                 ),
               ],
             ),
@@ -152,7 +153,7 @@ class _GymSelectionPageState extends ConsumerState<GymSelectionPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error, size: 48, color: Colors.grey),
+                    const Icon(Icons.error, size: 48, color: AppColors.sunabokori),
                     const SizedBox(height: 16),
                     Text(
                       'ジム情報の取得に失敗しました',
@@ -185,7 +186,7 @@ class _GymSelectionPageState extends ConsumerState<GymSelectionPage> {
                   ? Icons.search 
                   : Icons.search_off,
               size: 48,
-              color: Colors.grey,
+              color: AppColors.sunabokori,
             ),
             const SizedBox(height: 16),
             Text(
@@ -193,7 +194,7 @@ class _GymSelectionPageState extends ConsumerState<GymSelectionPage> {
                   ? 'ジム名を入力して検索してください'
                   : '該当するジムが見つかりません',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.grey,
+                color: AppColors.sunabokori,
               ),
             ),
           ],

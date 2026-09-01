@@ -11,6 +11,7 @@ import '../providers/dependency_injection.dart';
 import '../components/common/loading_widget.dart';
 import '../components/common/error_widget.dart';
 import '../components/gym/gym_photo_strip.dart';
+import '../theme/app_tokens.dart';
 import '../../shared/utils/navigation_helper.dart';
 import '../../shared/utils/ng_word_validator.dart';
 
@@ -71,10 +72,10 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       appBar: AppBar(
         title: const Text(
           'プロフィール編集',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: AppColors.chalk),
         ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        foregroundColor: Colors.black,
+        foregroundColor: AppColors.chalk,
         actions: [
           TextButton(
             onPressed: _hasChanges && !_isSaving ? _saveProfile : null,
@@ -86,7 +87,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                   )
                 : const Text(
                     '保存',
-                    style: TextStyle(color: Colors.black),
+                    style: TextStyle(color: AppColors.chalk),
                   ),
           ),
         ],
@@ -173,11 +174,11 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                   decoration: BoxDecoration(
                     color: Theme.of(context).primaryColor,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(color: AppColors.setsuri, width: 2),
                   ),
                   child: IconButton(
                     onPressed: _pickProfileImage,
-                    icon: const Icon(Icons.camera_alt, color: Colors.white),
+                    icon: const Icon(Icons.camera_alt, color: AppColors.onKabeBlue),
                     iconSize: 20,
                   ),
                 ),
@@ -294,7 +295,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                   Text(
                     _selectedHomeGym!.fullAddress,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
+                          color: AppColors.sunabokori,
                         ),
                   ),
                 ],
@@ -319,23 +320,23 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
+          border: Border.all(color: AppColors.wareme),
           borderRadius: BorderRadius.circular(4),
         ),
         child: const Row(
           children: [
-            Icon(Icons.search, color: Colors.grey),
+            Icon(Icons.search, color: AppColors.sunabokori),
             SizedBox(width: 12),
             Expanded(
               child: Text(
                 'ホームジムを選択してください',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey,
+                  color: AppColors.sunabokori,
                 ),
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+            Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.sunabokori),
           ],
         ),
       ),
@@ -452,7 +453,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           child: Text(
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
+                  color: AppColors.sunabokori,
                 ),
           ),
         ),
@@ -485,12 +486,12 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
+              border: Border.all(color: AppColors.wareme),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today, color: Colors.grey),
+                const Icon(Icons.calendar_today, color: AppColors.sunabokori),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -501,7 +502,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                   ),
                 ),
                 const Icon(Icons.arrow_forward_ios,
-                    size: 16, color: Colors.grey),
+                    size: 16, color: AppColors.sunabokori),
               ],
             ),
           ),
@@ -546,12 +547,12 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
+              border: Border.all(color: AppColors.wareme),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Row(
               children: [
-                const Icon(Icons.person, color: Colors.grey),
+                const Icon(Icons.person, color: AppColors.sunabokori),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -560,7 +561,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                   ),
                 ),
                 const Icon(Icons.arrow_forward_ios,
-                    size: 16, color: Colors.grey),
+                    size: 16, color: AppColors.sunabokori),
               ],
             ),
           ),
@@ -588,12 +589,12 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
+              border: Border.all(color: AppColors.wareme),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Row(
               children: [
-                const Icon(Icons.fitness_center, color: Colors.grey),
+                const Icon(Icons.fitness_center, color: AppColors.sunabokori),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -605,7 +606,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                   ),
                 ),
                 const Icon(Icons.arrow_forward_ios,
-                    size: 16, color: Colors.grey),
+                    size: 16, color: AppColors.sunabokori),
               ],
             ),
           ),
@@ -763,7 +764,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('画像選択に失敗しました: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.holdRed,
           ),
         );
       }
@@ -782,7 +783,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('ユーザー名の入力は必須です'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.holdRed,
             ),
           );
         }

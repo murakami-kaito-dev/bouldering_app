@@ -11,6 +11,7 @@ import '../providers/general_tweets_provider.dart';
 import '../providers/gym_provider.dart';
 import '../../domain/entities/gym.dart';
 import '../providers/terms_acceptance_provider.dart';
+import '../theme/app_tokens.dart';
 import 'home_page.dart';
 import 'gym_detail_page.dart';
 import 'gym_search_page.dart';
@@ -88,51 +89,76 @@ class BoulderingApp extends ConsumerWidget {
     };
   }
 
-  /// アプリケーションテーマを構築
+  /// アプリケーションテーマ「岩と粉」を構築
   ///
-  /// 以前のアプリと同じ青系の配色を設定
+  /// 夜のボルダリングウォールを模したダークテーマ。
+  /// 色の定義は app_tokens.dart（AppColors/AppRadius）に集約し、ここでは組むだけ
   ThemeData _buildTheme() {
     return ThemeData(
-      primarySwatch: Colors.blue,
-      primaryColor: const Color(0xFF0056FF), // 以前のアプリと同じ青色
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF0056FF),
-        brightness: Brightness.light,
+      brightness: Brightness.dark,
+      primaryColor: AppColors.kabeBlue,
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.kabeBlue,
+        onPrimary: AppColors.onKabeBlue,
+        secondary: AppColors.holdRed,
+        surface: AppColors.setsuri,
+        onSurface: AppColors.chalk,
+        error: AppColors.holdRed,
       ),
+      scaffoldBackgroundColor: AppColors.iwa,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF0056FF),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
+        foregroundColor: AppColors.chalk,
         elevation: 0,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF0056FF),
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          backgroundColor: AppColors.kabeBlue,
+          foregroundColor: AppColors.onKabeBlue,
+          shape: const StadiumBorder(),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.setsuri,
+        hintStyle: const TextStyle(color: AppColors.sunabokori),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          borderSide: const BorderSide(color: AppColors.wareme),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          borderSide: const BorderSide(color: AppColors.wareme),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(
-            color: Color(0xFF0056FF),
-            width: 2,
-          ),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          borderSide: const BorderSide(color: AppColors.kabeBlue, width: 2),
         ),
       ),
       cardTheme: CardTheme(
-        elevation: 2,
+        elevation: 0,
+        color: AppColors.setsuri,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          side: const BorderSide(color: AppColors.wareme),
         ),
       ),
-      // scaffoldBackgroundColor: Colors.white,
-      scaffoldBackgroundColor: const Color(0xFFFEF7FF),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.navi,
+        selectedItemColor: AppColors.chalk,
+        unselectedItemColor: AppColors.sunabokori,
+      ),
+      dividerColor: AppColors.wareme,
+      dialogBackgroundColor: AppColors.setsuri,
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: AppColors.wareme,
+        contentTextStyle: TextStyle(color: AppColors.chalk),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.kabeBlue,
+      ),
     );
   }
 }
@@ -359,8 +385,8 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
             label: 'マイページ',
           ),
         ],
-        selectedItemColor: const Color(0xFF0056FF),
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: AppColors.kabeBlue,
+        unselectedItemColor: AppColors.sunabokori,
         selectedLabelStyle: const TextStyle(fontSize: 12),
         unselectedLabelStyle: const TextStyle(fontSize: 12),
       ),

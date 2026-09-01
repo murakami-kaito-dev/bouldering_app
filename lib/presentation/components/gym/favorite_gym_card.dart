@@ -3,6 +3,7 @@ import '../../../shared/utils/navigation_helper.dart';
 import '../../../shared/utils/gym_hours_utils.dart';
 import '../common/gym_category.dart';
 import '../../../domain/entities/gym.dart';
+import '../../theme/app_tokens.dart';
 import 'gym_photo_strip.dart';
 
 /// イキタイジム専用カードコンポーネント
@@ -46,7 +47,7 @@ class FavoriteGymCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: AppColors.chalk,
                     ),
                   ),
                   const TextSpan(text: ' '),
@@ -54,7 +55,7 @@ class FavoriteGymCard extends StatelessWidget {
                     text: '[${gym.prefecture}]',
                     style: const TextStyle(
                       fontSize: 14,
-                      color: Colors.grey,
+                      color: AppColors.sunabokori,
                     ),
                   ),
                 ],
@@ -71,7 +72,7 @@ class FavoriteGymCard extends StatelessWidget {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'ボルダリング',
-                    colorCode: 0xFFFF0F00,
+                    colorCode: 0xFFFF7264,
                   ),
                 ),
               if (gym.isLeadGym)
@@ -79,13 +80,13 @@ class FavoriteGymCard extends StatelessWidget {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'リード',
-                    colorCode: 0xFF00A24C,
+                    colorCode: 0xFF3FCF8E,
                   ),
                 ),
               if (gym.isSpeedGym)
                 const GymCategory(
                   category: 'スピード',
-                  colorCode: 0xFF0057FF,
+                  colorCode: 0xFF3EC6E0,
                 ),
             ],
           ),
@@ -107,13 +108,13 @@ class FavoriteGymCard extends StatelessWidget {
               isOpened
                   ? const Text('OPEN',
                       style: TextStyle(
-                        color: Colors.green,
+                        color: AppColors.holdGreen,
                         fontWeight: FontWeight.bold,
                       ))
                   : const Text(
                       "CLOSE",
                       style: TextStyle(
-                        color: Colors.red,
+                        color: AppColors.holdRed,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -130,7 +131,7 @@ class FavoriteGymCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: AppColors.chalk,
                 ),
               ),
               const SizedBox(width: 4),
@@ -139,7 +140,7 @@ class FavoriteGymCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: AppColors.kabeBlue,
                   height: 1.25,
                 ),
               ),
@@ -151,7 +152,7 @@ class FavoriteGymCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: AppColors.chalk,
                 ),
               ),
               const SizedBox(width: 4),
@@ -160,7 +161,7 @@ class FavoriteGymCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: AppColors.kabeBlue,
                   height: 1.25,
                 ),
               )
@@ -172,7 +173,7 @@ class FavoriteGymCard extends StatelessWidget {
           Container(
             width: MediaQuery.of(context).size.width,
             height: 1,
-            color: const Color(0xFFB1B1B1),
+            color: AppColors.sunabokori,
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_tokens.dart';
 
 /// スプラッシュ画面
 ///
@@ -12,7 +13,7 @@ class SplashPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -29,7 +30,7 @@ class SplashPage extends StatelessWidget {
             const SizedBox(
               width: 22,
               height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2.5),
+              child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.kabeBlue),
             ),
           ],
         ),

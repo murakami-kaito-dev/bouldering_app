@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../components/user/user_avatar.dart';
 import '../components/common/app_logo.dart';
+import '../theme/app_tokens.dart';
 import 'login_or_signup_page.dart';
 
 /// 未ログイン時のマイページ
@@ -20,7 +21,7 @@ class UnloggedMyPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -37,7 +38,7 @@ class UnloggedMyPage extends ConsumerWidget {
               // 機能説明コンテナ
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEEEEEE).withOpacity(0.2),
+                  color: AppColors.wareme.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 padding: const EdgeInsets.all(16),
@@ -53,7 +54,7 @@ class UnloggedMyPage extends ConsumerWidget {
                       'イワノボリタイに登録すると，ボル活がさらに充実します！登録は無料！',
                       textAlign: TextAlign.left,
                       style: TextStyle(
-                        color: Colors.black,
+                        color: AppColors.chalk,
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                         height: 1.4,
@@ -96,7 +97,7 @@ class UnloggedMyPage extends ConsumerWidget {
                         width: double.infinity,
                         height: 49,
                         decoration: ShapeDecoration(
-                          color: const Color(0xFF0056FF),
+                          color: AppColors.kabeBlue,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -105,7 +106,7 @@ class UnloggedMyPage extends ConsumerWidget {
                           child: Text(
                             '新規登録 / ログイン',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.onKabeBlue,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               height: 1.4,
@@ -134,7 +135,7 @@ class UnloggedMyPage extends ConsumerWidget {
           title,
           textAlign: TextAlign.left,
           style: const TextStyle(
-            color: Color(0xFF0056FF),
+            color: AppColors.kabeBlue,
             fontSize: 16,
             fontWeight: FontWeight.w600,
             height: 1.4,
@@ -146,7 +147,7 @@ class UnloggedMyPage extends ConsumerWidget {
           description,
           textAlign: TextAlign.left,
           style: const TextStyle(
-            color: Colors.black,
+            color: AppColors.chalk,
             fontSize: 16,
             fontWeight: FontWeight.w500,
             height: 1.4,

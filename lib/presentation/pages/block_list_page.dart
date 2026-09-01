@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/block.dart';
 import '../providers/block_provider.dart';
+import '../theme/app_tokens.dart';
 import '../../shared/utils/navigation_helper.dart';
 
 /// ブロックリスト画面
@@ -48,7 +49,7 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
         title: const Text('ブロックしたユーザー'),
         // backgroundColor: Colors.white,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        foregroundColor: Colors.black,
+        foregroundColor: AppColors.chalk,
         elevation: 1,
       ),
       body: RefreshIndicator(
@@ -73,14 +74,14 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
             Icon(
               Icons.block,
               size: 64,
-              color: Colors.grey,
+              color: AppColors.sunabokori,
             ),
             SizedBox(height: 16),
             Text(
               'ブロックしたユーザーはいません',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey,
+                color: AppColors.sunabokori,
               ),
             ),
           ],
@@ -150,9 +151,9 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
       height: 48,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        color: Color(0xFFE0E0E0),
+        color: AppColors.wareme,
       ),
-      child: const Icon(Icons.person, size: 28, color: Colors.grey),
+      child: const Icon(Icons.person, size: 28, color: AppColors.sunabokori),
     );
   }
 
@@ -164,14 +165,14 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
           const Icon(
             Icons.error,
             size: 64,
-            color: Colors.red,
+            color: AppColors.holdRed,
           ),
           const SizedBox(height: 16),
           Text(
             'エラーが発生しました',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: AppColors.sunabokori,
             ),
           ),
           const SizedBox(height: 8),
@@ -179,7 +180,7 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
             error.toString(),
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[500],
+              color: AppColors.sunabokori,
             ),
             textAlign: TextAlign.center,
           ),
@@ -212,8 +213,8 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
               await _unblockUser(blockedUser);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.kabeBlue,
+              foregroundColor: AppColors.onKabeBlue,
             ),
             child: const Text('解除'),
           ),
@@ -239,8 +240,8 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
               await _reblockUser(blockedUser);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.holdRed,
+              foregroundColor: AppColors.chalk,
             ),
             child: const Text('追加'),
           ),
@@ -258,7 +259,7 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
           SnackBar(
             content: Text(
                 '${_getDisplayUserName(blockedUser.userName)}のブロックを解除しました'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.holdGreen,
           ),
         );
         // 該当タイルのキャッシュのみクリア
@@ -270,7 +271,7 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
           SnackBar(
             content: Text(
                 '${_getDisplayUserName(blockedUser.userName)}のブロック解除に失敗しました'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.holdRed,
           ),
         );
       }
@@ -286,7 +287,7 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
           SnackBar(
             content: Text(
                 '${_getDisplayUserName(blockedUser.userName)}をブロックに追加しました'),
-            backgroundColor: Colors.blue,
+            backgroundColor: AppColors.kabeBlue,
           ),
         );
         // 該当タイルのキャッシュのみクリア
@@ -298,7 +299,7 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
           SnackBar(
             content: Text(
                 '${_getDisplayUserName(blockedUser.userName)}のブロック追加に失敗しました'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.holdRed,
           ),
         );
       }
@@ -411,8 +412,8 @@ class _BlockedUserTileState extends ConsumerState<_BlockedUserTile> {
                   return ElevatedButton(
                     onPressed: null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.wareme,
+                      foregroundColor: AppColors.sunabokori,
                       minimumSize: const Size(70, 32),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                     ),
@@ -431,7 +432,7 @@ class _BlockedUserTileState extends ConsumerState<_BlockedUserTile> {
                     onPressed: widget.onShowUnblockDialog,
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(
-                        color: Color(0xFF0056FF),
+                        color: AppColors.kabeBlue,
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       minimumSize: const Size(0, 36),
@@ -440,7 +441,7 @@ class _BlockedUserTileState extends ConsumerState<_BlockedUserTile> {
                       'ブロックを解除',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF0056FF),
+                        color: AppColors.kabeBlue,
                       ),
                     ),
                   );
@@ -450,7 +451,7 @@ class _BlockedUserTileState extends ConsumerState<_BlockedUserTile> {
                     onPressed: widget.onShowBlockDialog,
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(
-                        color: Colors.grey,
+                        color: AppColors.wareme,
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       minimumSize: const Size(0, 36),

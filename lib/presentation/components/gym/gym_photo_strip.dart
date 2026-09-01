@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../domain/entities/gym_photo.dart';
 import '../../providers/gym_photos_provider.dart';
 import '../common/image_viewer.dart';
+import '../../theme/app_tokens.dart';
 
 /// ジム写真の横スクロール表示（一覧カード・地図カード・詳細画面で共用）
 ///
@@ -96,15 +97,15 @@ class GymPhotoStrip extends ConsumerWidget {
             placeholder: (context, url) => Container(
               width: photoWidth,
               height: height,
-              color: Colors.grey[300],
+              color: AppColors.wareme,
               child: const Center(
                   child: CircularProgressIndicator(strokeWidth: 2)),
             ),
             errorWidget: (context, url, error) => Container(
               width: photoWidth,
               height: height,
-              color: Colors.grey[300],
-              child: const Icon(Icons.broken_image, color: Colors.grey),
+              color: AppColors.wareme,
+              child: const Icon(Icons.broken_image, color: AppColors.sunabokori),
             ),
           ),
           // Google写真の帰属表示（Places API規約で必須）
@@ -121,7 +122,7 @@ class GymPhotoStrip extends ConsumerWidget {
                 ),
                 child: const Text(
                   'Google',
-                  style: TextStyle(color: Colors.white, fontSize: 9),
+                  style: TextStyle(color: AppColors.chalk, fontSize: 9),
                 ),
               ),
             ),
@@ -137,7 +138,7 @@ class GymPhotoStrip extends ConsumerWidget {
           width: photoWidth,
           height: height,
           decoration: BoxDecoration(
-            color: Colors.grey[300],
+            color: AppColors.wareme,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
@@ -147,7 +148,7 @@ class GymPhotoStrip extends ConsumerWidget {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2))
                 : Text(label ?? '',
-                    style: TextStyle(color: Colors.grey[700], fontSize: 14)),
+                    style: TextStyle(color: AppColors.sunabokori, fontSize: 14)),
           ),
         ),
       ],

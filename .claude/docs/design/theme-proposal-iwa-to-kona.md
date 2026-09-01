@@ -36,8 +36,20 @@
 2. Phase 2: 主要4画面（ホーム・タイムライン・ジム詳細・マイページ）作り込み＋テープコンポーネント
 3. Phase 3: 残り画面追従＋演出＋地図ダークスタイル
 
-## 未決事項（ユーザー判断待ち）
+## 決定事項（2026-09-01 ユーザー承認）
 
-- [ ] この方向でGOか（微調整の要望）
-- [ ] ライト/ダーク切替を残すか（推奨: まずダーク一本。切替は工数約1.5倍）
-- [ ] 地図のダークスタイル化の可否
+- [x] この方向でGO
+- [x] **ダーク一本**（ライト切替なし）
+- [x] **地図はライトスタイル維持**（見やすさ優先。周辺UIのみダーク）
+- [x] **アプリアイコンは差し替え**（ユーザーがNano Banana Proで生成→受領後に反映。
+      生成プロンプトは提供済み: 案1チョーク手形(推奨)/案2ホールド/案3岩の線画）
+
+## Phase 1 実施記録（2026-09-01）
+
+- lib/presentation/theme/app_tokens.dart 新設（AppColors/AppRadius）
+- ThemeData全面差し替え（dark・StadiumBorderボタン・カード14・入力欄filled）
+- スプラッシュ/LaunchScreen.storyboardを岩肌色に
+- 52ファイル・約370箇所の色literalをトークンへ置換（8並列エージェント・エラー0・ビルド成功）
+- 既知の残課題: GymCategory/SwitcherTab/Button等がint colorCodeを受けるAPIのため
+  同値hexで暫定対応 → Phase 2でColor型化・テープコンポーネント化
+- user_card.dartの_buildStatChip（MaterialColorシェード参照）はPhase 2対応

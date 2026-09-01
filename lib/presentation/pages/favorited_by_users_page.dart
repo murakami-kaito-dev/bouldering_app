@@ -4,6 +4,7 @@ import '../../domain/entities/user.dart';
 import '../components/user/favorite_user_card.dart';
 import '../providers/favorited_by_users_list_provider.dart';
 import '../providers/favorite_user_provider.dart';
+import '../theme/app_tokens.dart';
 
 /// お気に入られユーザー一覧ページ
 /// 
@@ -52,20 +53,20 @@ class _FavoritedByUsersPageState extends ConsumerState<FavoritedByUsersPage>
     final favoritedByUsersState = ref.watch(favoritedByUsersListProvider);
     
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
         title: const Text(
           'お気に入られ',
           style: TextStyle(
-            color: Colors.black,
+            color: AppColors.chalk,
             fontWeight: FontWeight.bold,
           ),
         ),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -145,13 +146,13 @@ class _FavoritedByUsersPageState extends ConsumerState<FavoritedByUsersPage>
             Icon(
               Icons.favorite_border,
               size: 80,
-              color: Colors.grey[400],
+              color: AppColors.sunabokori,
             ),
             const SizedBox(height: 24),
             Text(
               'あなたをお気に入り登録している\nユーザーがいません',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.grey[600],
+                color: AppColors.sunabokori,
                 fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
@@ -160,7 +161,7 @@ class _FavoritedByUsersPageState extends ConsumerState<FavoritedByUsersPage>
             Text(
               'ボル活投稿をして\nお気に入り登録してもらいましょう！',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
+                color: AppColors.sunabokori,
               ),
               textAlign: TextAlign.center,
             ),
@@ -180,7 +181,7 @@ class _FavoritedByUsersPageState extends ConsumerState<FavoritedByUsersPage>
             const Icon(
               Icons.error_outline,
               size: 80,
-              color: Colors.red,
+              color: AppColors.holdRed,
             ),
             const SizedBox(height: 24),
             const Text(
@@ -193,8 +194,8 @@ class _FavoritedByUsersPageState extends ConsumerState<FavoritedByUsersPage>
             const SizedBox(height: 8),
             Text(
               errorMessage,
-              style: TextStyle(
-                color: Colors.grey[600],
+              style: const TextStyle(
+                color: AppColors.sunabokori,
               ),
               textAlign: TextAlign.center,
             ),

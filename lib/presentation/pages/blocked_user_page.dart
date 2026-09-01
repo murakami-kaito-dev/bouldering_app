@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_tokens.dart';
 
 /// ブロック済みユーザー表示ページ
 ///
@@ -16,19 +17,19 @@ class BlockedUserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
           'ユーザー',
           style: TextStyle(
-            color: Colors.black,
+            color: AppColors.chalk,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -41,7 +42,7 @@ class BlockedUserPage extends StatelessWidget {
             Icon(
               Icons.block,
               size: 80,
-              color: Colors.grey,
+              color: AppColors.sunabokori,
             ),
             SizedBox(height: 24),
             Text(
@@ -49,7 +50,7 @@ class BlockedUserPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: AppColors.chalk,
               ),
             ),
             SizedBox(height: 12),
@@ -58,7 +59,7 @@ class BlockedUserPage extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey,
+                color: AppColors.sunabokori,
                 height: 1.5,
               ),
             ),

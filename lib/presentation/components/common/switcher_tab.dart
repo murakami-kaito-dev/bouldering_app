@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_tokens.dart';
 
 class SwitcherTab extends StatelessWidget {
   const SwitcherTab(
       {super.key,
       required this.leftTabName,
       required this.rightTabName,
-      this.colorCode = 0xFFFEF7FF});
+      this.colorCode = 0xFF15171B});
   final String leftTabName;
   final String rightTabName;
   final int colorCode;
@@ -18,9 +19,9 @@ class SwitcherTab extends StatelessWidget {
         height: 48,
         color: Color(colorCode),
         child: TabBar(
-          indicatorColor: const Color(0xFF0056FF),
-          labelColor: const Color(0xFF0056FF),
-          unselectedLabelColor: Colors.black,
+          indicatorColor: AppColors.kabeBlue,
+          labelColor: AppColors.kabeBlue,
+          unselectedLabelColor: AppColors.chalk,
           labelStyle: const TextStyle(
             fontSize: 20,
             fontFamily: 'Roboto',

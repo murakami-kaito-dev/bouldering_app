@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../components/common/app_logo.dart';
 import '../providers/auth_provider.dart';
 import '../../domain/exceptions/app_exceptions.dart';
+import '../theme/app_tokens.dart';
 
 class PasswordResetPage extends ConsumerStatefulWidget {
   const PasswordResetPage({super.key});
@@ -49,7 +50,7 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('パスワードリセットメールを送信しました'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.holdGreen,
             duration: Duration(seconds: 3),
           ),
         );
@@ -81,7 +82,7 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.holdRed,
         duration: const Duration(seconds: 3),
       ),
     );
@@ -103,7 +104,7 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
         leading: _isLoading 
           ? null 
           : IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
               onPressed: () => Navigator.pop(context),
             ),
       ),
@@ -125,7 +126,7 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: AppColors.chalk,
                 ),
               ),
             ),
@@ -138,7 +139,7 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
                 : 'ご登録のメールアドレスを入力してください。\nパスワードリセット用のメールをお送りします。',
               style: const TextStyle(
                 fontSize: 16,
-                color: Colors.black87,
+                color: AppColors.chalk,
               ),
               textAlign: TextAlign.center,
             ),
@@ -149,7 +150,7 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
               const Text(
                 'メールアドレス',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: AppColors.chalk,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -178,7 +179,7 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.onKabeBlue),
                         ),
                       )
                     : const Text("パスワードリセットメールを送信"),
@@ -214,7 +215,7 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
                 '注意事項：\n・メールが届かない場合は迷惑メールフォルダをご確認ください\n・リセット用のリンクの有効期限は1時間です',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.black54,
+                  color: AppColors.chalk,
                 ),
               ),
             ],

@@ -9,6 +9,7 @@ import '../components/common/loading_widget.dart';
 import '../components/common/error_widget.dart';
 import '../../shared/utils/navigation_helper.dart';
 import '../../shared/utils/url_launcher_helper.dart';
+import '../theme/app_tokens.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -21,7 +22,7 @@ class SettingsPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('設定'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        foregroundColor: Colors.black,
+        foregroundColor: AppColors.chalk,
       ),
       body: userState.when(
         data: (user) => _buildSettingsContent(context, ref, user),
@@ -102,14 +103,14 @@ class SettingsPage extends ConsumerWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
-                              ?.copyWith(color: Colors.grey[600])),
+                              ?.copyWith(color: AppColors.sunabokori)),
                       if (user.boulderingYearsExperience != null) ...[
                         const SizedBox(height: 4),
                         Text('ボルダリング歴: ${user.boulderingYearsExperience}年',
                             style: Theme.of(context)
                                 .textTheme
                                 .bodySmall
-                                ?.copyWith(color: Colors.grey[600])),
+                                ?.copyWith(color: AppColors.sunabokori)),
                       ],
                     ],
                   ),
@@ -230,7 +231,7 @@ class SettingsPage extends ConsumerWidget {
 
   Widget _buildDangerZoneSection(BuildContext context, WidgetRef ref) {
     return Card(
-      color: Colors.red[50],
+      color: AppColors.setsuri,
       child: Column(
         children: [
           Padding(
@@ -240,7 +241,7 @@ class SettingsPage extends ConsumerWidget {
               child: Text('アカウント管理',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.red[800],
+                        color: AppColors.holdRed,
                       )),
             ),
           ),
@@ -248,16 +249,16 @@ class SettingsPage extends ConsumerWidget {
             icon: Icons.logout,
             title: 'ログアウト',
             subtitle: 'アカウントからログアウト',
-            iconColor: Colors.red[600],
-            titleColor: Colors.red[800],
+            iconColor: AppColors.holdRed,
+            titleColor: AppColors.holdRed,
             onTap: () => _showLogoutDialog(context, ref),
           ),
           _buildSettingsItem(
             icon: Icons.delete_forever,
             title: '退会',
             subtitle: 'アカウントとすべてのデータを削除',
-            iconColor: Colors.red[600],
-            titleColor: Colors.red[800],
+            iconColor: AppColors.holdRed,
+            titleColor: AppColors.holdRed,
             onTap: () => _confirmAccountDeletion(context, ref),
           ),
         ],
@@ -290,11 +291,11 @@ class SettingsPage extends ConsumerWidget {
                   '外部サイト',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: AppColors.sunabokori,
                   ),
                 ),
                 const SizedBox(width: 4),
-                Icon(Icons.open_in_new, size: 18, color: Colors.grey[600]),
+                Icon(Icons.open_in_new, size: 18, color: AppColors.sunabokori),
               ],
             )
           : const Icon(Icons.chevron_right),
@@ -396,7 +397,7 @@ class SettingsPage extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('パスワードを入力してください'),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.holdRed,
         ),
       );
       return;
@@ -433,7 +434,7 @@ class SettingsPage extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('アカウントを削除しました'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.holdGreen,
             duration: Duration(seconds: 2),
           ),
         );
@@ -596,7 +597,7 @@ class SettingsPage extends ConsumerWidget {
               '新しいパスワードでログインしてください。',
             ),
             duration: Duration(seconds: 5),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.holdGreen,
           ),
         );
       }
@@ -617,7 +618,7 @@ class SettingsPage extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.holdRed,
           ),
         );
       }
@@ -705,8 +706,8 @@ class _PasswordDialogState extends State<_PasswordDialog> {
         ElevatedButton(
           onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red[600],
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.holdRed,
+            foregroundColor: AppColors.chalk,
           ),
           child: const Text('削除を実行'),
         ),
@@ -751,8 +752,8 @@ class _EmailChangeDialogState extends State<_EmailChangeDialog> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
-                border: Border.all(color: Colors.orange.shade200),
+                color: AppColors.wareme,
+                border: Border.all(color: AppColors.holdRed),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Column(
@@ -760,13 +761,13 @@ class _EmailChangeDialogState extends State<_EmailChangeDialog> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.warning, color: Colors.orange, size: 20),
+                      Icon(Icons.warning, color: AppColors.holdRed, size: 20),
                       SizedBox(width: 8),
                       Text(
                         '重要なお知らせ',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.orange,
+                          color: AppColors.holdRed,
                         ),
                       ),
                     ],
@@ -877,18 +878,18 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
+                color: AppColors.wareme,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.shade200),
+                border: Border.all(color: AppColors.holdRed),
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.warning_amber, color: Colors.orange, size: 20),
+                  Icon(Icons.warning_amber, color: AppColors.holdRed, size: 20),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '変更後は自動的にログアウトされます。\n新しいパスワードで再ログインしてください。',
-                      style: TextStyle(fontSize: 12, color: Colors.orange),
+                      style: TextStyle(fontSize: 12, color: AppColors.holdRed),
                     ),
                   ),
                 ],
@@ -963,7 +964,7 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
             const SizedBox(height: 8),
             const Text(
               '※パスワードは6文字以上で入力してください',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(fontSize: 12, color: AppColors.sunabokori),
             ),
           ],
         ),

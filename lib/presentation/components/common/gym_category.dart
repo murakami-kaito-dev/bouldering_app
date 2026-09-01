@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_tokens.dart';
 
 class GymCategory extends StatelessWidget {
   const GymCategory({
@@ -20,11 +21,11 @@ class GymCategory extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool showSelected = isSelected != null;
     final Color bgColor = showSelected
-        ? (isSelected! ? Color(colorCode) : Colors.grey.shade300)
+        ? (isSelected! ? Color(colorCode) : AppColors.wareme)
         : Color(colorCode);
     final Color textColor = showSelected
-        ? (isSelected! ? Colors.white : Colors.black)
-        : Colors.white;
+        ? (isSelected! ? AppColors.chalk : AppColors.chalk)
+        : AppColors.chalk;
 
     final categoryWidget = Align(
       alignment: Alignment.centerLeft,

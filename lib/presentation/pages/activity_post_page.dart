@@ -11,6 +11,7 @@ import '../providers/statistics_provider.dart';
 import '../providers/dependency_injection.dart';
 import '../../shared/utils/image_url_validator.dart';
 import '../../shared/utils/ng_word_validator.dart';
+import '../theme/app_tokens.dart';
 
 /// ■ クラス
 /// - View
@@ -231,7 +232,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
             'イワノボリタイに登録しよう',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF0056FF),
+              color: AppColors.kabeBlue,
               fontSize: 20,
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w700,
@@ -245,7 +246,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
             'ログインして日々の\nボル活を投稿しよう！',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.black,
+              color: AppColors.chalk,
               fontSize: 20,
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w700,
@@ -259,7 +260,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
             'ジムで登った記録や\n感想を残しましょう！',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.black,
+              color: AppColors.chalk,
               fontSize: 20,
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w700,
@@ -288,21 +289,21 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
           title: Text(
             isEditMode ? 'ボル活編集' : 'ボル活投稿',
             style: const TextStyle(
-              color: Colors.blue,
+              color: AppColors.kabeBlue,
               fontWeight: FontWeight.bold,
             ),
           ),
-          backgroundColor: const Color(0xFFFEF7FF),
-          surfaceTintColor: const Color(0xFFFEF7FF),
+          backgroundColor: AppColors.iwa,
+          surfaceTintColor: AppColors.iwa,
           leading: widget.asModalSheet
               // モーダル表示時は「閉じる」を明示（シートを閉じればキーボードも閉じる）
               ? IconButton(
-                  icon: const Icon(Icons.close, color: Colors.black),
+                  icon: const Icon(Icons.close, color: AppColors.chalk),
                   onPressed: () => Navigator.of(context).pop(),
                 )
               : (isEditMode || widget.fromGymDetail)
                   ? IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.black),
+                      icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
                       onPressed: () => Navigator.of(context).pop(),
                     )
                   : null,
@@ -433,13 +434,13 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.blue,
+                        color: AppColors.kabeBlue,
                       ),
                     )
                   : Text(
                       isEditMode ? '更新する' : '投稿する',
                       style: const TextStyle(
-                        color: Colors.blue,
+                        color: AppColors.kabeBlue,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -458,7 +459,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                   decoration: InputDecoration(
                     hintText: selectedGym ?? "ジムを選択してください",
                     hintStyle: const TextStyle(
-                      color: Colors.black,
+                      color: AppColors.chalk,
                       fontWeight: FontWeight.bold,
                     ),
                     suffixIcon: const Icon(Icons.arrow_drop_down),
@@ -484,7 +485,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                 // 日付選択ボタン
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, color: Colors.grey[600]),
+                    Icon(Icons.calendar_today, color: AppColors.sunabokori),
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () => _selectDate(context),
@@ -492,7 +493,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
+                          color: AppColors.wareme,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -557,9 +558,9 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                         return Container(
                                           width: 100,
                                           height: 100,
-                                          color: Colors.grey[300],
+                                          color: AppColors.wareme,
                                           child: const Icon(Icons.error,
-                                              color: Colors.grey),
+                                              color: AppColors.sunabokori),
                                         );
                                       },
                                     ),
@@ -580,7 +581,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(Icons.close,
-                                            size: 16, color: Colors.white),
+                                            size: 16, color: AppColors.chalk),
                                       ),
                                     ),
                                   ),
@@ -619,7 +620,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(Icons.close,
-                                          size: 16, color: Colors.white),
+                                          size: 16, color: AppColors.chalk),
                                     ),
                                   ),
                                 ),
@@ -639,17 +640,17 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                       child: Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
+                          color: AppColors.wareme,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Column(
                           children: [
-                            Icon(Icons.image, size: 30, color: Colors.grey),
+                            Icon(Icons.image, size: 30, color: AppColors.sunabokori),
                             SizedBox(height: 8),
                             Text(
                               '写真を追加',
                               style:
-                                  TextStyle(color: Colors.grey, fontSize: 12),
+                                  TextStyle(color: AppColors.sunabokori, fontSize: 12),
                             ),
                           ],
                         ),
@@ -662,7 +663,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                       child: Text(
                         '${_uploadedUrls.length + _mediaFiles.length} / 5枚',
                         style: const TextStyle(
-                          color: Colors.grey,
+                          color: AppColors.sunabokori,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),

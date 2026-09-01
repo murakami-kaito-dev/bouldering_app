@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../common/boul_log.dart';
 import '../../providers/other_user_tweets_provider.dart';
+import '../../theme/app_tokens.dart';
 
 /// 他ユーザーのツイート一覧セクション
 /// 
@@ -61,14 +62,14 @@ class _OtherUserTweetsSectionState extends ConsumerState<OtherUserTweetsSection>
               const Icon(
                 Icons.error_outline,
                 size: 64,
-                color: Colors.red,
+                color: AppColors.holdRed,
               ),
               const SizedBox(height: 16),
               Text(
                 tweetsState.error!,
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey[600],
+                  color: AppColors.sunabokori,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -104,14 +105,14 @@ class _OtherUserTweetsSectionState extends ConsumerState<OtherUserTweetsSection>
               Icon(
                 Icons.message_outlined,
                 size: 64,
-                color: Colors.grey,
+                color: AppColors.sunabokori,
               ),
               SizedBox(height: 16),
               Text(
                 'まだ投稿がありません',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey,
+                  color: AppColors.sunabokori,
                 ),
               ),
             ],

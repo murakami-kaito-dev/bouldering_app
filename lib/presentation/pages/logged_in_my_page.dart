@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../components/user/user_profile_section.dart';
 import '../components/my_tweets_section.dart';
 import '../components/favorite_gyms_section.dart';
+import '../theme/app_tokens.dart';
 import 'settings_page.dart';
 
 /// ログイン時のマイページ
@@ -24,18 +25,18 @@ class LoggedInMyPage extends ConsumerWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
         appBar: AppBar(
           // 【必須】戻るボタンを非表示
           automaticallyImplyLeading: false,
-          backgroundColor: const Color(0xFFFEF7FF),
-          surfaceTintColor: const Color(0xFFFEF7FF),
+          backgroundColor: AppColors.iwa,
+          surfaceTintColor: AppColors.iwa,
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: IconButton(
                 icon:
-                    const Icon(Icons.settings, size: 32.0, color: Colors.grey),
+                    const Icon(Icons.settings, size: 32.0, color: AppColors.sunabokori),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -66,7 +67,7 @@ class LoggedInMyPage extends ConsumerWidget {
                         Tab(text: "イキタイ"),
                       ],
                       labelStyle: TextStyle(
-                        color: Color(0xFF0056FF),
+                        color: AppColors.kabeBlue,
                         fontSize: 20,
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w900,
@@ -116,7 +117,7 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: const Color(0xFFFEF7FF),
+      color: AppColors.iwa,
       child: _tabBar,
     );
   }

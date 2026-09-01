@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../pages/statistics_report_page.dart';
 import '../providers/statistics_provider.dart';
 import '../components/common/loading_widget.dart';
+import '../theme/app_tokens.dart';
 
 /// 今月のボル活コンポーネント
 /// 
@@ -54,7 +55,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
         width: 400,
         padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
         decoration: ShapeDecoration(
-          color: const Color(0xFF0056FF),
+          color: AppColors.kabeBlue,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -71,7 +72,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
                     const Text(
                       '今月のボル活',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.onKabeBlue,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         letterSpacing: -0.50,
@@ -94,7 +95,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
                     '統計レポート >',
                     textAlign: TextAlign.right,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.onKabeBlue,
                       fontSize: 12,
                       fontFamily: 'Roboto',
                       fontWeight: FontWeight.w600,
@@ -128,7 +129,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
         Text(
           title,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.onKabeBlue,
             fontSize: 16,
             fontFamily: 'Roboto',
             fontWeight: FontWeight.w600,
@@ -141,7 +142,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
             Text(
               value,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.onKabeBlue,
                 fontSize: 24,
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w600,
@@ -152,7 +153,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
             Text(
               unit,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.onKabeBlue,
                 fontSize: 14,
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w600,

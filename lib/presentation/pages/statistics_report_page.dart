@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/bouldering_stats.dart';
 import '../providers/statistics_provider.dart';
+import '../theme/app_tokens.dart';
 import 'gym_detail_page.dart';
 
 /// 統計レポートページ
@@ -31,13 +32,13 @@ class StatisticsReportPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
         iconTheme: const IconThemeData(
-          color: Colors.black, // 戻るボタンを黒色に変更
+          color: AppColors.chalk, // 戻るボタンを黒色に変更
         ),
       ),
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       body: SingleChildScrollView(
         child: Center(
           child: Column(
@@ -47,14 +48,14 @@ class StatisticsReportPage extends ConsumerWidget {
                 context,
                 "今月のボル活 - ${now.year}.${now.month} -",
                 currentMonthStats,
-                const Color(0xFF0056FF),
+                AppColors.kabeBlue,
               ),
               const SizedBox(height: 16),
               _buildStatsContainer(
                 context,
                 "昨月のボル活 - ${previousMonth.year}.${previousMonth.month} -",
                 previousMonthStats,
-                const Color(0xFF8D8D8D),
+                AppColors.sunabokori,
               ),
               const SizedBox(height: 24),
             ],
@@ -121,7 +122,7 @@ class StatisticsReportPage extends ConsumerWidget {
           Text(
             title,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.onKabeBlue,
               fontSize: 16,
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w600,
@@ -143,7 +144,7 @@ class StatisticsReportPage extends ConsumerWidget {
 
           // 下線表示
           const Divider(
-            color: Colors.white,
+            color: AppColors.onKabeBlue,
             thickness: 1.0,
             indent: 0,
             endIndent: 0,
@@ -154,7 +155,7 @@ class StatisticsReportPage extends ConsumerWidget {
           const Text(
             'TOP5',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.onKabeBlue,
               fontSize: 16,
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w600,
@@ -197,7 +198,7 @@ class StatisticsReportPage extends ConsumerWidget {
                                 softWrap: true,
                                 overflow: TextOverflow.visible,
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.onKabeBlue,
                                   fontSize: 14,
                                   fontFamily: 'Roboto',
                                   fontWeight: FontWeight.w600,
@@ -208,7 +209,7 @@ class StatisticsReportPage extends ConsumerWidget {
                           : Text(
                               gymName,
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.onKabeBlue,
                                 fontSize: 14,
                                 fontFamily: 'Roboto',
                                 fontWeight: FontWeight.w600,
@@ -219,7 +220,7 @@ class StatisticsReportPage extends ConsumerWidget {
                     Text(
                       '$visitCount 回',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.onKabeBlue,
                         fontSize: 14,
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w600,
@@ -243,7 +244,7 @@ class StatisticsReportPage extends ConsumerWidget {
         Text(
           title,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.onKabeBlue,
             fontSize: 14,
             fontFamily: 'Roboto',
             fontWeight: FontWeight.w600,
@@ -256,7 +257,7 @@ class StatisticsReportPage extends ConsumerWidget {
             Text(
               value,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.onKabeBlue,
                 fontSize: 32,
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w600,
@@ -267,7 +268,7 @@ class StatisticsReportPage extends ConsumerWidget {
             Text(
               unit,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.onKabeBlue,
                 fontSize: 12,
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w600,

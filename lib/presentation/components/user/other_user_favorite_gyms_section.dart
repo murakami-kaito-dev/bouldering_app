@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/other_user_favorite_gyms_provider.dart';
 import '../gym/favorite_gym_card.dart';
+import '../../theme/app_tokens.dart';
 
 /// 他ユーザーのイキタイジムセクション
 ///
@@ -37,14 +38,14 @@ class OtherUserFavoriteGymsSection extends ConsumerWidget {
               Icon(
                 Icons.error_outline,
                 size: 64,
-                color: Colors.grey,
+                color: AppColors.sunabokori,
               ),
               SizedBox(height: 16),
               Text(
                 'イキタイジムの取得に失敗しました',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey,
+                  color: AppColors.sunabokori,
                 ),
               ),
             ],
@@ -62,14 +63,14 @@ class OtherUserFavoriteGymsSection extends ConsumerWidget {
                   Icon(
                     Icons.place_outlined,
                     size: 64,
-                    color: Colors.grey,
+                    color: AppColors.sunabokori,
                   ),
                   SizedBox(height: 16),
                   Text(
                     'イキタイジムがまだ登録されていません',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey,
+                      color: AppColors.sunabokori,
                     ),
                   ),
                 ],

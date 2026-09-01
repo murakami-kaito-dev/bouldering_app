@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../components/common/app_logo.dart';
 import '../components/common/switcher_tab.dart';
 import '../providers/auth_provider.dart';
+import '../theme/app_tokens.dart';
 import 'password_reset_page.dart';
 
 class LoginOrSignUpPage extends ConsumerStatefulWidget {
@@ -85,7 +86,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               const Text(
                                 'メールアドレス',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.chalk,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -106,7 +107,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               const Text(
                                 'パスワード',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.chalk,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -153,7 +154,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                   child: const Text(
                                     'パスワードを忘れた方はこちら',
                                     style: TextStyle(
-                                      color: Colors.blue,
+                                      color: AppColors.kabeBlue,
                                       fontSize: 14,
                                     ),
                                   ),
@@ -183,7 +184,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                                   .showSnackBar(
                                                 const SnackBar(
                                                   content: Text('ログインに成功しました'),
-                                                  backgroundColor: Colors.green,
+                                                  backgroundColor: AppColors.holdGreen,
                                                   duration:
                                                       Duration(seconds: 2),
                                                 ),
@@ -222,7 +223,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                                   .showSnackBar(
                                                 SnackBar(
                                                   content: Text(errorMessage),
-                                                  backgroundColor: Colors.red,
+                                                  backgroundColor: AppColors.holdRed,
                                                   duration: const Duration(
                                                       seconds: 3),
                                                 ),
@@ -264,7 +265,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               const Text(
                                 'メールアドレス',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.chalk,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -284,7 +285,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               const Text(
                                 'メールアドレス（確認）',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.chalk,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -305,7 +306,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               const Text(
                                 'パスワード',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.chalk,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -337,7 +338,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               const Text(
                                 'パスワードの条件：\n・8文字以上\n・英大文字・英小文字・数字をそれぞれ1文字以上含めてください',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.chalk,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -359,7 +360,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                               const SnackBar(
                                                 content: Text(
                                                     'メールアドレスが一致しません。再度確認してください。'),
-                                                backgroundColor: Colors.orange,
+                                                backgroundColor: AppColors.holdRed,
                                                 duration: Duration(seconds: 3),
                                               ),
                                             );
@@ -373,7 +374,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                               const SnackBar(
                                                 content: Text(
                                                     'メールアドレスの形式が正しくありません。'),
-                                                backgroundColor: Colors.orange,
+                                                backgroundColor: AppColors.holdRed,
                                                 duration: Duration(seconds: 3),
                                               ),
                                             );
@@ -396,7 +397,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                                   .showSnackBar(
                                                 const SnackBar(
                                                   content: Text('新規登録が完了しました！'),
-                                                  backgroundColor: Colors.green,
+                                                  backgroundColor: AppColors.holdGreen,
                                                   duration:
                                                       Duration(seconds: 2),
                                                 ),
@@ -437,7 +438,7 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                                   .showSnackBar(
                                                 SnackBar(
                                                   content: Text(errorMessage),
-                                                  backgroundColor: Colors.red,
+                                                  backgroundColor: AppColors.holdRed,
                                                   duration: const Duration(
                                                       seconds: 3),
                                                 ),

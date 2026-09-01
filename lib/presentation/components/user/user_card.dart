@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/user.dart';
 import '../../../shared/utils/navigation_helper.dart';
+import '../../theme/app_tokens.dart';
 
 /// ユーザーカードコンポーネント
 /// 
@@ -96,13 +97,13 @@ class UserCard extends ConsumerWidget {
   Widget _buildFavoriteGymInfo(BuildContext context) {
     return Row(
       children: [
-        Icon(Icons.fitness_center, size: 16, color: Colors.grey[600]),
+        const Icon(Icons.fitness_center, size: 16, color: AppColors.sunabokori),
         const SizedBox(width: 4),
         Expanded(
           child: Text(
             user.favoriteGym!,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey[600],
+              color: AppColors.sunabokori,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -115,12 +116,12 @@ class UserCard extends ConsumerWidget {
   Widget _buildExperienceInfo(BuildContext context) {
     return Row(
       children: [
-        Icon(Icons.timeline, size: 16, color: Colors.grey[600]),
+        const Icon(Icons.timeline, size: 16, color: AppColors.sunabokori),
         const SizedBox(width: 4),
         Text(
           'ボルダリング歴: ${user.boulderingYearsExperience}年',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
+            color: AppColors.sunabokori,
           ),
         ),
       ],
@@ -135,7 +136,7 @@ class UserCard extends ConsumerWidget {
               onPressed: () => _toggleFollow(ref),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                side: BorderSide(color: Colors.grey[400]!),
+                side: const BorderSide(color: AppColors.wareme),
               ),
               child: const Text('フォロー中'),
             )
@@ -157,9 +158,9 @@ class UserCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: AppColors.wareme,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.wareme),
       ),
       child: Text(
         user.userIntroduce!,

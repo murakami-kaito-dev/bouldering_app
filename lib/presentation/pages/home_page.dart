@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../components/common/app_logo.dart';
+import '../theme/app_tokens.dart';
 import '../../shared/constants/app_routes.dart';
 
 /// ホーム画面
@@ -34,22 +35,22 @@ class HomePage extends StatelessWidget {
                     Navigator.pushNamed(context, AppRoutes.gymSearch);
                   },
                   borderRadius: BorderRadius.circular(32),
-                  splashColor: Colors.grey.withOpacity(0.3),
+                  splashColor: AppColors.sunabokori.withOpacity(0.3),
                   child: Container(
                     width: double.infinity,
                     height: 64,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: ShapeDecoration(
-                      color: Colors.white,
+                      color: AppColors.setsuri,
                       shape: RoundedRectangleBorder(
                         side: const BorderSide(
-                            width: 1, color: Color(0xFFD9D9D9)),
+                            width: 1, color: AppColors.wareme),
                         borderRadius: BorderRadius.circular(32),
                       ),
                     ),
                     child: const Row(
                       children: [
-                        Icon(Icons.search, size: 32.0, color: Color(0xFF0056FF)),
+                        Icon(Icons.search, size: 32.0, color: AppColors.kabeBlue),
                         SizedBox(width: 16),
                         Expanded(
                           child: Column(
@@ -59,7 +60,7 @@ class HomePage extends StatelessWidget {
                               Text(
                                 '条件からジムを探す',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.chalk,
                                   fontSize: 16,
                                   fontFamily: 'Roboto',
                                   fontWeight: FontWeight.w600,
@@ -72,7 +73,7 @@ class HomePage extends StatelessWidget {
                                 child: Text(
                                   'ボルダリング以外の種目も検索できます',
                                   style: TextStyle(
-                                    color: Color(0xFFD9D9D9),
+                                    color: AppColors.sunabokori,
                                     fontSize: 14,
                                     fontFamily: 'Roboto',
                                     fontWeight: FontWeight.w600,
@@ -112,7 +113,7 @@ class HomePage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
                         decoration: ShapeDecoration(
-                          color: const Color(0xFF0056FF),
+                          color: AppColors.kabeBlue,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -120,7 +121,7 @@ class HomePage extends StatelessWidget {
                         child: const Text(
                           '地図からジムを探す',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.onKabeBlue,
                             fontSize: 16,
                             fontFamily: 'Roboto',
                             fontWeight: FontWeight.w600,
@@ -139,7 +140,7 @@ class HomePage extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF4D9), // 薄い黄色背景
+                    color: AppColors.wareme,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -150,7 +151,7 @@ class HomePage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: AppColors.chalk,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -160,7 +161,7 @@ class HomePage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: AppColors.chalk,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -195,8 +196,8 @@ class HomePage extends StatelessWidget {
                             ],
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0056FF),
-                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.kabeBlue,
+                            foregroundColor: AppColors.onKabeBlue,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,
                               vertical: 12,
