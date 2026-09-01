@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'gym_map_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/gym_name_search_provider.dart';
 import '../providers/gym_provider.dart';
@@ -86,6 +87,22 @@ class _GymSelectionPageState extends ConsumerState<GymSelectionPage> {
     ref.read(gymNameSearchProvider.notifier).clearSearch();
   }
 
+  /// 地図からの選択画面を開き、選ばれたら呼び出し元へ返す
+  Future<void> _openMapSelection() async {
+    // キーボードを閉じてから遷移する（開いたままだと遷移先の描画高が
+    // キーボードぶん縮み、閉じるのに合わせてレイアウトがズレて見える）
+    FocusManager.instance.primaryFocus?.unfocus();
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const GymMapPage(selectionMode: true),
+      ),
+    );
+    if (result != null && mounted) {
+      Navigator.pop(context, result); // 呼び出し元（プロフィール編集等）へ橋渡し
+    }
+  }
+
   /// ジム選択時の処理
   void _onGymSelected(int gymId, String gymName) {
     if (widget.selectionMode) {
@@ -113,6 +130,15 @@ class _GymSelectionPageState extends ConsumerState<GymSelectionPage> {
         title: Text('ジム検索', style: AppText.heading(size: 17)),
         elevation: 0.0,
         iconTheme: const IconThemeData(color: AppColors.chalk),
+        actions: [
+          // 選択モードのみ: 地図から視覚的に選ぶ導線
+          if (widget.selectionMode)
+            IconButton(
+              icon: const Icon(Icons.map_outlined, color: AppColors.chalk),
+              tooltip: '地図から選ぶ',
+              onPressed: _openMapSelection,
+            ),
+        ],
       ),
       body: Column(
         children: [

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show SemanticsBinding;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../../domain/entities/gym.dart';
 import '../providers/gym_provider.dart';
-import '../components/common/loading_widget.dart';
 import '../components/gym/gym_photo_strip.dart';
-import '../components/common/error_widget.dart';
 import '../components/common/gym_category.dart';
 import '../theme/app_tokens.dart';
 import '../theme/app_text.dart';
@@ -28,7 +27,17 @@ import '../../shared/utils/prefecture_order_utils.dart';
 /// - ViewModel（Provider）からデータを取得
 /// - 単一責任：地図とジムリストの表示に特化
 class GymMapPage extends ConsumerStatefulWidget {
-  const GymMapPage({super.key});
+  const GymMapPage({
+    super.key,
+    this.selectionMode = false,
+    this.confirmLabel = 'このジムを選ぶ',
+  });
+
+  /// 選択モード（true: ピンのカードに確定ボタンを出し、選んだジムを呼び出し元へ返す）
+  final bool selectionMode;
+
+  /// 選択モード時の確定ボタン文言
+  final String confirmLabel;
 
   @override
   ConsumerState<GymMapPage> createState() => _GymMapPageState();
@@ -37,6 +46,13 @@ class GymMapPage extends ConsumerStatefulWidget {
 class _GymMapPageState extends ConsumerState<GymMapPage> {
   final ScrollController _scrollController = ScrollController();
   int _focusedGymIndex = -1;
+
+
+  /// 画面遷移アニメーション完了後にtrue。
+  /// Google Mapのネイティブビュー生成と430本のピン転送は重く、遷移中に走ると
+  /// フレームが止まる（フリーズ感）ため、遷移が終わるまで地図を作らない
+  bool _mapReady = false;
+  bool _mapGateScheduled = false;
 
   // Google Maps関連
   Set<Marker> _markers = {};
@@ -72,6 +88,46 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_mapGateScheduled) {
+      return;
+    }
+    _mapGateScheduled = true;
+
+    final route = ModalRoute.of(context);
+    final animation = route?.animation;
+    if (animation == null || animation.status == AnimationStatus.completed) {
+      // 実測(2026-09-02)より: 本アプリでは遷移アニメーションが即completedになる
+      // 環境があり、この分岐に入る。ここで即生成すると「新画面の1フレーム目」に
+      // GoogleMapが含まれ、プラットフォームビュー生成のストール(数百ms)が
+      // 旧画面のまま発生して「ラグ後にカット切替」になる。
+      // → まず軽いプレースホルダを1フレーム描画してから生成する
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            setState(() => _mapReady = true);
+          }
+        });
+      });
+    } else {
+      void onStatus(AnimationStatus status) {
+        if (status == AnimationStatus.completed) {
+          animation.removeStatusListener(onStatus);
+          // 完了通知は遷移の最終フレームと同じフレームで届く。ここで即生成すると
+          // （特にアプリ起動後1回目のGoogle Maps SDK初期化は突出して重く）
+          // 着地の数フレームを食ってフリーズに見える。一拍置いてから生成する
+          Future.delayed(const Duration(milliseconds: 250), () {
+            if (mounted) setState(() => _mapReady = true);
+          });
+        }
+      }
+
+      animation.addStatusListener(onStatus);
+    }
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     _mapController?.dispose();
@@ -81,8 +137,30 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   @override
   Widget build(BuildContext context) {
     final gymListState = ref.watch(gymListProvider);
+    final gyms = gymListState.valueOrNull ?? const <Gym>[];
+    final sortedGyms = PrefectureOrderUtils.sortGymsByGeographicOrder(gyms);
 
-    return Scaffold(
+    // データが後から届いたらマーカーだけ更新する。
+    // 地図とカード枠は常に固定位置で表示し、読み込みでレイアウトが動かないようにする
+    ref.listen<AsyncValue<List<Gym>>>(gymListProvider, (prev, next) {
+      final g = next.valueOrNull;
+      if (g != null && _mapController != null) {
+        final sorted = PrefectureOrderUtils.sortGymsByGeographicOrder(g);
+        _updateMarkers(sorted);
+      }
+    });
+
+    final safeBottom = MediaQuery.of(context).viewPadding.bottom;
+    // 浮遊カードの下端余白 + カード高（地図padding・現在地ボタンの基準）
+    final cardBottom = safeBottom + 12;
+    final cardListHeight = _floatingCardHeight + cardBottom;
+
+    final scaffold = Scaffold(
+      // 重要: 呼び出し元（ジム選択の検索欄等）でキーボードが開いたまま遷移すると、
+      // 既定(true)ではbodyがキーボード高ぶん縮んで描画され、下部カードが画面中央に
+      // 来る＋キーボードが閉じるのに合わせて位置がズレ続ける。地図画面は入力を
+      // 持たないため、キーボードでリサイズさせない
+      resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -99,52 +177,91 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
         //   ),
         // ],
       ),
-      body: gymListState.when(
-        data: (gyms) => _buildMapView(gyms),
-        loading: () => const Center(
-          child: LoadingWidget(message: 'ジム情報を読み込み中...'),
+      body: Stack(
+        // 重要: fitを指定しないとStackは「位置指定なしの子＝GoogleMap」の
+        // サイズに縮む。地図プラットフォームビューの初期化中は高さが不定なため、
+        // パネルごと上に詰まるレイアウト崩れが起きる。常に画面全体へ強制する
+        fit: StackFit.expand,
+        children: [
+          // Google Map。遷移完了までは岩肌のプレースホルダ（生成の重さを
+          // 遷移アニメーションと重ねない）。完了後にフェードで地図を表示
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: _mapReady
+                ? _buildGoogleMap(sortedGyms, cardListHeight)
+                : const ColoredBox(
+                    key: ValueKey('map-placeholder'),
+                    color: AppColors.iwa,
+                  ),
+          ),
+
+          // ジムカード（地図の上に浮かぶ横スクロール。背景パネルなし）
+          Positioned(
+            bottom: cardBottom,
+            left: 0,
+            right: 0,
+            height: _floatingCardHeight,
+            child: _buildFloatingCards(gymListState, sortedGyms),
+          ),
+
+          // 現在地ボタン（浮遊カードの直上に追従）
+          Positioned(
+            right: 16,
+            bottom: cardListHeight + 12,
+            child: FloatingActionButton(
+              mini: true,
+              heroTag: 'gym_map_my_location',
+              backgroundColor: AppColors.setsuri,
+              foregroundColor: AppColors.chalk,
+              onPressed: _moveToCurrentLocation,
+              child: const Icon(Icons.my_location),
+            ),
+          ),
+        ],
+      ),
+    );
+    return scaffold;
+  }
+
+  /// 浮遊カードの高さ（選択モードは確定ボタンぶん加算）
+  /// 中身（ジム名2行44 + 種別テープ + 写真100 + 料金/営業行 + 余白）が
+  /// 内部スクロールなしで収まる高さにしている
+  double get _floatingCardHeight => widget.selectionMode ? 316.0 : 258.0;
+
+  /// 地図の上に浮かぶジムカード列（位置・高さは常に固定。中身だけ状態で切替）
+  Widget _buildFloatingCards(AsyncValue<List<Gym>> state, List<Gym> gyms) {
+    if (gyms.isNotEmpty) return _buildGymCardList(gyms);
+
+    // データ未到着時は小さな浮遊チップだけ（レイアウトは不動）
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.setsuri,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(color: AppColors.wareme),
         ),
-        error: (error, stackTrace) => Center(
-          child: AppErrorWidget(
-            message: 'ジム情報の取得に失敗しました',
-            onRetry: () => ref.read(gymListProvider.notifier).loadAllGyms(),
+        child: state.when(
+          data: (_) => Text('ジムがありません', style: AppText.body(size: 13)),
+          loading: () => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: 10),
+              Text('ジム情報を読み込み中...', style: AppText.body(size: 13)),
+            ],
+          ),
+          error: (error, stackTrace) => GestureDetector(
+            onTap: () => ref.read(gymListProvider.notifier).loadAllGyms(),
+            child: Text('取得に失敗しました（タップで再試行）',
+                style: AppText.body(size: 13, color: AppColors.holdRed)),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildMapView(List<Gym> gyms) {
-    // 地理的順序（北から南）でジムをソート
-    final sortedGyms = PrefectureOrderUtils.sortGymsByGeographicOrder(gyms);
-
-    return Stack(
-      children: [
-        // Google Map（ソート済みリストを使用してマーカーとカードの整合性を保つ）
-        _buildGoogleMap(sortedGyms),
-
-        // ジムカード横スクロール（下部）- ソート済みリストを使用
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: _buildGymCardList(sortedGyms),
-        ),
-
-        // 現在地ボタン（自前実装。標準ボタンの置き換え）
-        Positioned(
-          right: 16,
-          bottom: 296, // ジムカード(280) + 余白
-          child: FloatingActionButton(
-            mini: true,
-            heroTag: 'gym_map_my_location',
-            backgroundColor: AppColors.setsuri,
-            foregroundColor: AppColors.chalk,
-            onPressed: _moveToCurrentLocation,
-            child: const Icon(Icons.my_location),
-          ),
-        ),
-      ],
     );
   }
 
@@ -165,7 +282,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   }
 
   /// Google Mapを表示
-  Widget _buildGoogleMap(List<Gym> gyms) {
+  Widget _buildGoogleMap(List<Gym> gyms, double bottomPadding) {
     return GoogleMap(
       onMapCreated: (GoogleMapController controller) async {
         _mapController = controller;
@@ -200,7 +317,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
       // 標準の現在地ボタンは測位が完了しない状況（オフライン等）で反応しないことが
       // あるため、タイムアウト+フォールバック付きの自前ボタンに置き換える
       myLocationButtonEnabled: false,
-      padding: const EdgeInsets.only(bottom: 280), // ジムカード分の余白
+      padding: EdgeInsets.only(bottom: bottomPadding), // ジムカード分の余白
     );
   }
 
@@ -288,49 +405,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   }
 
   Widget _buildGymCardList(List<Gym> gyms) {
-    return Container(
-      height: 280,
-      color: AppColors.setsuri,
-      child: Column(
-        children: [
-          // ハンドルバー
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.wareme,
-              borderRadius: BorderRadius.circular(AppRadius.tape),
-            ),
-          ),
-
-          // ヘッダー
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Text(
-                  '近くのジム (${gyms.length}件)',
-                  style: AppText.heading(size: 15),
-                ),
-                const Spacer(),
-                // TODO: 全件表示機能の実装は不要の可能性あり
-                // TextButton(
-                //   onPressed: () {
-                //     // TODO: 全件表示ページへの遷移
-                //     ScaffoldMessenger.of(context).showSnackBar(
-                //       const SnackBar(content: Text('全件表示機能は実装予定です')),
-                //     );
-                //   },
-                //   child: const Text('すべて見る'),
-                // ),
-              ],
-            ),
-          ),
-
-          // ジムカード横スクロール
-          Expanded(
-            child: ListView.builder(
+    return ListView.builder(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -351,11 +426,11 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                     border: _focusedGymIndex == index
                         ? Border.all(color: AppColors.kabeBlue, width: 2)
                         : Border.all(color: AppColors.wareme),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
+                        color: Colors.black.withOpacity(0.35),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
@@ -367,8 +442,13 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                         // ジム名と都道府県
                         GestureDetector(
                           onTap: () async {
-                            // ジム詳細ページへ遷移
-                            await NavigationHelper.toGymDetail(context, gym.id);
+                            if (widget.selectionMode) {
+                              Navigator.pop(context,
+                                  {'gymId': gym.id, 'gymName': gym.name});
+                            } else {
+                              await NavigationHelper.toGymDetail(
+                                  context, gym.id);
+                            }
                           },
                           child: Container(
                             height: 44,
@@ -447,15 +527,25 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                             ),
                           ],
                         ),
+                        if (widget.selectionMode) ...[
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.pop(context,
+                                  {'gymId': gym.id, 'gymName': gym.name}),
+                              child: Text(widget.confirmLabel,
+                                  style: AppText.label(
+                                      size: 14,
+                                      color: AppColors.onKabeBlue)),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 );
               },
-            ),
-          ),
-        ],
-      ),
     );
   }
 
