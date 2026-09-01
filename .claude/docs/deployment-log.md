@@ -18,6 +18,20 @@
 
 ---
 
+## 2026-09-01 — ジム写真機能 Phase 4-前半: prod インフラ・DB反映（v2.0.0準備）
+
+- **インフラ（prod / bouldering-app-prod-ca5d7）**: Places API (New)・API Keys API を有効化。専用APIキー `places-server-prod` を新規作成（places.googleapis.com のみに制限。キー文字列は `.local/places_api_key_prod.txt`、リソース名は `.local/places_key_resource_prod.txt`、Git管理外）。実リクエスト1回で200/place取得を確認
+- **DB（prod Supabase・1トランザクション+単独DELETE、psqlで直接実行）**:
+  1. `gyms` に `google_place_id TEXT` 列追加
+  2. devで解決済みの place_id **430件** を投入（dev→prodコピー、UPDATE 430）
+  3. `gym_photos` テーブル新設（devと同一スキーマ: photo_id serial PK / gym_id FK CASCADE / photo_url / source default 'own' / created_at、idx_gym_photos_gym_id）
+  4. 重複ジム **313「Dボルダリングプラスリードなんば」を削除**（I-9完了。事前に tweets/gym_favorites/users.home_gym_id への参照0件を確認。gym_hours 1件はCASCADE削除）
+  - 事後検証: ジム430件・place_id保有430件・gym_photos 0行・313不在・345（正）残存
+- **アプリ側の事前検証**: `flutter build ios --simulator --flavor "Runner Prod"` 成功 → `Bouldering App.app`（com.km.boulderingapp）生成を確認（**台帳I-4のスキーム不整合は実害なし**と実証。Archive構成は Release-Runner Prod で正しい）
+- **バックエンドデプロイは未実施**（PR #44 の .dockerignore 修正マージ後に supabase-v2.0.0 をビルド・デプロイ予定）
+
+---
+
 ## 2026-08-30 — ジム写真機能 Phase 1-2: Places API 導入（**devのみ・prod未変更**）
 
 - **インフラ（dev）**: `bouldering-app-dev` で Places API (New) を有効化。専用APIキーを新規作成（Places APIのみに制限。キー文字列は `.local/places_api_key_dev.txt`、Git管理外）
