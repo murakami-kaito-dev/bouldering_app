@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../shared/config/environment_config.dart';
 import '../../shared/constants/app_routes.dart';
 import '../providers/auth_provider.dart';
+import '../providers/general_tweets_provider.dart';
 import '../providers/gym_provider.dart';
 import '../../domain/entities/gym.dart';
 import '../providers/terms_acceptance_provider.dart';
@@ -298,6 +299,15 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
         try {
           await ref.read(authProvider.notifier).checkAuthRevoked();
           debugPrint('[APP LIFECYCLE] トークン失効チェック完了');
+
+          // オフライン起動などでユーザー情報が未取得のままなら取得し直す
+          // （通信回復後にアプリへ戻ってきたタイミングで自己回復させる）
+          await ref.read(authProvider.notifier).retryUserLoadIfNeeded();
+
+          // みんなのボル活も、取得失敗で空のままなら取得し直す
+          await ref
+              .read(generalTweetsProvider.notifier)
+              .retryInitialIfFailed();
         } catch (e) {
           debugPrint('[APP LIFECYCLE ERROR] トークン失効チェックエラー: $e');
         }

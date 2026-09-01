@@ -391,6 +391,26 @@ class AuthNotifier extends StateNotifier<bool> {
     }
   }
 
+  /// Firebaseログイン済みなのにユーザー情報が未取得なら取得し直す（自己回復）
+  ///
+  /// 機内モード等のオフラインで起動すると、Firebaseの認証セッション自体は
+  /// 端末内で復元される一方、ユーザー情報API（Supabase）の取得が失敗し、
+  /// 通信が回復しても「未ログイン扱い」のまま固まってしまう。
+  /// アプリ復帰時（app.dart）や再読み込みボタンからこれを呼んで回復させる。
+  Future<void> retryUserLoadIfNeeded() async {
+    final user = _authService.currentUser;
+    if (user == null) return;
+
+    final userState = ref.read(userProvider);
+    // 注意: エラー状態の AsyncValue に .value でアクセスすると保持している例外が
+    // その場で再スローされる（Riverpod 2.x の仕様）。ここでそれを踏むと
+    // login() に到達する前に黙って死に、「再読み込みが全く効かない」状態になる。
+    // 必ず valueOrNull を使うこと
+    if (userState.isLoading || userState.valueOrNull != null) return;
+
+    await ref.read(userProvider.notifier).login(user.uid);
+  }
+
   /// 強制ログアウト処理
   /// 
   /// Firebase Authからサインアウトし、ローカル状態をクリア

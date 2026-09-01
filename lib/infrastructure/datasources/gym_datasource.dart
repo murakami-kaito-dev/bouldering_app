@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import '../services/api_client.dart';
 import '../services/gym_cache_service.dart';
+import '../services/gym_photos_cache_service.dart';
 import '../../domain/entities/gym.dart';
 import '../../domain/entities/gym_photo.dart';
 // TODO: 本番環境では以下のインポートをコメントアウトする
@@ -24,34 +25,67 @@ class GymDataSource {
   /// ジム全件の永続キャッシュ（null なら常にAPI取得＝従来動作）
   final GymCacheService? _cacheService;
 
+  /// ジム写真の永続キャッシュ（null なら常にAPI取得＝従来動作）
+  final GymPhotosCacheService? _photosCacheService;
+
   /// コンストラクタ
   ///
   /// [_apiClient] API通信クライアント
   /// [cacheService] ジム全件データの永続キャッシュ
-  GymDataSource(this._apiClient, {GymCacheService? cacheService})
-      : _cacheService = cacheService;
+  /// [photosCacheService] ジム写真URLリストの永続キャッシュ
+  GymDataSource(
+    this._apiClient, {
+    GymCacheService? cacheService,
+    GymPhotosCacheService? photosCacheService,
+  })  : _cacheService = cacheService,
+        _photosCacheService = photosCacheService;
 
   /// ジム写真セット取得
   ///
   /// 処理フロー:
   /// 1. REST API: GET /api/gyms/{gymId}/photos
   ///    バックエンドが「自前写真（GCS） or Google Places API」を判定して返す
-  /// 2. 取得失敗時は「写真なし」として扱う（写真は補助情報のため画面全体は壊さない）
+  /// 2. 取得失敗時は例外を上位へ伝播する（Provider側が一定時間後の再試行を管理。
+  ///    以前は空セットに丸めていたため、オフライン時の取得失敗が「写真なし」として
+  ///    アプリ再起動まで固定される不具合があった）
   Future<GymPhotoSet> getGymPhotos(int gymId) async {
-    try {
-      final response = await _apiClient.get(
-        endpoint: '/gyms/$gymId/photos',
-        requireAuth: false,
-      );
-      final data = response['data'];
-      if (data is Map<String, dynamic>) {
-        return GymPhotoSet.fromJson(data);
+    // 永続キャッシュ優先（cache-first + stale-while-revalidate）。
+    // オフラインや通信不安定時でも、一度表示したジムの写真リストを出せるようにする
+    final cached = await _photosCacheService?.read(gymId);
+    if (cached != null) {
+      if (!cached.isFresh) {
+        // TTL超過: キャッシュを即返しつつ、裏でファイルだけ更新
+        unawaited(_refreshPhotosInBackground(gymId));
       }
-      return GymPhotoSet.empty;
-    } catch (e) {
-      // 写真は必須情報ではないので、失敗しても空セットで継続する
-      return GymPhotoSet.empty;
+      return GymPhotoSet.fromJson(cached.data);
     }
+
+    final data = await _fetchGymPhotosRaw(gymId);
+    if (data != null) {
+      return GymPhotoSet.fromJson(data);
+    }
+    return GymPhotoSet.empty;
+  }
+
+  /// 写真セットの生JSONをAPIから取得し、キャッシュへ保存する
+  Future<Map<String, dynamic>?> _fetchGymPhotosRaw(int gymId) async {
+    final response = await _apiClient.get(
+      endpoint: '/gyms/$gymId/photos',
+      requireAuth: false,
+    );
+    final data = response['data'];
+    if (data is Map<String, dynamic>) {
+      await _photosCacheService?.write(gymId, data);
+      return data;
+    }
+    return null;
+  }
+
+  /// TTL超過キャッシュの裏更新（ファイルのみ更新。失敗は無視＝オフライン耐性）
+  Future<void> _refreshPhotosInBackground(int gymId) async {
+    try {
+      await _fetchGymPhotosRaw(gymId);
+    } catch (_) {}
   }
 
   /// 全ジム情報取得

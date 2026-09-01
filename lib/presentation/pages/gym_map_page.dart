@@ -58,7 +58,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
       // カスタムマーカーアイコンの設定（アセットがない場合はデフォルト使用）
       final icon = await BitmapDescriptor.fromAssetImage(
         const ImageConfiguration(size: Size(48, 48)),
-        'assets/images/gym_pin.png', // アセットパス（存在しない場合はデフォルトマーカー）
+        'assets/pin_48.png', // カスタムピン（読込失敗時はデフォルトマーカー）
       ).catchError((_) =>
           BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed));
 
@@ -128,7 +128,37 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
           right: 0,
           child: _buildGymCardList(sortedGyms),
         ),
+
+        // 現在地ボタン（自前実装。標準ボタンの置き換え）
+        Positioned(
+          right: 16,
+          bottom: 296, // ジムカード(280) + 余白
+          child: FloatingActionButton(
+            mini: true,
+            heroTag: 'gym_map_my_location',
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black87,
+            onPressed: _moveToCurrentLocation,
+            child: const Icon(Icons.my_location),
+          ),
+        ),
       ],
+    );
+  }
+
+  /// 現在地へカメラを移動する（自前の現在地ボタンから呼ばれる）
+  Future<void> _moveToCurrentLocation() async {
+    final location = await _getCurrentLocation();
+    if (location == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('現在地を取得できませんでした')),
+        );
+      }
+      return;
+    }
+    await _mapController?.animateCamera(
+      CameraUpdate.newLatLngZoom(location, 12.0),
     );
   }
 
@@ -146,20 +176,18 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
           // マップスタイルファイルがない場合は無視
         }
 
-        // 現在地に移動
+        // 先にマーカーを設置する（現在地取得を待たない）。
+        // オフライン時は現在地取得が長時間返らないことがあり、
+        // 従来の「現在地→マーカー」の順ではピンが一切立たなくなっていた
+        await _updateMarkers(gyms);
+
+        // 現在地に移動（取得できなければ初期位置=東京駅のまま）
         final currentLocation = await _getCurrentLocation();
         if (currentLocation != null) {
           await _mapController?.animateCamera(
             CameraUpdate.newLatLngZoom(currentLocation, 12.0),
           );
-        } else {
-          await _mapController?.animateCamera(
-            CameraUpdate.newLatLngZoom(_center, 11.0),
-          );
         }
-
-        // マーカー更新
-        await _updateMarkers(gyms);
       },
       initialCameraPosition: CameraPosition(
         target: _center,
@@ -167,7 +195,9 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
       ),
       markers: _markers,
       myLocationEnabled: true,
-      myLocationButtonEnabled: true,
+      // 標準の現在地ボタンは測位が完了しない状況（オフライン等）で反応しないことが
+      // あるため、タイムアウト+フォールバック付きの自前ボタンに置き換える
+      myLocationButtonEnabled: false,
       padding: const EdgeInsets.only(bottom: 280), // ジムカード分の余白
     );
   }
@@ -190,17 +220,28 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
 
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 5), // オフライン時等に無限待ちしない
       );
       return LatLng(position.latitude, position.longitude);
     } catch (e) {
-      // 位置情報取得エラー
+      // 取得失敗・タイムアウト時は、最後に取得できた位置で代用する
+      // （機内モード等でGPS測位が完了しなくても現在地系の機能を動かすため）
+      try {
+        final last = await Geolocator.getLastKnownPosition();
+        if (last != null) return LatLng(last.latitude, last.longitude);
+      } catch (_) {}
       return null;
     }
   }
 
   /// ジム情報を基にマーカーを更新
   Future<void> _updateMarkers(List<Gym> gyms) async {
-    if (_customGymMarker == null) return;
+    // アイコン未初期化でもピン設置を止めない（初期化を待ち、失敗時は既定マーカー）
+    if (_customGymMarker == null) {
+      await _initializeMap();
+    }
+    final icon = _customGymMarker ??
+        BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
 
     final markers = gyms.asMap().entries.where((entry) {
       final gym = entry.value;
@@ -215,7 +256,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
       return Marker(
         markerId: MarkerId(gym.id.toString()),
         position: LatLng(gym.latitude!, gym.longitude!),
-        icon: _customGymMarker!,
+        icon: icon,
         onTap: () async {
           // マーカータップ時の処理
           setState(() {
@@ -238,6 +279,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
       );
     }).toSet();
 
+    if (!mounted) return;
     setState(() {
       _markers = markers;
     });
