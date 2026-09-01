@@ -99,7 +99,12 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
       void onStatus(AnimationStatus status) {
         if (status == AnimationStatus.completed) {
           animation.removeStatusListener(onStatus);
-          if (mounted) setState(() => _mapReady = true);
+          // 完了通知は遷移の最終フレームと同じフレームで届く。ここで即生成すると
+          // （特にアプリ起動後1回目のGoogle Maps SDK初期化は突出して重く）
+          // 着地の数フレームを食ってフリーズに見える。一拍置いてから生成する
+          Future.delayed(const Duration(milliseconds: 250), () {
+            if (mounted) setState(() => _mapReady = true);
+          });
         }
       }
 
@@ -202,7 +207,9 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   }
 
   /// 浮遊カードの高さ（選択モードは確定ボタンぶん加算）
-  double get _floatingCardHeight => widget.selectionMode ? 276.0 : 220.0;
+  /// 中身（ジム名2行44 + 種別テープ + 写真100 + 料金/営業行 + 余白）が
+  /// 内部スクロールなしで収まる高さにしている
+  double get _floatingCardHeight => widget.selectionMode ? 316.0 : 258.0;
 
   /// 地図の上に浮かぶジムカード列（位置・高さは常に固定。中身だけ状態で切替）
   Widget _buildFloatingCards(AsyncValue<List<Gym>> state, List<Gym> gyms) {
