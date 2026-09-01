@@ -406,34 +406,47 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
         selectedLabelStyle: const TextStyle(fontSize: 12),
         unselectedLabelStyle: const TextStyle(fontSize: 12),
           ),
-          // 選択中タブを示す「課題テープ」。タブ切替で横にスライドする
+          // 選択中タブを示す「課題テープ」。タブ切替で横にスライドする。
+          // 各タブ(幅=全幅/4)の中心にテープ中心をピクセル単位で合わせる
+          // （Alignment指定だと子幅ぶん内寄せされ両端がズレるため、実測で配置）
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: IgnorePointer(
-              child: SizedBox(
-                height: 4,
-                child: AnimatedAlign(
-                  duration: const Duration(milliseconds: 260),
-                  curve: Curves.easeOutBack,
-                  // 4タブの各中心: x = -0.75 / -0.25 / +0.25 / +0.75
-                  // （投稿タブ(2)は選択されないため通過しない）
-                  alignment: Alignment(-0.75 + 0.5 * _currentIndex, -1),
-                  child: Transform(
-                    transform: Matrix4.skewX(-0.14),
-                    alignment: Alignment.center,
-                    child: Container(
-                      width: 34,
-                      height: 4,
-                      decoration: const BoxDecoration(
-                        color: AppColors.kabeBlue,
-                        borderRadius: BorderRadius.vertical(
-                            bottom: Radius.circular(3)),
-                      ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  const tapeWidth = 34.0;
+                  final itemWidth = constraints.maxWidth / _pages.length;
+                  final targetLeft =
+                      (_currentIndex + 0.5) * itemWidth - tapeWidth / 2;
+                  return SizedBox(
+                    height: 4,
+                    child: Stack(
+                      children: [
+                        AnimatedPositioned(
+                          duration: const Duration(milliseconds: 260),
+                          curve: Curves.easeOutBack,
+                          top: 0,
+                          left: targetLeft,
+                          child: Transform(
+                            transform: Matrix4.skewX(-0.14),
+                            alignment: Alignment.center,
+                            child: Container(
+                              width: tapeWidth,
+                              height: 4,
+                              decoration: const BoxDecoration(
+                                color: AppColors.kabeBlue,
+                                borderRadius: BorderRadius.vertical(
+                                    bottom: Radius.circular(3)),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ),
           ),
