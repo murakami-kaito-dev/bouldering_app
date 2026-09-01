@@ -28,7 +28,17 @@ import '../../shared/utils/prefecture_order_utils.dart';
 /// - ViewModel（Provider）からデータを取得
 /// - 単一責任：地図とジムリストの表示に特化
 class GymMapPage extends ConsumerStatefulWidget {
-  const GymMapPage({super.key});
+  const GymMapPage({
+    super.key,
+    this.selectionMode = false,
+    this.confirmLabel = 'このジムを選ぶ',
+  });
+
+  /// 選択モード（true: ピンのカードに確定ボタンを出し、選んだジムを呼び出し元へ返す）
+  final bool selectionMode;
+
+  /// 選択モード時の確定ボタン文言
+  final String confirmLabel;
 
   @override
   ConsumerState<GymMapPage> createState() => _GymMapPageState();
@@ -288,8 +298,10 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   }
 
   Widget _buildGymCardList(List<Gym> gyms) {
+    // 選択モードは確定ボタンぶん高さを足す
+    final listHeight = widget.selectionMode ? 344.0 : 280.0;
     return Container(
-      height: 280,
+      height: listHeight,
       color: AppColors.setsuri,
       child: Column(
         children: [
@@ -310,7 +322,9 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
             child: Row(
               children: [
                 Text(
-                  '近くのジム (${gyms.length}件)',
+                  widget.selectionMode
+                      ? 'ピンをタップしてジムを選ぶ'
+                      : '近くのジム (${gyms.length}件)',
                   style: AppText.heading(size: 15),
                 ),
                 const Spacer(),
@@ -367,8 +381,13 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                         // ジム名と都道府県
                         GestureDetector(
                           onTap: () async {
-                            // ジム詳細ページへ遷移
-                            await NavigationHelper.toGymDetail(context, gym.id);
+                            if (widget.selectionMode) {
+                              Navigator.pop(context,
+                                  {'gymId': gym.id, 'gymName': gym.name});
+                            } else {
+                              await NavigationHelper.toGymDetail(
+                                  context, gym.id);
+                            }
                           },
                           child: Container(
                             height: 44,
@@ -447,6 +466,20 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                             ),
                           ],
                         ),
+                        if (widget.selectionMode) ...[
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.pop(context,
+                                  {'gymId': gym.id, 'gymName': gym.name}),
+                              child: Text(widget.confirmLabel,
+                                  style: AppText.label(
+                                      size: 14,
+                                      color: AppColors.onKabeBlue)),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
