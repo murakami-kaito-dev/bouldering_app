@@ -91,6 +91,20 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   @override
   Widget build(BuildContext context) {
     final gymListState = ref.watch(gymListProvider);
+    final gyms = gymListState.valueOrNull ?? const <Gym>[];
+    final sortedGyms = PrefectureOrderUtils.sortGymsByGeographicOrder(gyms);
+
+    // データが後から届いたらマーカーだけ更新する。
+    // 地図とカード枠は常に固定位置で表示し、読み込みでレイアウトが動かないようにする
+    ref.listen<AsyncValue<List<Gym>>>(gymListProvider, (prev, next) {
+      final g = next.valueOrNull;
+      if (g != null && _mapController != null) {
+        _updateMarkers(PrefectureOrderUtils.sortGymsByGeographicOrder(g));
+      }
+    });
+
+    final safeBottom = MediaQuery.of(context).viewPadding.bottom;
+    final cardListHeight = _cardListHeight(safeBottom);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -109,52 +123,72 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
         //   ),
         // ],
       ),
-      body: gymListState.when(
-        data: (gyms) => _buildMapView(gyms),
-        loading: () => const Center(
-          child: LoadingWidget(message: 'ジム情報を読み込み中...'),
-        ),
-        error: (error, stackTrace) => Center(
-          child: AppErrorWidget(
-            message: 'ジム情報の取得に失敗しました',
-            onRetry: () => ref.read(gymListProvider.notifier).loadAllGyms(),
+      body: Stack(
+        children: [
+          // Google Map（常に表示。マーカーはデータ到着時に追加）
+          _buildGoogleMap(sortedGyms, cardListHeight),
+
+          // ジムカード横スクロール（下部・固定高でレイアウトを不動に）
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _buildBottomPanel(
+                gymListState, sortedGyms, cardListHeight, safeBottom),
           ),
-        ),
+
+          // 現在地ボタン（自前実装。パネル高に追従させ被りを防ぐ）
+          Positioned(
+            right: 16,
+            bottom: cardListHeight + 16,
+            child: FloatingActionButton(
+              mini: true,
+              heroTag: 'gym_map_my_location',
+              backgroundColor: AppColors.setsuri,
+              foregroundColor: AppColors.chalk,
+              onPressed: _moveToCurrentLocation,
+              child: const Icon(Icons.my_location),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildMapView(List<Gym> gyms) {
-    // 地理的順序（北から南）でジムをソート
-    final sortedGyms = PrefectureOrderUtils.sortGymsByGeographicOrder(gyms);
+  /// カードパネルの高さ（選択モードは確定ボタンぶん加算・下部セーフエリア込み）
+  double _cardListHeight(double safeBottom) {
+    const headerAndHandle = 52.0;
+    const cardArea = 250.0;
+    final buttonExtra = widget.selectionMode ? 56.0 : 0.0;
+    return headerAndHandle + cardArea + buttonExtra + safeBottom;
+  }
 
-    return Stack(
-      children: [
-        // Google Map（ソート済みリストを使用してマーカーとカードの整合性を保つ）
-        _buildGoogleMap(sortedGyms),
-
-        // ジムカード横スクロール（下部）- ソート済みリストを使用
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: _buildGymCardList(sortedGyms),
-        ),
-
-        // 現在地ボタン（自前実装。標準ボタンの置き換え）
-        Positioned(
-          right: 16,
-          bottom: 296, // ジムカード(280) + 余白
-          child: FloatingActionButton(
-            mini: true,
-            heroTag: 'gym_map_my_location',
-            backgroundColor: AppColors.setsuri,
-            foregroundColor: AppColors.chalk,
-            onPressed: _moveToCurrentLocation,
-            child: const Icon(Icons.my_location),
-          ),
-        ),
-      ],
+  /// 下部パネル（データ状態に依らず同じ高さ＝位置が動かない。中身だけ切替）
+  Widget _buildBottomPanel(
+    AsyncValue<List<Gym>> state,
+    List<Gym> gyms,
+    double height,
+    double safeBottom,
+  ) {
+    return Container(
+      height: height,
+      color: AppColors.setsuri,
+      padding: EdgeInsets.only(bottom: safeBottom),
+      child: gyms.isNotEmpty
+          ? _buildGymCardList(gyms)
+          : state.when(
+              data: (_) => const Center(child: Text('ジムがありません')),
+              loading: () => const Center(
+                child: LoadingWidget(message: 'ジム情報を読み込み中...'),
+              ),
+              error: (error, stackTrace) => Center(
+                child: AppErrorWidget(
+                  message: 'ジム情報の取得に失敗しました',
+                  onRetry: () =>
+                      ref.read(gymListProvider.notifier).loadAllGyms(),
+                ),
+              ),
+            ),
     );
   }
 
@@ -175,7 +209,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   }
 
   /// Google Mapを表示
-  Widget _buildGoogleMap(List<Gym> gyms) {
+  Widget _buildGoogleMap(List<Gym> gyms, double bottomPadding) {
     return GoogleMap(
       onMapCreated: (GoogleMapController controller) async {
         _mapController = controller;
@@ -210,7 +244,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
       // 標準の現在地ボタンは測位が完了しない状況（オフライン等）で反応しないことが
       // あるため、タイムアウト+フォールバック付きの自前ボタンに置き換える
       myLocationButtonEnabled: false,
-      padding: const EdgeInsets.only(bottom: 280), // ジムカード分の余白
+      padding: EdgeInsets.only(bottom: bottomPadding), // ジムカード分の余白
     );
   }
 
@@ -298,13 +332,8 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   }
 
   Widget _buildGymCardList(List<Gym> gyms) {
-    // 選択モードは確定ボタンぶん高さを足す
-    final listHeight = widget.selectionMode ? 344.0 : 280.0;
-    return Container(
-      height: listHeight,
-      color: AppColors.setsuri,
-      child: Column(
-        children: [
+    return Column(
+      children: [
           // ハンドルバー
           Container(
             margin: const EdgeInsets.only(top: 8),
@@ -488,7 +517,6 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
             ),
           ),
         ],
-      ),
     );
   }
 
