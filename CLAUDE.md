@@ -24,6 +24,7 @@ Flutter + Cloud Run(Express/TS) + Firebase Auth + Supabase。dev/prod 完全分�
 | リリース履歴 | `.claude/docs/release-log.md` |
 | 秘密情報の所在 | `.claude/docs/secrets-map.md` |
 | バグ・リファクタ候補（未着手） | `.claude/docs/refactor-candidates.md` |
+| バックエンドAPI一覧（Googleスプレッドシート）と維持ルール | `.claude/rules/api-catalog.md` |
 | 詳細な構築・デプロイ手順（一次資料、機密込み・Git非管理） | `docs/`（deployment/, setup/ 等） |
 | 公開用サニタイズ版ドキュメント | `docs_public/` |
 
