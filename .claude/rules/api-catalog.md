@@ -5,8 +5,8 @@ Google スプレッドシートで一元管理する。**コードが正**であ
 
 ## 置き場所
 
-- **スプレッドシート**: 「イワノボリタイ_バックエンドAPI一覧」（オーナーのGoogle Drive・マイドライブ直下）
-  https://docs.google.com/spreadsheets/d/1y28TUjJEeucsBsrQkYYR8_AG4QAMS8xgEwRaiJMMdhY/edit
+- **スプレッドシート**: 「イワノボリタイ_バックエンドAPI一覧」（Google Drive。接続アカウント km.solo.developer@gmail.com 側）
+  https://docs.google.com/spreadsheets/d/1Y0hsZFJ9792eFqVpDt3DcWL6zUhZeXE8um5PAWRM1Ko/edit
 - タブ構成: **API一覧** / **凡例・更新ルール** / **改訂履歴**
 
 ## 更新ルール（必須）
