@@ -7,6 +7,7 @@ import '../components/gym/gym_type_selector.dart';
 import 'gym_selection_page.dart';
 import 'gym_search_result_page.dart';
 import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 
 /// ジム検索ページ
 ///
@@ -46,12 +47,9 @@ class GymSearchPage extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'ジム検索',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppText.heading(size: 17),
         ),
         actions: [
           // フィルターリセットボタン
@@ -124,13 +122,9 @@ class GymSearchPage extends ConsumerWidget {
             ),
           );
         },
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           hintText: '施設名',
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(32),
-            borderSide: const BorderSide(color: AppColors.wareme),
-          ),
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: Icon(Icons.search),
         ),
       ),
     );
@@ -157,10 +151,7 @@ class GymSearchPage extends ConsumerWidget {
             child: ref.read(gymSearchFilterProvider.notifier).hasActiveFilter
                 ? Text(
                     '${ref.read(gymSearchFilterProvider.notifier).selectedConditionCount}個の条件で絞り込み中',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.sunabokori,
-                    ),
+                    style: AppText.caption(size: 12),
                   )
                 : const SizedBox.shrink(),
           ),
@@ -177,10 +168,7 @@ class GymSearchPage extends ConsumerWidget {
                       ? '検索中...'
                       : '${filterState.filteredGyms.length} 件',
                 ),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppText.number(size: 20),
               ),
               const SizedBox(width: 8),
 
@@ -199,19 +187,10 @@ class GymSearchPage extends ConsumerWidget {
                             ),
                           );
                         },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: filterState.filteredGyms.isEmpty
-                        ? AppColors.sunabokori
-                        : AppColors.kabeBlue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
+                  child: Text(
                     '検　索',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
+                    style: AppText.label(
+                      size: 14,
                       color: AppColors.onKabeBlue,
                     ),
                   ),

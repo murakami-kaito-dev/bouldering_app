@@ -10,6 +10,7 @@ import '../components/gym/gym_photo_strip.dart';
 import '../components/common/error_widget.dart';
 import '../components/common/gym_category.dart';
 import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 import '../../shared/utils/gym_hours_utils.dart';
 import '../../shared/utils/navigation_helper.dart';
 import '../../shared/utils/prefecture_order_utils.dart';
@@ -299,7 +300,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
             height: 4,
             decoration: BoxDecoration(
               color: AppColors.wareme,
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(AppRadius.tape),
             ),
           ),
 
@@ -310,10 +311,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
               children: [
                 Text(
                   '近くのジム (${gyms.length}件)',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppText.heading(size: 15),
                 ),
                 const Spacer(),
                 // TODO: 全件表示機能の実装は不要の可能性あり
@@ -349,10 +347,10 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                     color: _focusedGymIndex == index
                         ? AppColors.wareme
                         : AppColors.setsuri,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppRadius.card),
                     border: _focusedGymIndex == index
                         ? Border.all(color: AppColors.kabeBlue, width: 2)
-                        : null,
+                        : Border.all(color: AppColors.wareme),
                     boxShadow: const [
                       BoxShadow(
                         color: Colors.black12,
@@ -377,9 +375,9 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               '${gym.name} [${gym.prefecture}]',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                              style: AppText.body(
+                                size: 12,
+                                weight: FontWeight.w700,
                                 height: 1.2,
                               ),
                               maxLines: 2,
@@ -393,24 +391,24 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                         Row(
                           children: [
                             if (gym.isBoulderingGym)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
+                              const Padding(
+                                padding: EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'ボルダリング',
                                   color: AppColors.holdRed,
                                 ),
                               ),
                             if (gym.isLeadGym)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
+                              const Padding(
+                                padding: EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'リード',
                                   color: AppColors.holdGreen,
                                 ),
                               ),
                             if (gym.isSpeedGym)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
+                              const Padding(
+                                padding: EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'スピード',
                                   color: AppColors.holdCyan,
@@ -427,19 +425,24 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                         // 料金と営業状態
                         Row(
                           children: [
-                            const Icon(Icons.currency_yen, size: 18),
+                            const Icon(Icons.currency_yen,
+                                size: 18, color: AppColors.sunabokori),
+                            const SizedBox(width: 4),
                             Text(
                               '${gym.minimumFee}〜',
-                              style: const TextStyle(fontSize: 12),
+                              style: AppText.number(size: 14),
                             ),
                             const SizedBox(width: 16),
-                            const Icon(Icons.access_time, size: 18),
+                            const Icon(Icons.access_time,
+                                size: 18, color: AppColors.sunabokori),
+                            const SizedBox(width: 4),
                             Text(
                               isOpen ? 'OPEN' : 'CLOSE',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isOpen ? AppColors.holdGreen : AppColors.holdRed,
-                                fontWeight: FontWeight.bold,
+                              style: AppText.label(
+                                size: 12,
+                                color: isOpen
+                                    ? AppColors.holdGreen
+                                    : AppColors.holdRed,
                               ),
                             ),
                           ],

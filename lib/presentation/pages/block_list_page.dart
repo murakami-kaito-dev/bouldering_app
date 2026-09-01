@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/block.dart';
 import '../providers/block_provider.dart';
+import '../theme/app_text.dart';
 import '../theme/app_tokens.dart';
 import '../../shared/utils/navigation_helper.dart';
 
@@ -46,11 +47,10 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ブロックしたユーザー'),
-        // backgroundColor: Colors.white,
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        foregroundColor: AppColors.chalk,
-        elevation: 1,
+        title: Text(
+          'ブロックしたユーザー',
+          style: AppText.heading(size: 17),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -67,22 +67,19 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
 
   Widget _buildBlockedUsersList(List<BlockedUser> blockedUsers) {
     if (blockedUsers.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.block,
               size: 64,
               color: AppColors.sunabokori,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'ブロックしたユーザーはいません',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.sunabokori,
-              ),
+              style: AppText.heading(size: 15, color: AppColors.sunabokori),
             ),
           ],
         ),
@@ -170,18 +167,12 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
           const SizedBox(height: 16),
           Text(
             'エラーが発生しました',
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.sunabokori,
-            ),
+            style: AppText.heading(size: 15),
           ),
           const SizedBox(height: 8),
           Text(
             error.toString(),
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.sunabokori,
-            ),
+            style: AppText.caption(size: 12),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -189,7 +180,10 @@ class _BlockListPageState extends ConsumerState<BlockListPage> {
             onPressed: () {
               ref.read(blockProvider.notifier).getBlockedUsers();
             },
-            child: const Text('再試行'),
+            child: Text(
+              '再試行',
+              style: AppText.label(size: 14, color: AppColors.onKabeBlue),
+            ),
           ),
         ],
       ),
@@ -357,11 +351,20 @@ class _BlockedUserTileState extends ConsumerState<_BlockedUserTile> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: widget.onNavigateToProfile,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-        child: Row(
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Material(
+        color: AppColors.setsuri,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          side: const BorderSide(color: AppColors.wareme),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: widget.onNavigateToProfile,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+            child: Row(
           children: [
             // ユーザーアイコン
             Hero(
@@ -379,10 +382,7 @@ class _BlockedUserTileState extends ConsumerState<_BlockedUserTile> {
                 children: [
                   Text(
                     widget.getDisplayUserName(widget.blockedUser.userName),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppText.heading(size: 15),
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
@@ -417,9 +417,9 @@ class _BlockedUserTileState extends ConsumerState<_BlockedUserTile> {
                       minimumSize: const Size(70, 32),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                     ),
-                    child: const Text(
+                    child: Text(
                       'エラー',
-                      style: TextStyle(fontSize: 12),
+                      style: AppText.label(size: 12, color: AppColors.sunabokori),
                     ),
                   );
                 }
@@ -434,15 +434,13 @@ class _BlockedUserTileState extends ConsumerState<_BlockedUserTile> {
                       side: const BorderSide(
                         color: AppColors.kabeBlue,
                       ),
+                      shape: const StadiumBorder(),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       minimumSize: const Size(0, 36),
                     ),
-                    child: const Text(
+                    child: Text(
                       'ブロックを解除',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.kabeBlue,
-                      ),
+                      style: AppText.label(size: 12, color: AppColors.kabeBlue),
                     ),
                   );
                 } else {
@@ -453,18 +451,21 @@ class _BlockedUserTileState extends ConsumerState<_BlockedUserTile> {
                       side: const BorderSide(
                         color: AppColors.wareme,
                       ),
+                      shape: const StadiumBorder(),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       minimumSize: const Size(0, 36),
                     ),
-                    child: const Text(
+                    child: Text(
                       'ブロックする',
-                      style: TextStyle(fontSize: 12),
+                      style: AppText.label(size: 12),
                     ),
                   );
                 }
-              },
+                  },
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

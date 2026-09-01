@@ -10,6 +10,7 @@ import 'user_logo_and_name.dart';
 import '../common/button.dart';
 import '../this_month_boul_log.dart';
 import '../../theme/app_tokens.dart';
+import '../../theme/app_text.dart';
 
 /// 他ユーザープロフィールセクション
 ///
@@ -121,29 +122,15 @@ class _OtherUserProfileSectionState
                   softWrap: true,
                   overflow: TextOverflow.visible,
                   maxLines: null,
-                  style: const TextStyle(
-                    color: AppColors.chalk,
-                    fontSize: 12,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                    letterSpacing: -0.50,
-                  ),
+                  style: AppText.body(size: 13, height: 1.5),
                 ),
               ),
               const SizedBox(height: 12),
 
               // 好きなジム欄
-              const Text(
+              Text(
                 "好きなジム",
-                style: TextStyle(
-                  color: AppColors.sunabokori,
-                  fontSize: 12,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.bold,
-                  height: 1.4,
-                  letterSpacing: -0.50,
-                ),
+                style: AppText.caption(size: 11, weight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               SizedBox(
@@ -156,14 +143,7 @@ class _OtherUserProfileSectionState
                   softWrap: true,
                   overflow: TextOverflow.visible,
                   maxLines: null,
-                  style: const TextStyle(
-                    color: AppColors.chalk,
-                    fontSize: 12,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                    letterSpacing: -0.50,
-                  ),
+                  style: AppText.body(size: 13, height: 1.5),
                 ),
               ),
               const SizedBox(height: 8),
@@ -171,12 +151,13 @@ class _OtherUserProfileSectionState
               // ボル活歴
               Row(
                 children: [
-                  const Icon(Icons.date_range, size: 16, color: AppColors.sunabokori),
+                  const Icon(Icons.date_range,
+                      size: 16, color: AppColors.sunabokori),
                   const SizedBox(width: 8),
-                  const Text("ボルダリング歴：", style: TextStyle(fontSize: 12)),
+                  Text("ボルダリング歴：", style: AppText.caption(size: 12)),
                   Text(
                     calculateExperience(otherUser?.boulStartDate),
-                    style: const TextStyle(fontSize: 12),
+                    style: AppText.body(size: 12),
                   ),
                 ],
               ),
@@ -188,7 +169,7 @@ class _OtherUserProfileSectionState
                 children: [
                   const Icon(Icons.home, size: 16, color: AppColors.sunabokori),
                   const SizedBox(width: 8),
-                  const Text("ホームジム：", style: TextStyle(fontSize: 12)),
+                  Text("ホームジム：", style: AppText.caption(size: 12)),
                   Expanded(
                     child: GestureDetector(
                       onTap: otherUser?.homeGymId != null
@@ -199,13 +180,11 @@ class _OtherUserProfileSectionState
                           : null,
                       child: Text(
                         getHomeGymName(otherUser?.homeGymId, gymMap),
-                        style: TextStyle(
+                        style: AppText.body(
+                          size: 12,
                           color: otherUser?.homeGymId != null
                               ? AppColors.kabeBlue
                               : AppColors.chalk,
-                          fontSize: 12,
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w500,
                         ),
                         overflow: TextOverflow.visible,
                         softWrap: true,
@@ -247,11 +226,7 @@ class _OtherUserProfileSectionState
                 error.toString().contains('USER_WITHDRAWN')
                     ? 'このユーザーページを取得することができませんでした'
                     : 'ユーザー情報の読み込みに失敗しました',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.sunabokori,
-                ),
+                style: AppText.heading(size: 15, color: AppColors.sunabokori),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -259,10 +234,7 @@ class _OtherUserProfileSectionState
                 error.toString().contains('USER_WITHDRAWN')
                     ? '退会した可能性があります'
                     : '通信エラーが発生しました',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.sunabokori,
-                ),
+                style: AppText.caption(size: 12),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -270,12 +242,9 @@ class _OtherUserProfileSectionState
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: const Text(
+                child: Text(
                   '戻る',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.kabeBlue,
-                  ),
+                  style: AppText.body(size: 14, color: AppColors.kabeBlue),
                 ),
               ),
             ],

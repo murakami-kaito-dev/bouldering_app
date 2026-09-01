@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../components/common/app_logo.dart';
 import '../providers/auth_provider.dart';
 import '../../domain/exceptions/app_exceptions.dart';
+import '../theme/app_text.dart';
 import '../theme/app_tokens.dart';
 
 class PasswordResetPage extends ConsumerStatefulWidget {
@@ -99,12 +100,10 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
     return Scaffold(
       // AppBar相当（既存の実装と統一）
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: _isLoading 
-          ? null 
+        leading: _isLoading
+          ? null
           : IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
+              icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.pop(context),
             ),
       ),
@@ -120,14 +119,10 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
             const SizedBox(height: 32),
 
             // タイトル
-            const Center(
+            Center(
               child: Text(
                 'パスワードリセット',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.chalk,
-                ),
+                style: AppText.heading(size: 17),
               ),
             ),
             const SizedBox(height: 16),
@@ -137,30 +132,22 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
               _isEmailSent 
                 ? 'パスワードリセットメールを送信しました。\nメールに記載されたリンクから新しいパスワードを設定してください。'
                 : 'ご登録のメールアドレスを入力してください。\nパスワードリセット用のメールをお送りします。',
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.chalk,
-              ),
+              style: AppText.body(size: 14),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
 
             if (!_isEmailSent) ...[
               // メールアドレス入力欄（既存の実装と統一）
-              const Text(
+              Text(
                 'メールアドレス',
-                style: TextStyle(
-                  color: AppColors.chalk,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppText.heading(size: 15),
               ),
               const SizedBox(height: 8),
 
               TextField(
                 decoration: const InputDecoration(
                   hintText: "boulder@example.com",
-                  border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 onChanged: (value) => _email = value,
@@ -182,7 +169,13 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
                           valueColor: AlwaysStoppedAnimation<Color>(AppColors.onKabeBlue),
                         ),
                       )
-                    : const Text("パスワードリセットメールを送信"),
+                    : Text(
+                        "パスワードリセットメールを送信",
+                        style: AppText.label(
+                          size: 14,
+                          color: AppColors.onKabeBlue,
+                        ),
+                      ),
                 ),
               ),
             ] else ...[
@@ -194,7 +187,14 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: _isLoading ? null : _resendEmail,
-                  child: const Text("メールを再送信"),
+                  style: OutlinedButton.styleFrom(
+                    shape: const StadiumBorder(),
+                    side: const BorderSide(color: AppColors.wareme),
+                  ),
+                  child: Text(
+                    "メールを再送信",
+                    style: AppText.label(size: 14),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -204,19 +204,22 @@ class _PasswordResetPageState extends ConsumerState<PasswordResetPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("ログイン画面に戻る"),
+                  child: Text(
+                    "ログイン画面に戻る",
+                    style: AppText.label(
+                      size: 14,
+                      color: AppColors.onKabeBlue,
+                    ),
+                  ),
                 ),
               ),
               
               const SizedBox(height: 24),
 
               // 注意事項
-              const Text(
+              Text(
                 '注意事項：\n・メールが届かない場合は迷惑メールフォルダをご確認ください\n・リセット用のリンクの有効期限は1時間です',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.chalk,
-                ),
+                style: AppText.caption(size: 12),
               ),
             ],
           ],

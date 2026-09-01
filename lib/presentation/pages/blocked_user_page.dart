@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_text.dart';
 import '../theme/app_tokens.dart';
 
 /// ブロック済みユーザー表示ページ
@@ -26,42 +27,30 @@ class BlockedUserPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
+        title: Text(
           'ユーザー',
-          style: TextStyle(
-            color: AppColors.chalk,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppText.heading(size: 17),
         ),
       ),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.block,
               size: 80,
               color: AppColors.sunabokori,
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             Text(
               '表示できないユーザーです',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.chalk,
-              ),
+              style: AppText.heading(size: 15),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
               'このユーザーはブロック中のため、\nプロフィールを表示できません。',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.sunabokori,
-                height: 1.5,
-              ),
+              style: AppText.caption(size: 12),
             ),
           ],
         ),

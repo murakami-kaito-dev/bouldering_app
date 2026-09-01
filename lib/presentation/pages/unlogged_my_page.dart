@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../components/user/user_avatar.dart';
 import '../components/common/app_logo.dart';
+import '../theme/app_text.dart';
 import '../theme/app_tokens.dart';
 import 'login_or_signup_page.dart';
 
@@ -38,8 +39,9 @@ class UnloggedMyPage extends ConsumerWidget {
               // 機能説明コンテナ
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.wareme.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(16),
+                  color: AppColors.setsuri,
+                  borderRadius: BorderRadius.circular(AppRadius.card),
+                  border: Border.all(color: AppColors.wareme),
                 ),
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -50,16 +52,10 @@ class UnloggedMyPage extends ConsumerWidget {
                     const SizedBox(height: 16),
 
                     // 説明テキスト
-                    const Text(
+                    Text(
                       'イワノボリタイに登録すると，ボル活がさらに充実します！登録は無料！',
                       textAlign: TextAlign.left,
-                      style: TextStyle(
-                        color: AppColors.chalk,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        height: 1.4,
-                        letterSpacing: -0.50,
-                      ),
+                      style: AppText.body(size: 14),
                     ),
                     const SizedBox(height: 32),
 
@@ -83,35 +79,23 @@ class UnloggedMyPage extends ConsumerWidget {
                     const SizedBox(height: 40),
 
                     // ログイン/新規登録ボタン
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginOrSignUpPage(),
-                          ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        width: double.infinity,
-                        height: 49,
-                        decoration: ShapeDecoration(
-                          color: AppColors.kabeBlue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            '新規登録 / ログイン',
-                            style: TextStyle(
-                              color: AppColors.onKabeBlue,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              height: 1.4,
-                              letterSpacing: -0.50,
+                    SizedBox(
+                      width: double.infinity,
+                      height: 49,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginOrSignUpPage(),
                             ),
+                          );
+                        },
+                        child: Text(
+                          '新規登録 / ログイン',
+                          style: AppText.label(
+                            size: 14,
+                            color: AppColors.onKabeBlue,
                           ),
                         ),
                       ),
@@ -134,25 +118,13 @@ class UnloggedMyPage extends ConsumerWidget {
         Text(
           title,
           textAlign: TextAlign.left,
-          style: const TextStyle(
-            color: AppColors.kabeBlue,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            height: 1.4,
-            letterSpacing: -0.50,
-          ),
+          style: AppText.heading(size: 15),
         ),
         const SizedBox(height: 4),
         Text(
           description,
           textAlign: TextAlign.left,
-          style: const TextStyle(
-            color: AppColors.chalk,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            height: 1.4,
-            letterSpacing: -0.50,
-          ),
+          style: AppText.caption(size: 12),
         ),
       ],
     );

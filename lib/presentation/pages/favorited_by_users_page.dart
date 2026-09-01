@@ -4,6 +4,7 @@ import '../../domain/entities/user.dart';
 import '../components/user/favorite_user_card.dart';
 import '../providers/favorited_by_users_list_provider.dart';
 import '../providers/favorite_user_provider.dart';
+import '../theme/app_text.dart';
 import '../theme/app_tokens.dart';
 
 /// お気に入られユーザー一覧ページ
@@ -57,12 +58,9 @@ class _FavoritedByUsersPageState extends ConsumerState<FavoritedByUsersPage>
       appBar: AppBar(
         backgroundColor: AppColors.iwa,
         surfaceTintColor: AppColors.iwa,
-        title: const Text(
+        title: Text(
           'お気に入られ',
-          style: TextStyle(
-            color: AppColors.chalk,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppText.heading(size: 17),
         ),
         elevation: 0,
         leading: IconButton(
@@ -151,18 +149,13 @@ class _FavoritedByUsersPageState extends ConsumerState<FavoritedByUsersPage>
             const SizedBox(height: 24),
             Text(
               'あなたをお気に入り登録している\nユーザーがいません',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.sunabokori,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppText.heading(size: 15, color: AppColors.sunabokori),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'ボル活投稿をして\nお気に入り登録してもらいましょう！',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.sunabokori,
-              ),
+              style: AppText.caption(size: 12),
               textAlign: TextAlign.center,
             ),
           ],
@@ -184,19 +177,14 @@ class _FavoritedByUsersPageState extends ConsumerState<FavoritedByUsersPage>
               color: AppColors.holdRed,
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'エラーが発生しました',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppText.heading(size: 15),
             ),
             const SizedBox(height: 8),
             Text(
               errorMessage,
-              style: const TextStyle(
-                color: AppColors.sunabokori,
-              ),
+              style: AppText.caption(size: 12),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -204,7 +192,10 @@ class _FavoritedByUsersPageState extends ConsumerState<FavoritedByUsersPage>
               onPressed: () {
                 ref.read(favoritedByUsersListProvider.notifier).refresh();
               },
-              child: const Text('再試行'),
+              child: Text(
+                '再試行',
+                style: AppText.label(size: 14, color: AppColors.onKabeBlue),
+              ),
             ),
           ],
         ),

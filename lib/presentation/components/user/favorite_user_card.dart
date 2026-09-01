@@ -5,6 +5,7 @@ import '../../../domain/entities/user.dart';
 import '../../../shared/utils/navigation_helper.dart';
 import '../../providers/gym_provider.dart';
 import '../../providers/favorite_user_provider.dart';
+import '../../theme/app_text.dart';
 import '../../theme/app_tokens.dart';
 
 /// お気に入りユーザーカードコンポーネント
@@ -43,15 +44,24 @@ class FavoriteUserCard extends ConsumerWidget {
       }
     }
 
-    return InkWell(
-      onTap: () async {
-        // ユーザー詳細画面へ遷移
-        await NavigationHelper.toOtherUserProfile(context, user.id);
-        // 戻ってきた時のコールバック
-        onAfterNavigation?.call();
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Material(
+        color: AppColors.setsuri,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          side: const BorderSide(color: AppColors.wareme),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () async {
+            // ユーザー詳細画面へ遷移
+            await NavigationHelper.toOtherUserProfile(context, user.id);
+            // 戻ってきた時のコールバック
+            onAfterNavigation?.call();
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         child: Row(
           children: [
             // ユーザーアイコン
@@ -70,18 +80,12 @@ class FavoriteUserCard extends ConsumerWidget {
                 children: [
                   Text(
                     user.userName ?? '名無し',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppText.heading(size: 15),
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     homeGymName,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.sunabokori,
-                    ),
+                    style: AppText.caption(size: 12),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -93,20 +97,23 @@ class FavoriteUserCard extends ConsumerWidget {
               onPressed: onFavoriteToggle,
               style: OutlinedButton.styleFrom(
                 side: BorderSide(
-                  color: isFavorite ? AppColors.kabeBlue : AppColors.sunabokori,
+                  color: isFavorite ? AppColors.kabeBlue : AppColors.wareme,
                 ),
+                shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 minimumSize: const Size(0, 36),
               ),
               child: Text(
                 isFavorite ? 'お気に入り解除' : 'お気に入り登録',
-                style: TextStyle(
-                  color: isFavorite ? AppColors.kabeBlue : AppColors.sunabokori,
-                  fontSize: 12,
+                style: AppText.label(
+                  size: 12,
+                  color: isFavorite ? AppColors.kabeBlue : AppColors.chalk,
                 ),
               ),
             ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );

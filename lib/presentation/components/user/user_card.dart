@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/user.dart';
 import '../../../shared/utils/navigation_helper.dart';
+import '../../theme/app_text.dart';
 import '../../theme/app_tokens.dart';
 
 /// ユーザーカードコンポーネント
@@ -31,10 +32,16 @@ class UserCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      color: AppColors.setsuri,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        side: const BorderSide(color: AppColors.wareme),
+      ),
       child: InkWell(
         onTap: onTap ?? () => NavigationHelper.toOtherUserProfile(context, user.id),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -76,9 +83,7 @@ class UserCard extends ConsumerWidget {
             children: [
               Text(
                 user.userName,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppText.heading(size: 15),
               ),
               const SizedBox(height: 4),
               if (user.favoriteGym != null && user.favoriteGym!.isNotEmpty)
@@ -102,9 +107,7 @@ class UserCard extends ConsumerWidget {
         Expanded(
           child: Text(
             user.favoriteGym!,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.sunabokori,
-            ),
+            style: AppText.caption(size: 12),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -120,9 +123,7 @@ class UserCard extends ConsumerWidget {
         const SizedBox(width: 4),
         Text(
           'ボルダリング歴: ${user.boulderingYearsExperience}年',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppColors.sunabokori,
-          ),
+          style: AppText.caption(size: 12),
         ),
       ],
     );
@@ -137,15 +138,19 @@ class UserCard extends ConsumerWidget {
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 side: const BorderSide(color: AppColors.wareme),
+                shape: const StadiumBorder(),
               ),
-              child: const Text('フォロー中'),
+              child: Text('フォロー中', style: AppText.label(size: 13)),
             )
           : ElevatedButton(
               onPressed: () => _toggleFollow(ref),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              child: const Text('フォロー'),
+              child: Text(
+                'フォロー',
+                style: AppText.label(size: 13, color: AppColors.onKabeBlue),
+              ),
             ),
     );
   }
@@ -159,12 +164,11 @@ class UserCard extends ConsumerWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.wareme,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.wareme),
+        borderRadius: BorderRadius.circular(AppRadius.card),
       ),
       child: Text(
         user.userIntroduce!,
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: AppText.body(size: 13),
         maxLines: 3,
         overflow: TextOverflow.ellipsis,
       ),
@@ -179,7 +183,6 @@ class UserCard extends ConsumerWidget {
           icon: Icons.person,
           label: '性別',
           value: user.genderDisplay,
-          color: Colors.purple,
         ),
         if (user.birthday != null) ...[
           const SizedBox(width: 8),
@@ -188,7 +191,6 @@ class UserCard extends ConsumerWidget {
             icon: Icons.cake,
             label: '年齢',
             value: '${_calculateAge(user.birthday!)}歳',
-            color: Colors.green,
           ),
         ],
         if (user.boulStartDate != null) ...[
@@ -198,7 +200,6 @@ class UserCard extends ConsumerWidget {
             icon: Icons.fitness_center,
             label: '開始',
             value: '${user.boulStartDate!.year}年',
-            color: Colors.blue,
           ),
         ],
       ],
@@ -210,33 +211,29 @@ class UserCard extends ConsumerWidget {
     required IconData icon,
     required String label,
     required String value,
-    required MaterialColor color,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color[200]!),
+        color: AppColors.wareme,
+        borderRadius: BorderRadius.circular(AppRadius.tape),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: color[600]),
+          Icon(icon, size: 12, color: AppColors.sunabokori),
           const SizedBox(width: 4),
           Text(
             label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: color[800],
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppText.caption(size: 11),
           ),
           const SizedBox(width: 4),
           Text(
             value,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: color[600],
-              fontWeight: FontWeight.bold,
+            style: AppText.caption(
+              size: 11,
+              color: AppColors.chalk,
+              weight: FontWeight.w700,
             ),
           ),
         ],

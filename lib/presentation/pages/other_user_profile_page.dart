@@ -4,6 +4,7 @@ import '../components/user/other_user_profile_section.dart';
 import '../components/user/other_user_tweets_section.dart';
 import '../components/user/other_user_favorite_gyms_section.dart';
 import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 
 /// 他ユーザープロフィールページ
 ///
@@ -52,16 +53,14 @@ class OtherUserProfilePage extends ConsumerWidget {
                   delegate: _SliverAppBarDelegate(
                     Container(
                       color: AppColors.iwa,
-                      child: const TabBar(
-                        tabs: [
+                      child: TabBar(
+                        tabs: const [
                           Tab(text: 'ボル活'),
                           Tab(text: 'イキタイ'),
                         ],
-                        labelStyle: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        labelColor: AppColors.kabeBlue,
+                        labelStyle: AppText.label(size: 14),
+                        unselectedLabelStyle: AppText.label(size: 14),
+                        labelColor: AppColors.chalk,
                         unselectedLabelColor: AppColors.sunabokori,
                         indicatorColor: AppColors.kabeBlue,
                       ),

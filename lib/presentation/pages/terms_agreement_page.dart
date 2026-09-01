@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/terms_acceptance_provider.dart';
 import '../components/common/app_logo.dart';
 import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 import '../../shared/utils/url_launcher_helper.dart';
 
 /// 利用規約同意画面
@@ -42,12 +43,9 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
               const SizedBox(height: 40),
 
               // 説明文
-              const Text(
+              Text(
                 '利用規約をご確認の上、\n同意してください',
-                style: TextStyle(
-                  fontSize: 26,
-                  color: AppColors.chalk,
-                ),
+                style: AppText.display(size: 22),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -59,12 +57,12 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: Column(
                     children: [
-                      const Text(
+                      Text(
                         '利用規約を開く',
-                        style: TextStyle(
-                          fontSize: 18,
+                        style: AppText.body(
+                          size: 15,
+                          weight: FontWeight.w600,
                           color: AppColors.kabeBlue,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -91,19 +89,16 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
                     },
                     activeColor: AppColors.kabeBlue,
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       '利用規約に同意します',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppColors.chalk,
-                      ),
+                      style: AppText.body(size: 14),
                     ),
                   ),
                 ],
               ),
 
-              // 同意ボタン
+              // 同意ボタン（主ボタン: 壁ブルーのピル。未同意時は割れ目色）
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -115,9 +110,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
                     backgroundColor:
                         _isAgreed ? AppColors.kabeBlue : AppColors.wareme,
                     foregroundColor: AppColors.onKabeBlue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    textStyle: AppText.label(size: 15),
                     elevation: _isAgreed ? 2 : 0,
                   ),
                   child: termsState.isLoading
@@ -129,13 +122,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          '同意して始める',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                      : const Text('同意して始める'),
                 ),
               ),
               const SizedBox(height: 16),
@@ -143,10 +130,7 @@ class _TermsAgreementPageState extends ConsumerState<TermsAgreementPage> {
               // 注意書き
               Text(
                 '※ 利用規約に同意いただかないと\nアプリをご利用いただけません',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.sunabokori,
-                ),
+                style: AppText.caption(size: 12),
                 textAlign: TextAlign.center,
               ),
             ],

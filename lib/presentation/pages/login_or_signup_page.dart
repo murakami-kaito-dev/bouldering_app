@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../components/common/app_logo.dart';
 import '../components/common/switcher_tab.dart';
 import '../providers/auth_provider.dart';
+import '../theme/app_text.dart';
 import '../theme/app_tokens.dart';
 import 'password_reset_page.dart';
 
@@ -83,13 +84,9 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               const SizedBox(height: 24),
 
                               // メールアドレスの入力欄
-                              const Text(
+                              Text(
                                 'メールアドレス',
-                                style: TextStyle(
-                                  color: AppColors.chalk,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: AppText.heading(size: 15),
                               ),
                               const SizedBox(height: 8),
 
@@ -97,20 +94,15 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               TextField(
                                 decoration: const InputDecoration(
                                   hintText: "boulder@example.com",
-                                  border: OutlineInputBorder(),
                                 ),
                                 onChanged: (value) => _mailAddress = value,
                               ),
                               const SizedBox(height: 24),
 
                               // パスワードの入力欄
-                              const Text(
+                              Text(
                                 'パスワード',
-                                style: TextStyle(
-                                  color: AppColors.chalk,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: AppText.heading(size: 15),
                               ),
                               const SizedBox(height: 8),
 
@@ -119,7 +111,6 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                 obscureText: !_isLoginPasswordVisible,
                                 decoration: InputDecoration(
                                   hintText: "8文字以上の半角英数",
-                                  border: const OutlineInputBorder(),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _isLoginPasswordVisible
@@ -151,11 +142,11 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                             ),
                                           );
                                         },
-                                  child: const Text(
+                                  child: Text(
                                     'パスワードを忘れた方はこちら',
-                                    style: TextStyle(
+                                    style: AppText.body(
+                                      size: 13,
                                       color: AppColors.kabeBlue,
-                                      fontSize: 14,
                                     ),
                                   ),
                                 ),
@@ -236,7 +227,13 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                             }
                                           }
                                         },
-                                  child: const Text("ログイン"),
+                                  child: Text(
+                                    "ログイン",
+                                    style: AppText.label(
+                                      size: 14,
+                                      color: AppColors.onKabeBlue,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -262,40 +259,30 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               const SizedBox(height: 24),
 
                               // メールアドレスの入力欄
-                              const Text(
+                              Text(
                                 'メールアドレス',
-                                style: TextStyle(
-                                  color: AppColors.chalk,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: AppText.heading(size: 15),
                               ),
                               const SizedBox(height: 8),
 
                               TextField(
                                 decoration: const InputDecoration(
                                   hintText: "boulder@example.com",
-                                  border: OutlineInputBorder(),
                                 ),
                                 onChanged: (value) => _mailAddress = value,
                               ),
                               const SizedBox(height: 16),
 
                               // メールアドレス確認の入力欄
-                              const Text(
+                              Text(
                                 'メールアドレス（確認）',
-                                style: TextStyle(
-                                  color: AppColors.chalk,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: AppText.heading(size: 15),
                               ),
                               const SizedBox(height: 8),
 
                               TextField(
                                 decoration: const InputDecoration(
                                   hintText: "上記と同じメールアドレスを入力",
-                                  border: OutlineInputBorder(),
                                 ),
                                 onChanged: (value) =>
                                     _mailAddressConfirm = value,
@@ -303,13 +290,9 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               const SizedBox(height: 24),
 
                               // パスワードの入力欄
-                              const Text(
+                              Text(
                                 'パスワード',
-                                style: TextStyle(
-                                  color: AppColors.chalk,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: AppText.heading(size: 15),
                               ),
                               const SizedBox(height: 8),
 
@@ -317,7 +300,6 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                 obscureText: !_isSignupPasswordVisible,
                                 decoration: InputDecoration(
                                   hintText: "8文字以上の半角英数",
-                                  border: const OutlineInputBorder(),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _isSignupPasswordVisible
@@ -335,13 +317,9 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                               ),
                               const SizedBox(height: 8),
 
-                              const Text(
+                              Text(
                                 'パスワードの条件：\n・8文字以上\n・英大文字・英小文字・数字をそれぞれ1文字以上含めてください',
-                                style: TextStyle(
-                                  color: AppColors.chalk,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: AppText.caption(size: 12),
                               ),
                               const SizedBox(height: 12),
 
@@ -451,7 +429,13 @@ class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
                                             }
                                           }
                                         },
-                                  child: const Text("新規登録"),
+                                  child: Text(
+                                    "新規登録",
+                                    style: AppText.label(
+                                      size: 14,
+                                      color: AppColors.onKabeBlue,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
