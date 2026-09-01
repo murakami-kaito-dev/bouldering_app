@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show SemanticsBinding;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -46,6 +47,15 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   final ScrollController _scrollController = ScrollController();
   int _focusedGymIndex = -1;
 
+  // ===== [PROBE] 計測用（動的計測が終わったら削除する） =====
+  int _probeBuildCount = 0;
+  static void _probe(String name, [int? ms]) {
+    // ignore: avoid_print
+    debugPrint(
+        '[PROBE] $name ${ms == null ? '' : '${ms}ms '}@${DateTime.now().toIso8601String()}');
+  }
+  // ===== [PROBE] ここまで =====
+
   /// 画面遷移アニメーション完了後にtrue。
   /// Google Mapのネイティブビュー生成と430本のピン転送は重く、遷移中に走ると
   /// フレームが止まる（フリーズ感）ため、遷移が終わるまで地図を作らない
@@ -88,21 +98,47 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_mapGateScheduled) return;
+    if (_mapGateScheduled) {
+      _probe('didChangeDependencies(gate already scheduled)');
+      return;
+    }
     _mapGateScheduled = true;
 
     final route = ModalRoute.of(context);
     final animation = route?.animation;
+    _probe('didChangeDependencies gate: animation='
+        '${animation == null ? 'null' : animation.status.name}'
+        ' value=${animation?.value}'
+        ' route=${route.runtimeType}'
+        ' transitionDuration=${route?.transitionDuration}'
+        ' disableAnimations='
+        '${SemanticsBinding.instance.disableAnimations}');
     if (animation == null || animation.status == AnimationStatus.completed) {
-      _mapReady = true;
+      // 実測(2026-09-02)より: 本アプリでは遷移アニメーションが即completedになる
+      // 環境があり、この分岐に入る。ここで即生成すると「新画面の1フレーム目」に
+      // GoogleMapが含まれ、プラットフォームビュー生成のストール(数百ms)が
+      // 旧画面のまま発生して「ラグ後にカット切替」になる。
+      // → まず軽いプレースホルダを1フレーム描画してから生成する
+      _probe('gate: immediate branch -> defer after first frame');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _probe('gate: first placeholder frame rendered');
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            _probe('gate: mapReady=true (deferred)');
+            setState(() => _mapReady = true);
+          }
+        });
+      });
     } else {
       void onStatus(AnimationStatus status) {
         if (status == AnimationStatus.completed) {
           animation.removeStatusListener(onStatus);
+          _probe('route animation completed');
           // 完了通知は遷移の最終フレームと同じフレームで届く。ここで即生成すると
           // （特にアプリ起動後1回目のGoogle Maps SDK初期化は突出して重く）
           // 着地の数フレームを食ってフリーズに見える。一拍置いてから生成する
           Future.delayed(const Duration(milliseconds: 250), () {
+            _probe('mapReady flip (after 250ms delay, mounted=$mounted)');
             if (mounted) setState(() => _mapReady = true);
           });
         }
@@ -121,16 +157,28 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
 
   @override
   Widget build(BuildContext context) {
+    _probeBuildCount++;
+    final probeBuildNo = _probeBuildCount;
+    final swBuild = Stopwatch()..start();
     final gymListState = ref.watch(gymListProvider);
     final gyms = gymListState.valueOrNull ?? const <Gym>[];
+    final swSort = Stopwatch()..start();
     final sortedGyms = PrefectureOrderUtils.sortGymsByGeographicOrder(gyms);
+    swSort.stop();
+    _probe('sortGyms(build#$probeBuildNo, n=${gyms.length})',
+        swSort.elapsedMilliseconds);
 
     // データが後から届いたらマーカーだけ更新する。
     // 地図とカード枠は常に固定位置で表示し、読み込みでレイアウトが動かないようにする
     ref.listen<AsyncValue<List<Gym>>>(gymListProvider, (prev, next) {
       final g = next.valueOrNull;
       if (g != null && _mapController != null) {
-        _updateMarkers(PrefectureOrderUtils.sortGymsByGeographicOrder(g));
+        final swListenSort = Stopwatch()..start();
+        final sorted = PrefectureOrderUtils.sortGymsByGeographicOrder(g);
+        swListenSort.stop();
+        _probe('sortGyms(listen, n=${g.length})',
+            swListenSort.elapsedMilliseconds);
+        _updateMarkers(sorted);
       }
     });
 
@@ -139,7 +187,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
     final cardBottom = safeBottom + 12;
     final cardListHeight = _floatingCardHeight + cardBottom;
 
-    return Scaffold(
+    final scaffold = Scaffold(
       // 重要: 呼び出し元（ジム選択の検索欄等）でキーボードが開いたまま遷移すると、
       // 既定(true)ではbodyがキーボード高ぶん縮んで描画され、下部カードが画面中央に
       // 来る＋キーボードが閉じるのに合わせて位置がズレ続ける。地図画面は入力を
@@ -204,6 +252,10 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
         ],
       ),
     );
+    swBuild.stop();
+    _probe('build#$probeBuildNo (mapReady=$_mapReady, markers=${_markers.length})',
+        swBuild.elapsedMilliseconds);
+    return scaffold;
   }
 
   /// 浮遊カードの高さ（選択モードは確定ボタンぶん加算）
@@ -266,8 +318,11 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
 
   /// Google Mapを表示
   Widget _buildGoogleMap(List<Gym> gyms, double bottomPadding) {
+    _probe('GoogleMap widget constructed (n=${gyms.length})');
     return GoogleMap(
       onMapCreated: (GoogleMapController controller) async {
+        _probe('onMapCreated START');
+        final swMapCreated = Stopwatch()..start();
         _mapController = controller;
 
         // マップスタイルを適用（オプション）
@@ -277,11 +332,13 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
         } catch (e) {
           // マップスタイルファイルがない場合は無視
         }
+        _probe('onMapCreated style applied', swMapCreated.elapsedMilliseconds);
 
         // 先にマーカーを設置する（現在地取得を待たない）。
         // オフライン時は現在地取得が長時間返らないことがあり、
         // 従来の「現在地→マーカー」の順ではピンが一切立たなくなっていた
         await _updateMarkers(gyms);
+        _probe('onMapCreated markers done', swMapCreated.elapsedMilliseconds);
 
         // 現在地に移動（取得できなければ初期位置=東京駅のまま）
         final currentLocation = await _getCurrentLocation();
@@ -290,6 +347,8 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
             CameraUpdate.newLatLngZoom(currentLocation, 12.0),
           );
         }
+        swMapCreated.stop();
+        _probe('onMapCreated END', swMapCreated.elapsedMilliseconds);
       },
       initialCameraPosition: CameraPosition(
         target: _center,
@@ -338,6 +397,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
 
   /// ジム情報を基にマーカーを更新
   Future<void> _updateMarkers(List<Gym> gyms) async {
+    _probe('updateMarkers START (n=${gyms.length})');
     // アイコン未初期化でもピン設置を止めない（初期化を待ち、失敗時は既定マーカー）
     if (_customGymMarker == null) {
       await _initializeMap();
@@ -345,6 +405,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
     final icon = _customGymMarker ??
         BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
 
+    final swGen = Stopwatch()..start();
     final markers = gyms.asMap().entries.where((entry) {
       final gym = entry.value;
       return gym.latitude != null &&
@@ -380,11 +441,17 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
         ),
       );
     }).toSet();
+    swGen.stop();
+    _probe('updateMarkers.generate (markers=${markers.length})',
+        swGen.elapsedMilliseconds);
 
     if (!mounted) return;
+    final swSet = Stopwatch()..start();
     setState(() {
       _markers = markers;
     });
+    swSet.stop();
+    _probe('updateMarkers.setState', swSet.elapsedMilliseconds);
   }
 
   Widget _buildGymCardList(List<Gym> gyms) {
