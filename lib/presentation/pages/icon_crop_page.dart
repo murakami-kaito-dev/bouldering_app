@@ -41,6 +41,9 @@ class _IconCropPageState extends State<IconCropPage> {
   /// 現在の切り抜き範囲（元画像のピクセル座標系）
   Rect? _cropRectInImage;
 
+  /// 切り抜き枠（ビューポート座標系）。onImageMoved での再計算に使う
+  Rect? _cropRectInViewport;
+
   /// Cropウィジェットが操作可能になったか
   bool _cropReady = false;
 
@@ -210,8 +213,34 @@ class _IconCropPageState extends State<IconCropPage> {
           setState(() => _cropReady = ready);
         }
       },
+      // 枠自体が動いたとき（初期配置を含む）。imageRect は元画像座標系の切り抜き範囲
       onMoved: (viewportRect, imageRect) {
-        setState(() => _cropRectInImage = imageRect);
+        setState(() {
+          _cropRectInViewport = viewportRect;
+          _cropRectInImage = imageRect;
+        });
+      },
+      // 枠固定モードで画像側をドラッグ・ピンチしたときはこちらしか発火しないため、
+      // 枠（ビューポート座標）と画像の表示位置から切り抜き範囲を自前で再計算する
+      onImageMoved: (imageRectInViewport) {
+        final cropVp = _cropRectInViewport;
+        final image = _previewImage;
+        if (cropVp == null ||
+            image == null ||
+            imageRectInViewport.width <= 0 ||
+            imageRectInViewport.height <= 0) {
+          return;
+        }
+        final scaleX = image.width / imageRectInViewport.width;
+        final scaleY = image.height / imageRectInViewport.height;
+        setState(() {
+          _cropRectInImage = Rect.fromLTWH(
+            (cropVp.left - imageRectInViewport.left) * scaleX,
+            (cropVp.top - imageRectInViewport.top) * scaleY,
+            cropVp.width * scaleX,
+            cropVp.height * scaleY,
+          );
+        });
       },
       onCropped: _onCropped,
     );
