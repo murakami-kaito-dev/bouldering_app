@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_tokens.dart';
 
 /// ローディング表示ウィジェット
 /// 
@@ -38,7 +39,7 @@ class LoadingWidget extends StatelessWidget {
           Text(
             message!,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
+              color: AppColors.sunabokori,
             ),
             textAlign: TextAlign.center,
           ),
@@ -65,7 +66,7 @@ class InlineLoadingWidget extends StatelessWidget {
       child: CircularProgressIndicator(
         strokeWidth: 2,
         valueColor: AlwaysStoppedAnimation<Color>(
-          color ?? Colors.white,
+          color ?? AppColors.chalk,
         ),
       ),
     );

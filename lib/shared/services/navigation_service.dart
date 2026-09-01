@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../presentation/pages/gym_detail_page.dart';
+import '../../presentation/theme/app_tokens.dart';
 import '../utils/type_converter.dart';
 
 /// ナビゲーションサービス
@@ -52,7 +53,7 @@ class NavigationService {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.holdRed,
       ),
     );
   }

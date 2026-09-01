@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../providers/user_provider.dart';
 import 'unlogged_my_page.dart';
 import 'logged_in_my_page.dart';
+import '../theme/app_tokens.dart';
 
 /// マイページ
 ///
@@ -33,7 +34,7 @@ class MyPage extends ConsumerWidget {
     // （機内モード起動など）。壊れたマイページを出さず、再読み込み動線を表示する
     if (userState.hasError) {
       return Scaffold(
-        backgroundColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -42,7 +43,7 @@ class MyPage extends ConsumerWidget {
               const SizedBox(height: 4),
               const Text(
                 '通信環境を確認してください',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(fontSize: 12, color: AppColors.sunabokori),
               ),
               const SizedBox(height: 12),
               OutlinedButton(
@@ -59,7 +60,7 @@ class MyPage extends ConsumerWidget {
     if (userState.valueOrNull == null) {
       // ユーザー情報の読み込み中（起動直後・再読み込み中）
       return const Scaffold(
-        backgroundColor: Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
         body: Center(child: CircularProgressIndicator()),
       );
     }

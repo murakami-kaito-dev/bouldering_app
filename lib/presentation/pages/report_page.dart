@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/report_provider.dart';
 import '../providers/user_provider.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 import '../../shared/utils/url_launcher_helper.dart';
 
 /// 報告フォーム画面
@@ -39,22 +41,12 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     final userAsyncValue = ref.watch(userProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
+          icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          '報告フォーム',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: Text('報告フォーム', style: AppText.heading(size: 17)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -63,87 +55,58 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 報告内容セクション
-            const Text(
-              '報告内容',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
+            Text('報告内容', style: AppText.heading(size: 15)),
             const SizedBox(height: 16),
 
             // 説明文
-            const Text(
+            Text(
               'ガイドライン違反などお気付きの点があればお知らせください。報告いただいた内容については、運営側で随時確認を行います。返信は致しませんのでご了承ください。',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-                height: 1.5,
-              ),
+              style: AppText.body(size: 14),
             ),
             const SizedBox(height: 24),
 
-            // テキスト入力フィールド
+            // テキスト入力フィールド（枠・面はテーマ既定に任せる）
             ConstrainedBox(
               constraints: const BoxConstraints(
                 minHeight: 200,
                 maxHeight: 300,
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: TextField(
-                  controller: _descriptionController,
-                  focusNode: _descriptionFocusNode,
-                  maxLines: null,
-                  minLines: 8,
-                  maxLength: 1000,
-                  style: const TextStyle(fontSize: 14),
-                  textAlignVertical: TextAlignVertical.top,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(16),
-                    hintText: '報告内容を入力してください',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    counterText: '', // 文字数カウンターを非表示
-                  ),
+              child: TextField(
+                controller: _descriptionController,
+                focusNode: _descriptionFocusNode,
+                maxLines: null,
+                minLines: 8,
+                maxLength: 1000,
+                style: AppText.body(size: 14),
+                textAlignVertical: TextAlignVertical.top,
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.all(16),
+                  hintText: '報告内容を入力してください',
+                  counterText: '', // 文字数カウンターを非表示
                 ),
               ),
             ),
             const SizedBox(height: 24),
 
-            // 送信ボタン
+            // 送信ボタン（主ボタン: テーマ既定の壁ブルーのピル）
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
                 onPressed: reportState.isLoading ? null : _submitReport,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF007AFF), // iOS風の青色
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  textStyle: AppText.label(size: 14),
                 ),
                 child: reportState.isLoading
                     ? const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: AppColors.onKabeBlue,
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
-                        '送信',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
+                    : const Text('送信'),
               ),
             ),
             const SizedBox(height: 16),
@@ -154,23 +117,17 @@ class _ReportPageState extends ConsumerState<ReportPage> {
               children: [
                 GestureDetector(
                   onTap: () => UrlLauncherHelper.showTermsOfService(context),
-                  child: const Text(
+                  child: Text(
                     '利用規約はこちら',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF007AFF),
-                    ),
+                    style: AppText.body(size: 14, color: AppColors.kabeBlue),
                   ),
                 ),
                 const SizedBox(height: 8),
                 GestureDetector(
                   onTap: () => UrlLauncherHelper.showPrivacyPolicy(context),
-                  child: const Text(
+                  child: Text(
                     'プライバシーポリシーはこちら',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF007AFF),
-                    ),
+                    style: AppText.body(size: 14, color: AppColors.kabeBlue),
                   ),
                 ),
               ],
@@ -220,7 +177,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('報告を送信しました'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.holdGreen,
           ),
         );
         Navigator.of(context).pop();
@@ -239,7 +196,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.holdRed,
       ),
     );
   }

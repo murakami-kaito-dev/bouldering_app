@@ -9,6 +9,8 @@ import '../components/common/loading_widget.dart';
 import '../components/gym/gym_photo_strip.dart';
 import '../components/common/error_widget.dart';
 import '../components/common/gym_category.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 import '../../shared/utils/gym_hours_utils.dart';
 import '../../shared/utils/navigation_helper.dart';
 import '../../shared/utils/prefecture_order_utils.dart';
@@ -86,7 +88,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () => Navigator.of(context).pop(),
         ),
         // TODO：現在位置取得機能の実装は不要の可能性あり，API実装後必要か否か確認
@@ -136,8 +138,8 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
           child: FloatingActionButton(
             mini: true,
             heroTag: 'gym_map_my_location',
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black87,
+            backgroundColor: AppColors.setsuri,
+            foregroundColor: AppColors.chalk,
             onPressed: _moveToCurrentLocation,
             child: const Icon(Icons.my_location),
           ),
@@ -288,7 +290,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   Widget _buildGymCardList(List<Gym> gyms) {
     return Container(
       height: 280,
-      color: Colors.white,
+      color: AppColors.setsuri,
       child: Column(
         children: [
           // ハンドルバー
@@ -297,8 +299,8 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
+              color: AppColors.wareme,
+              borderRadius: BorderRadius.circular(AppRadius.tape),
             ),
           ),
 
@@ -309,10 +311,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
               children: [
                 Text(
                   '近くのジム (${gyms.length}件)',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppText.heading(size: 15),
                 ),
                 const Spacer(),
                 // TODO: 全件表示機能の実装は不要の可能性あり
@@ -346,12 +345,12 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: _focusedGymIndex == index
-                        ? Colors.blue[50]
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                        ? AppColors.wareme
+                        : AppColors.setsuri,
+                    borderRadius: BorderRadius.circular(AppRadius.card),
                     border: _focusedGymIndex == index
-                        ? Border.all(color: Colors.blue, width: 2)
-                        : null,
+                        ? Border.all(color: AppColors.kabeBlue, width: 2)
+                        : Border.all(color: AppColors.wareme),
                     boxShadow: const [
                       BoxShadow(
                         color: Colors.black12,
@@ -376,9 +375,9 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               '${gym.name} [${gym.prefecture}]',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                              style: AppText.body(
+                                size: 12,
+                                weight: FontWeight.w700,
                                 height: 1.2,
                               ),
                               maxLines: 2,
@@ -396,7 +395,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                                 padding: EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'ボルダリング',
-                                  colorCode: 0xFFFF0F00,
+                                  color: AppColors.holdRed,
                                 ),
                               ),
                             if (gym.isLeadGym)
@@ -404,7 +403,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                                 padding: EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'リード',
-                                  colorCode: 0xFF00A24C,
+                                  color: AppColors.holdGreen,
                                 ),
                               ),
                             if (gym.isSpeedGym)
@@ -412,7 +411,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                                 padding: EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'スピード',
-                                  colorCode: 0xFF0057FF,
+                                  color: AppColors.holdCyan,
                                 ),
                               ),
                           ],
@@ -426,19 +425,24 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                         // 料金と営業状態
                         Row(
                           children: [
-                            const Icon(Icons.currency_yen, size: 18),
+                            const Icon(Icons.currency_yen,
+                                size: 18, color: AppColors.sunabokori),
+                            const SizedBox(width: 4),
                             Text(
                               '${gym.minimumFee}〜',
-                              style: const TextStyle(fontSize: 12),
+                              style: AppText.number(size: 14),
                             ),
                             const SizedBox(width: 16),
-                            const Icon(Icons.access_time, size: 18),
+                            const Icon(Icons.access_time,
+                                size: 18, color: AppColors.sunabokori),
+                            const SizedBox(width: 4),
                             Text(
                               isOpen ? 'OPEN' : 'CLOSE',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isOpen ? Colors.green : Colors.red,
-                                fontWeight: FontWeight.bold,
+                              style: AppText.label(
+                                size: 12,
+                                color: isOpen
+                                    ? AppColors.holdGreen
+                                    : AppColors.holdRed,
                               ),
                             ),
                           ],

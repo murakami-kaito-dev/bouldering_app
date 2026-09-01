@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../theme/app_text.dart';
+import '../theme/app_tokens.dart';
 
 /// ブロック済みユーザー表示ページ
 ///
@@ -16,51 +18,39 @@ class BlockedUserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
+        title: Text(
           'ユーザー',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppText.heading(size: 17),
         ),
       ),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.block,
               size: 80,
-              color: Colors.grey,
+              color: AppColors.sunabokori,
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             Text(
               '表示できないユーザーです',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+              style: AppText.heading(size: 15),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
               'このユーザーはブロック中のため、\nプロフィールを表示できません。',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-                height: 1.5,
-              ),
+              style: AppText.caption(size: 12),
             ),
           ],
         ),

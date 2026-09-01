@@ -11,6 +11,9 @@ import '../providers/statistics_provider.dart';
 import '../providers/dependency_injection.dart';
 import '../../shared/utils/image_url_validator.dart';
 import '../../shared/utils/ng_word_validator.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
+import '../components/common/chalk_puff.dart';
 
 /// ■ クラス
 /// - View
@@ -216,56 +219,35 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
 
   /// 未ログイン状態の表示
   Widget _buildUnloggedState() {
-    return const Scaffold(
+    return Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // 余白
-          SizedBox(height: 128),
+          const SizedBox(height: 128),
 
           // ロゴ
-          Center(child: AppLogo()),
-          SizedBox(height: 16),
+          const Center(child: AppLogo()),
+          const SizedBox(height: 16),
 
           Text(
             'イワノボリタイに登録しよう',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF0056FF),
-              fontSize: 20,
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w700,
-              height: 1.2,
-              letterSpacing: -0.50,
-            ),
+            style: AppText.heading(size: 20),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           Text(
             'ログインして日々の\nボル活を投稿しよう！',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 20,
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w700,
-              height: 1.4,
-              letterSpacing: -0.50,
-            ),
+            style: AppText.heading(size: 20),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           Text(
             'ジムで登った記録や\n感想を残しましょう！',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 20,
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w700,
-              height: 1.4,
-              letterSpacing: -0.50,
-            ),
+            style: AppText.heading(size: 20),
           ),
         ],
       ),
@@ -287,22 +269,19 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
               widget.asModalSheet, // 編集/ジム詳細遷移/モーダル時に左上ボタンを表示
           title: Text(
             isEditMode ? 'ボル活編集' : 'ボル活投稿',
-            style: const TextStyle(
-              color: Colors.blue,
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppText.heading(size: 17),
           ),
-          backgroundColor: const Color(0xFFFEF7FF),
-          surfaceTintColor: const Color(0xFFFEF7FF),
+          backgroundColor: AppColors.iwa,
+          surfaceTintColor: AppColors.iwa,
           leading: widget.asModalSheet
               // モーダル表示時は「閉じる」を明示（シートを閉じればキーボードも閉じる）
               ? IconButton(
-                  icon: const Icon(Icons.close, color: Colors.black),
+                  icon: const Icon(Icons.close, color: AppColors.chalk),
                   onPressed: () => Navigator.of(context).pop(),
                 )
               : (isEditMode || widget.fromGymDetail)
                   ? IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.black),
+                      icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
                       onPressed: () => Navigator.of(context).pop(),
                     )
                   : null,
@@ -387,9 +366,9 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
 
                               // 投稿ページ初期化
                               if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('投稿が完了しました')),
-                                );
+                                // お祝い演出: チョークの粉が舞う（SnackBarの代わり。
+                                // ルートOverlayに出すのでシートを閉じても表示され続ける）
+                                showChalkPuffCelebration(context);
 
                                 // モーダル/ジム詳細からの場合は画面を閉じる
                                 // → シートが閉じる動きで「投稿できた」ことが伝わる
@@ -433,15 +412,12 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.blue,
+                        color: AppColors.kabeBlue,
                       ),
                     )
                   : Text(
                       isEditMode ? '更新する' : '投稿する',
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppText.label(size: 14, color: AppColors.kabeBlue),
                     ),
             ),
           ],
@@ -457,11 +433,12 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                   readOnly: true,
                   decoration: InputDecoration(
                     hintText: selectedGym ?? "ジムを選択してください",
-                    hintStyle: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    suffixIcon: const Icon(Icons.arrow_drop_down),
+                    // 選択済みはchalk本文、未選択はテーマ既定のヒント色(sunabokori)
+                    hintStyle: selectedGym != null
+                        ? AppText.body(size: 14, weight: FontWeight.w700)
+                        : null,
+                    suffixIcon: const Icon(Icons.arrow_drop_down,
+                        color: AppColors.sunabokori),
                   ),
                   onTap: () async {
                     final result = await Navigator.push(
@@ -484,20 +461,29 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                 // 日付選択ボタン
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, color: Colors.grey[600]),
+                    const Icon(Icons.calendar_today, color: AppColors.sunabokori),
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () => _selectDate(context),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                            horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
+                          color: AppColors.setsuri,
+                          borderRadius: BorderRadius.circular(AppRadius.card),
+                          border: Border.all(color: AppColors.wareme),
                         ),
-                        child: Text(
-                          "ジム訪問日：${DateFormat('yyyy.MM.dd').format(_selectedDate)}",
-                          style: const TextStyle(fontSize: 16),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text('ジム訪問日：', style: AppText.caption(size: 12)),
+                            Text(
+                              DateFormat('yyyy.MM.dd').format(_selectedDate),
+                              style: AppText.number(size: 18),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -557,9 +543,9 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                         return Container(
                                           width: 100,
                                           height: 100,
-                                          color: Colors.grey[300],
+                                          color: AppColors.wareme,
                                           child: const Icon(Icons.error,
-                                              color: Colors.grey),
+                                              color: AppColors.sunabokori),
                                         );
                                       },
                                     ),
@@ -580,7 +566,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(Icons.close,
-                                            size: 16, color: Colors.white),
+                                            size: 16, color: AppColors.chalk),
                                       ),
                                     ),
                                   ),
@@ -619,7 +605,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(Icons.close,
-                                          size: 16, color: Colors.white),
+                                          size: 16, color: AppColors.chalk),
                                     ),
                                   ),
                                 ),
@@ -639,18 +625,16 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                       child: Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
+                          color: AppColors.setsuri,
+                          borderRadius: BorderRadius.circular(AppRadius.card),
+                          border: Border.all(color: AppColors.wareme),
                         ),
-                        child: const Column(
+                        child: Column(
                           children: [
-                            Icon(Icons.image, size: 30, color: Colors.grey),
-                            SizedBox(height: 8),
-                            Text(
-                              '写真を追加',
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 12),
-                            ),
+                            const Icon(Icons.image,
+                                size: 30, color: AppColors.sunabokori),
+                            const SizedBox(height: 8),
+                            Text('写真を追加', style: AppText.caption(size: 12)),
                           ],
                         ),
                       ),
@@ -661,11 +645,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Text(
                         '${_uploadedUrls.length + _mediaFiles.length} / 5枚',
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: AppText.caption(size: 12),
                       ),
                     ),
                   ],

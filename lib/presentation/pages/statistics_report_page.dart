@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/bouldering_stats.dart';
 import '../providers/statistics_provider.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 import 'gym_detail_page.dart';
 
 /// 統計レポートページ
@@ -31,30 +33,32 @@ class StatisticsReportPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
         iconTheme: const IconThemeData(
-          color: Colors.black, // 戻るボタンを黒色に変更
+          color: AppColors.chalk, // 戻るボタンを黒色に変更
         ),
       ),
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
               const SizedBox(height: 16),
+              // 今月: 数字を壁ブルーで強調（青カード面は廃止、節理面＋色数字）
               _buildStatsContainer(
                 context,
                 "今月のボル活 - ${now.year}.${now.month} -",
                 currentMonthStats,
-                const Color(0xFF0056FF),
+                AppColors.kabeBlue,
               ),
               const SizedBox(height: 16),
+              // 昨月: 数字はchalk（過去の記録は控えめに）
               _buildStatsContainer(
                 context,
                 "昨月のボル活 - ${previousMonth.year}.${previousMonth.month} -",
                 previousMonthStats,
-                const Color(0xFF8D8D8D),
+                AppColors.chalk,
               ),
               const SizedBox(height: 24),
             ],
@@ -68,7 +72,7 @@ class StatisticsReportPage extends ConsumerWidget {
     BuildContext context,
     String title,
     AsyncValue<BoulderingStats> asyncStats,
-    Color bgColor,
+    Color accentColor,
   ) {
     String visits = "-";
     String gyms = "-";
@@ -107,11 +111,10 @@ class StatisticsReportPage extends ConsumerWidget {
     return Container(
       width: 344,
       padding: const EdgeInsets.all(16),
-      decoration: ShapeDecoration(
-        color: bgColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+      decoration: BoxDecoration(
+        color: AppColors.setsuri,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.wareme),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,13 +123,7 @@ class StatisticsReportPage extends ConsumerWidget {
           // 今月のボル活/昨月のボル活
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.50,
-            ),
+            style: AppText.heading(size: 15),
           ),
           const SizedBox(height: 12),
 
@@ -134,16 +131,16 @@ class StatisticsReportPage extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatsItem('ボル活', visits, '回'),
-              _buildStatsItem('施設数', gyms, '施設'),
-              _buildStatsItem('ペース', pace, '回/週'),
+              _buildStatsItem('ボル活', visits, '回', accentColor),
+              _buildStatsItem('施設数', gyms, '施設', accentColor),
+              _buildStatsItem('ペース', pace, '回/週', accentColor),
             ],
           ),
           const SizedBox(height: 8),
 
           // 下線表示
           const Divider(
-            color: Colors.white,
+            color: AppColors.wareme,
             thickness: 1.0,
             indent: 0,
             endIndent: 0,
@@ -151,15 +148,9 @@ class StatisticsReportPage extends ConsumerWidget {
           const SizedBox(height: 8),
 
           // TOP5
-          const Text(
+          Text(
             'TOP5',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.50,
-            ),
+            style: AppText.caption(size: 11, weight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
 
@@ -196,35 +187,30 @@ class StatisticsReportPage extends ConsumerWidget {
                                 gymName,
                                 softWrap: true,
                                 overflow: TextOverflow.visible,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: -0.50,
+                                // タップ可能＝リンクなので壁ブルー
+                                style: AppText.body(
+                                  size: 14,
+                                  color: AppColors.kabeBlue,
+                                  weight: FontWeight.w500,
                                 ),
                               ),
                             )
                           : Text(
                               gymName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: -0.50,
-                              ),
+                              style: AppText.body(size: 14),
                             ),
                     ),
-                    Text(
-                      '$visitCount 回',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.50,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          '$visitCount',
+                          style: AppText.number(size: 16),
+                        ),
+                        const SizedBox(width: 3),
+                        Text('回', style: AppText.caption(size: 11)),
+                      ],
                     ),
                   ],
                 ),
@@ -236,43 +222,28 @@ class StatisticsReportPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatsItem(String title, String value, String unit) {
+  Widget _buildStatsItem(
+      String title, String value, String unit, Color accentColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.50,
-          ),
+          style: AppText.caption(size: 11),
         ),
+        const SizedBox(height: 2),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
           children: [
             Text(
               value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.50,
-              ),
+              style: AppText.number(size: 30, color: accentColor),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 3),
             Text(
               unit,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.50,
-              ),
+              style: AppText.caption(size: 11),
             ),
           ],
         ),

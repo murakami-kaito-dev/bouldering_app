@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../shared/config/environment_config.dart';
 import '../../shared/constants/app_routes.dart';
 import '../providers/auth_provider.dart';
@@ -11,6 +12,7 @@ import '../providers/general_tweets_provider.dart';
 import '../providers/gym_provider.dart';
 import '../../domain/entities/gym.dart';
 import '../providers/terms_acceptance_provider.dart';
+import '../theme/app_tokens.dart';
 import 'home_page.dart';
 import 'gym_detail_page.dart';
 import 'gym_search_page.dart';
@@ -88,51 +90,80 @@ class BoulderingApp extends ConsumerWidget {
     };
   }
 
-  /// アプリケーションテーマを構築
+  /// アプリケーションテーマ「岩と粉」を構築
   ///
-  /// 以前のアプリと同じ青系の配色を設定
+  /// 夜のボルダリングウォールを模したダークテーマ。
+  /// 色の定義は app_tokens.dart（AppColors/AppRadius）に集約し、ここでは組むだけ
   ThemeData _buildTheme() {
     return ThemeData(
-      primarySwatch: Colors.blue,
-      primaryColor: const Color(0xFF0056FF), // 以前のアプリと同じ青色
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF0056FF),
-        brightness: Brightness.light,
+      brightness: Brightness.dark,
+      primaryColor: AppColors.kabeBlue,
+      // 全文字の基本書体を Zen Kaku Gothic New に（個別の強調は AppText を使う）
+      textTheme: GoogleFonts.zenKakuGothicNewTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ).apply(bodyColor: AppColors.chalk, displayColor: AppColors.chalk),
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.kabeBlue,
+        onPrimary: AppColors.onKabeBlue,
+        secondary: AppColors.holdRed,
+        surface: AppColors.setsuri,
+        onSurface: AppColors.chalk,
+        error: AppColors.holdRed,
       ),
+      scaffoldBackgroundColor: AppColors.iwa,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF0056FF),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
+        foregroundColor: AppColors.chalk,
         elevation: 0,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF0056FF),
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          backgroundColor: AppColors.kabeBlue,
+          foregroundColor: AppColors.onKabeBlue,
+          shape: const StadiumBorder(),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.setsuri,
+        hintStyle: const TextStyle(color: AppColors.sunabokori),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          borderSide: const BorderSide(color: AppColors.wareme),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          borderSide: const BorderSide(color: AppColors.wareme),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(
-            color: Color(0xFF0056FF),
-            width: 2,
-          ),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          borderSide: const BorderSide(color: AppColors.kabeBlue, width: 2),
         ),
       ),
       cardTheme: CardTheme(
-        elevation: 2,
+        elevation: 0,
+        color: AppColors.setsuri,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          side: const BorderSide(color: AppColors.wareme),
         ),
       ),
-      // scaffoldBackgroundColor: Colors.white,
-      scaffoldBackgroundColor: const Color(0xFFFEF7FF),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.navi,
+        selectedItemColor: AppColors.chalk,
+        unselectedItemColor: AppColors.sunabokori,
+      ),
+      dividerColor: AppColors.wareme,
+      dialogBackgroundColor: AppColors.setsuri,
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: AppColors.wareme,
+        contentTextStyle: TextStyle(color: AppColors.chalk),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.kabeBlue,
+      ),
     );
   }
 }
@@ -153,6 +184,11 @@ class AppRoot extends ConsumerStatefulWidget {
 
 class _AppRootState extends ConsumerState<AppRoot> {
   bool _splashDone = false;
+
+  /// スプラッシュ中に読み込んだ「前回選択タブ」。
+  /// 本体の初期タブとして渡す（後からsetStateで切り替えるとホームが1フレーム
+  /// 見えてチラつくため、最初の描画から前回タブで始める）
+  int _initialTab = 0;
 
   /// スプラッシュの最低表示時間（チラつき防止 + ブランド表示）
   static const Duration _minSplashDuration = Duration(milliseconds: 1000);
@@ -183,11 +219,25 @@ class _AppRootState extends ConsumerState<AppRoot> {
       Future.delayed(_minSplashDuration),
       // 読込完了かタイムアウトの早い方。オフラインでも必ず先へ進む
       gymReady.future.timeout(_gymLoadTimeout, onTimeout: () {}),
+      _loadLastTab(), // 前回タブの復元もスプラッシュ中に済ませる
     ]);
     subscription.close();
 
     if (mounted) {
       setState(() => _splashDone = true);
+    }
+  }
+
+  /// 前回選択タブを読み込む（失敗時はホームのまま）
+  Future<void> _loadLastTab() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getInt(ScaffoldWithNavBar.lastTabIndexKey);
+      if (saved != null && saved >= 0 && saved < 4 && saved != 2) {
+        _initialTab = saved;
+      }
+    } catch (_) {
+      // 復元失敗時はホームタブのまま（起動を妨げない）
     }
   }
 
@@ -200,7 +250,7 @@ class _AppRootState extends ConsumerState<AppRoot> {
     }
 
     return termsState.hasAccepted
-        ? const ScaffoldWithNavBar()
+        ? ScaffoldWithNavBar(initialIndex: _initialTab)
         : const TermsAgreementPage();
   }
 }
@@ -209,7 +259,13 @@ class _AppRootState extends ConsumerState<AppRoot> {
 ///
 /// アプリライフサイクルを監視してトークン失効を検知
 class ScaffoldWithNavBar extends ConsumerStatefulWidget {
-  const ScaffoldWithNavBar({super.key});
+  const ScaffoldWithNavBar({super.key, this.initialIndex = 0});
+
+  /// 起動時に表示するタブ（AppRootがスプラッシュ中に前回タブを読み込んで渡す）
+  final int initialIndex;
+
+  /// タブ復元用の保存キー（AppRootからも参照）
+  static const String lastTabIndexKey = 'last_tab_index';
 
   @override
   ConsumerState<ScaffoldWithNavBar> createState() => _ScaffoldWithNavBarState();
@@ -217,7 +273,7 @@ class ScaffoldWithNavBar extends ConsumerStatefulWidget {
 
 class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
     with WidgetsBindingObserver {
-  int _currentIndex = 0;
+  late int _currentIndex = widget.initialIndex;
 
   final List<Widget> _pages = [
     const HomePage(),
@@ -241,27 +297,8 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
     // ここで一度 read して生成しておかないと、マイページを開くまで復元処理が走らず、
     // 投稿ページ等が「未ログイン」表示のままになる不具合があった。
     ref.read(authProvider);
-
-    // 前回選択タブの復元（コールドスタート後も元いた場所に戻れるように）
-    _restoreLastTab();
-  }
-
-  /// タブ復元用の保存キー
-  static const String _lastTabIndexKey = 'last_tab_index';
-
-  /// 前回選択タブを復元する
-  Future<void> _restoreLastTab() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getInt(_lastTabIndexKey);
-      if (!mounted || saved == null) return;
-      if (saved == 2) return; // 投稿タブは実体が無いため復元しない（保存もしていない）
-      if (saved >= 0 && saved < _pages.length && saved != _currentIndex) {
-        setState(() => _currentIndex = saved);
-      }
-    } catch (_) {
-      // 復元失敗時はホームタブのまま（起動を妨げない）
-    }
+    // 前回選択タブの復元は AppRoot がスプラッシュ中に行い initialIndex で受け取る
+    // （ここで非同期に切り替えるとホームが1フレーム見えてチラつくため廃止）
   }
 
   /// 選択タブを保存する。投稿タブ(index 2)は保存しない
@@ -270,7 +307,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
     if (index == 2) return;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt(_lastTabIndexKey, index);
+      await prefs.setInt(ScaffoldWithNavBar.lastTabIndexKey, index);
     } catch (_) {
       // 保存失敗は無視（次回はホームタブから始まるだけ）
     }
@@ -319,7 +356,9 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: Stack(
+        children: [
+          BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: (int index) {
@@ -349,20 +388,69 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
             label: '投稿',
           ),
           BottomNavigationBarItem(
+            // 登攀グリフ（Noun Project由来・単色）。選択で壁ブルー、非選択で砂埃
             icon: SvgPicture.asset(
-              _currentIndex == 3
-                  ? 'lib/view/assets/rock_selected.svg'
-                  : 'lib/view/assets/rock_unselected.svg',
+              'lib/view/assets/climber_nav.svg',
               width: 24,
               height: 24,
+              colorFilter: ColorFilter.mode(
+                _currentIndex == 3 ? AppColors.kabeBlue : AppColors.sunabokori,
+                BlendMode.srcIn,
+              ),
             ),
             label: 'マイページ',
           ),
         ],
-        selectedItemColor: const Color(0xFF0056FF),
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: AppColors.kabeBlue,
+        unselectedItemColor: AppColors.sunabokori,
         selectedLabelStyle: const TextStyle(fontSize: 12),
         unselectedLabelStyle: const TextStyle(fontSize: 12),
+          ),
+          // 選択中タブを示す「課題テープ」。タブ切替で横にスライドする。
+          // 各タブ(幅=全幅/4)の中心にテープ中心をピクセル単位で合わせる
+          // （Alignment指定だと子幅ぶん内寄せされ両端がズレるため、実測で配置）
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  const tapeWidth = 34.0;
+                  final itemWidth = constraints.maxWidth / _pages.length;
+                  final targetLeft =
+                      (_currentIndex + 0.5) * itemWidth - tapeWidth / 2;
+                  return SizedBox(
+                    height: 4,
+                    child: Stack(
+                      children: [
+                        AnimatedPositioned(
+                          duration: const Duration(milliseconds: 260),
+                          curve: Curves.easeOutBack,
+                          top: 0,
+                          left: targetLeft,
+                          child: Transform(
+                            transform: Matrix4.skewX(-0.14),
+                            alignment: Alignment.center,
+                            child: Container(
+                              width: tapeWidth,
+                              height: 4,
+                              decoration: const BoxDecoration(
+                                color: AppColors.kabeBlue,
+                                borderRadius: BorderRadius.vertical(
+                                    bottom: Radius.circular(3)),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

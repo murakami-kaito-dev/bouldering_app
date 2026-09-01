@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../components/common/switcher_tab.dart';
 import '../components/common/gym_category.dart';
+import '../components/common/pressable.dart';
 import '../providers/gym_provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/dependency_injection.dart';
@@ -10,6 +11,8 @@ import '../components/tweet/gym_tweets_section.dart';
 import '../components/gym/gym_photo_strip.dart';
 import '../../domain/entities/gym.dart';
 import 'activity_post_page.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 
 // Mock実装（テスト時のみ使用）
 // Mock環境用の簡単な表示コンポーネントをここにインポート
@@ -122,31 +125,31 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
 
   Widget _buildLoadingScaffold() {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: const Center(
-        child: CircularProgressIndicator(color: Colors.purple),
+        child: CircularProgressIndicator(color: AppColors.kabeBlue),
       ),
     );
   }
 
   Widget _buildErrorScaffold() {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -158,13 +161,13 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: const Color(0xFFFEF7FF),
-          surfaceTintColor: const Color(0xFFFEF7FF),
+          backgroundColor: AppColors.iwa,
+          surfaceTintColor: AppColors.iwa,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -177,7 +180,6 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
               child: SwitcherTab(
                 leftTabName: "施設情報",
                 rightTabName: "ボル活",
-                colorCode: 0xFFFEF7FF,
               ),
             ),
             Padding(
@@ -215,7 +217,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'ボルダリング',
-                    colorCode: 0xFFFF0F00,
+                    color: AppColors.holdRed,
                   ),
                 ),
               if (gymInfo.isLeadGym)
@@ -223,7 +225,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'リード',
-                    colorCode: 0xFF00A24C,
+                    color: AppColors.holdGreen,
                   ),
                 ),
               if (gymInfo.isSpeedGym)
@@ -231,7 +233,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'スピード',
-                    colorCode: 0xFF0057FF,
+                    color: AppColors.holdCyan,
                   ),
                 ),
             ],
@@ -306,12 +308,23 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
       left: 0,
       right: 0,
       child: Container(
-        padding: const EdgeInsets.all(16),
-        color: Colors.transparent,
+        padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
+        decoration: BoxDecoration(
+          // 下端の読みやすさ確保（内容の上に浮くバーなのでスクリムを敷く）
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.iwa.withOpacity(0),
+              AppColors.iwa.withOpacity(0.9),
+            ],
+          ),
+        ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            OutlinedButton(
+            Expanded(
+                child: Pressable(
+                    child: OutlinedButton(
               onPressed: () async {
                 // 実際のイキタイ登録/解除処理を実装
                 final currentUser = ref.read(currentUserProvider);
@@ -372,21 +385,31 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                 }
               },
               style: OutlinedButton.styleFrom(
-                backgroundColor:
-                    _isFavoriteRegistered ? Colors.blue : Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                backgroundColor: _isFavoriteRegistered
+                    ? AppColors.kabeBlue
+                    : AppColors.setsuri,
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                shape: const StadiumBorder(),
                 side: BorderSide(
-                  color: _isFavoriteRegistered ? Colors.blue : Colors.grey,
+                  color: _isFavoriteRegistered
+                      ? AppColors.kabeBlue
+                      : AppColors.wareme,
                 ),
               ),
               child: Text(
-                'イキタイ',
-                style: TextStyle(
-                  color: _isFavoriteRegistered ? Colors.white : Colors.blue,
+                _isFavoriteRegistered ? 'イキタイ登録済み' : 'イキタイに追加',
+                style: AppText.label(
+                  size: 14,
+                  color: _isFavoriteRegistered
+                      ? AppColors.onKabeBlue
+                      : AppColors.chalk,
                 ),
               ),
-            ),
-            ElevatedButton(
+            ))),
+            const SizedBox(width: 12),
+            Expanded(
+                child: Pressable(
+                    child: ElevatedButton(
               onPressed: () {
                 // ボル活投稿をモーダルシートで開く（ジムが事前選択された状態）
                 showActivityPostSheet(
@@ -395,11 +418,13 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                backgroundColor: Colors.blue,
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                backgroundColor: AppColors.kabeBlue,
               ),
-              child: const Text('ボル活投稿', style: TextStyle(color: Colors.white)),
-            ),
+              child: Text('ボル活を投稿',
+                  style:
+                      AppText.label(size: 14, color: AppColors.onKabeBlue)),
+            ))),
           ],
         ),
       ),
@@ -496,7 +521,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
               onTap: isLink ? onTap : null,
               child: Text(
                 value,
-                style: TextStyle(color: isLink ? Colors.blue : Colors.black),
+                style: TextStyle(color: isLink ? AppColors.kabeBlue : AppColors.chalk),
               ),
             ),
           ),
@@ -525,30 +550,33 @@ class GymIkitaiBoullogCount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+            child: _statTile('イキタイ', ikitaiCount, AppColors.kabeBlue)),
+        const SizedBox(width: 10),
+        Expanded(
+            child: _statTile('ボル活', boullogCount, AppColors.holdRed)),
+      ],
+    );
+  }
+
+  /// 統計タイル（数字が顔。イキタイ=壁ブルー / ボル活=ホールド赤）
+  Widget _statTile(String label, String value, Color numberColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.setsuri,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.wareme),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('イキタイ ', style: TextStyle(fontWeight: FontWeight.bold)),
-          Text(
-            ikitaiCount,
-            style: const TextStyle(
-                color: Colors.blue, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(width: 8),
-          Container(width: 1, height: 16, color: Colors.grey),
-          const SizedBox(width: 8),
-          const Text('ボル活 ', style: TextStyle(fontWeight: FontWeight.bold)),
-          Text(
-            boullogCount,
-            style: const TextStyle(
-                color: Colors.blue, fontWeight: FontWeight.bold),
-          ),
+          Text(value,
+              style: AppText.number(size: 28, color: numberColor)),
+          const SizedBox(height: 2),
+          Text(label, style: AppText.caption(size: 11)),
         ],
       ),
     );

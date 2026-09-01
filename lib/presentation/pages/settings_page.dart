@@ -9,6 +9,8 @@ import '../components/common/loading_widget.dart';
 import '../components/common/error_widget.dart';
 import '../../shared/utils/navigation_helper.dart';
 import '../../shared/utils/url_launcher_helper.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -19,9 +21,7 @@ class SettingsPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('設定'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        foregroundColor: Colors.black,
+        title: Text('設定', style: AppText.heading(size: 17)),
       ),
       body: userState.when(
         data: (user) => _buildSettingsContent(context, ref, user),
@@ -61,19 +61,28 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
+  /// セクション見出し（カードの外に置く小ラベル）
+  Widget _buildSectionLabel(String label, {Color? color}) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(label,
+          style: AppText.caption(
+            size: 11,
+            weight: FontWeight.w700,
+            color: color ?? AppColors.sunabokori,
+          )),
+    );
+  }
+
   Widget _buildUserInfoSection(BuildContext context, User user) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('アカウント情報',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    )),
-            const SizedBox(height: 16),
-            Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionLabel('アカウント情報'),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
                 CircleAvatar(
                   radius: 30,
@@ -93,23 +102,14 @@ class SettingsPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(user.userName,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold)),
+                          style:
+                              AppText.body(size: 14, weight: FontWeight.w700)),
                       const SizedBox(height: 4),
-                      Text(user.email,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(color: Colors.grey[600])),
+                      Text(user.email, style: AppText.caption(size: 12)),
                       if (user.boulderingYearsExperience != null) ...[
                         const SizedBox(height: 4),
                         Text('ボルダリング歴: ${user.boulderingYearsExperience}年',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(color: Colors.grey[600])),
+                            style: AppText.caption(size: 11)),
                       ],
                     ],
                   ),
@@ -120,148 +120,136 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
   Widget _buildPrivacySection(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text('ユーザー管理',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      )),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionLabel('ユーザー管理'),
+        Card(
+          child: Column(
+            children: [
+              _buildSettingsItem(
+                icon: Icons.block,
+                title: 'ブロックしたユーザー',
+                subtitle: 'ブロックしたユーザーの管理',
+                onTap: () => NavigationHelper.toBlockList(context),
+              ),
+            ],
           ),
-          _buildSettingsItem(
-            icon: Icons.block,
-            title: 'ブロックしたユーザー',
-            subtitle: 'ブロックしたユーザーの管理',
-            onTap: () => NavigationHelper.toBlockList(context),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildSecuritySection(BuildContext context, WidgetRef ref, User user) {
-    return Card(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text('セキュリティ設定',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      )),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionLabel('セキュリティ設定'),
+        Card(
+          child: Column(
+            children: [
+              _buildSettingsItem(
+                icon: Icons.email,
+                title: 'メールアドレス変更',
+                subtitle: '現在: ${user.email}',
+                onTap: () => _showEmailChangeDialog(context, ref),
+              ),
+              _buildSettingsItem(
+                icon: Icons.lock,
+                title: 'パスワード変更',
+                subtitle: 'アカウントのパスワードを変更',
+                onTap: () => _showPasswordChangeDialog(context, ref),
+              ),
+            ],
           ),
-          _buildSettingsItem(
-            icon: Icons.email,
-            title: 'メールアドレス変更',
-            subtitle: '現在: ${user.email}',
-            onTap: () => _showEmailChangeDialog(context, ref),
-          ),
-          _buildSettingsItem(
-            icon: Icons.lock,
-            title: 'パスワード変更',
-            subtitle: 'アカウントのパスワードを変更',
-            onTap: () => _showPasswordChangeDialog(context, ref),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildAboutSection(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text('アプリについて',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      )),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionLabel('アプリについて'),
+        Card(
+          child: Column(
+            children: [
+              _buildSettingsItem(
+                icon: Icons.info,
+                title: 'アプリ情報',
+                subtitle: 'バージョン情報とライセンス',
+                onTap: () => _showAppInfo(context),
+              ),
+              _buildSettingsItem(
+                icon: Icons.privacy_tip,
+                title: 'プライバシーポリシー',
+                subtitle: 'プライバシーポリシーを確認',
+                onTap: () => UrlLauncherHelper.showPrivacyPolicy(context),
+                isExternalLink: true, // 外部サイトへ遷移
+              ),
+              _buildSettingsItem(
+                icon: Icons.description,
+                title: '利用規約',
+                subtitle: '利用規約を確認',
+                onTap: () => UrlLauncherHelper.showTermsOfService(context),
+                isExternalLink: true, // 外部サイトへ遷移
+              ),
+              _buildSettingsItem(
+                icon: Icons.feedback,
+                title: 'フィードバック',
+                subtitle: 'アプリの改善提案・バグ報告',
+                onTap: () => UrlLauncherHelper.showFeedbackForm(context),
+                isExternalLink: true, // 外部サイトへ遷移（将来的に外部フォームへ）
+              ),
+            ],
           ),
-          _buildSettingsItem(
-            icon: Icons.info,
-            title: 'アプリ情報',
-            subtitle: 'バージョン情報とライセンス',
-            onTap: () => _showAppInfo(context),
-          ),
-          _buildSettingsItem(
-            icon: Icons.privacy_tip,
-            title: 'プライバシーポリシー',
-            subtitle: 'プライバシーポリシーを確認',
-            onTap: () => UrlLauncherHelper.showPrivacyPolicy(context),
-            isExternalLink: true, // 外部サイトへ遷移
-          ),
-          _buildSettingsItem(
-            icon: Icons.description,
-            title: '利用規約',
-            subtitle: '利用規約を確認',
-            onTap: () => UrlLauncherHelper.showTermsOfService(context),
-            isExternalLink: true, // 外部サイトへ遷移
-          ),
-          _buildSettingsItem(
-            icon: Icons.feedback,
-            title: 'フィードバック',
-            subtitle: 'アプリの改善提案・バグ報告',
-            onTap: () => UrlLauncherHelper.showFeedbackForm(context),
-            isExternalLink: true, // 外部サイトへ遷移（将来的に外部フォームへ）
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildDangerZoneSection(BuildContext context, WidgetRef ref) {
-    return Card(
-      color: Colors.red[50],
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text('アカウント管理',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red[800],
-                      )),
-            ),
+    // 危険ゾーン: 枠・文字を holdRed で明示する
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionLabel('アカウント管理', color: AppColors.holdRed),
+        Card(
+          color: AppColors.setsuri,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            side: const BorderSide(color: AppColors.holdRed),
           ),
-          _buildSettingsItem(
-            icon: Icons.logout,
-            title: 'ログアウト',
-            subtitle: 'アカウントからログアウト',
-            iconColor: Colors.red[600],
-            titleColor: Colors.red[800],
-            onTap: () => _showLogoutDialog(context, ref),
+          child: Column(
+            children: [
+              _buildSettingsItem(
+                icon: Icons.logout,
+                title: 'ログアウト',
+                subtitle: 'アカウントからログアウト',
+                iconColor: AppColors.holdRed,
+                titleColor: AppColors.holdRed,
+                onTap: () => _showLogoutDialog(context, ref),
+              ),
+              _buildSettingsItem(
+                icon: Icons.delete_forever,
+                title: '退会',
+                subtitle: 'アカウントとすべてのデータを削除',
+                iconColor: AppColors.holdRed,
+                titleColor: AppColors.holdRed,
+                onTap: () => _confirmAccountDeletion(context, ref),
+              ),
+            ],
           ),
-          _buildSettingsItem(
-            icon: Icons.delete_forever,
-            title: '退会',
-            subtitle: 'アカウントとすべてのデータを削除',
-            iconColor: Colors.red[600],
-            titleColor: Colors.red[800],
-            onTap: () => _confirmAccountDeletion(context, ref),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -275,29 +263,25 @@ class SettingsPage extends ConsumerWidget {
     bool isExternalLink = false, // 外部リンクかどうかのフラグ（デフォルト: false）
   }) {
     return ListTile(
-      leading: Icon(icon, color: iconColor),
+      leading: Icon(icon, color: iconColor ?? AppColors.sunabokori),
       title: Text(title,
-          style: TextStyle(
-            color: titleColor,
-            fontWeight: FontWeight.w500,
+          style: AppText.body(
+            size: 14,
+            weight: FontWeight.w500,
+            color: titleColor ?? AppColors.chalk,
           )),
-      subtitle: Text(subtitle),
+      subtitle: Text(subtitle, style: AppText.caption(size: 12)),
       trailing: isExternalLink
           ? Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  '外部サイト',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
+                Text('外部サイト', style: AppText.caption(size: 11)),
                 const SizedBox(width: 4),
-                Icon(Icons.open_in_new, size: 18, color: Colors.grey[600]),
+                const Icon(Icons.open_in_new,
+                    size: 18, color: AppColors.sunabokori),
               ],
             )
-          : const Icon(Icons.chevron_right),
+          : const Icon(Icons.chevron_right, color: AppColors.sunabokori),
       onTap: onTap,
     );
   }
@@ -308,7 +292,7 @@ class SettingsPage extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('アプリ情報'),
+        title: Text('アプリ情報', style: AppText.heading(size: 16)),
         // バージョンはビルド情報から動的取得（旧実装はハードコードで実際の版とズレていた）
         content: FutureBuilder<PackageInfo>(
           future: PackageInfo.fromPlatform(),
@@ -319,11 +303,13 @@ class SettingsPage extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('イワノボリタイ'),
+                Text('イワノボリタイ',
+                    style: AppText.body(size: 14, weight: FontWeight.w700)),
                 const SizedBox(height: 8),
-                Text('バージョン: $version ($build)'),
+                Text('バージョン: $version ($build)',
+                    style: AppText.body(size: 13)),
                 const SizedBox(height: 16),
-                const Text('© 2025 イワノボリタイ開発チーム'),
+                Text('© 2025 イワノボリタイ開発チーム', style: AppText.caption(size: 12)),
               ],
             );
           },
@@ -396,7 +382,7 @@ class SettingsPage extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('パスワードを入力してください'),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.holdRed,
         ),
       );
       return;
@@ -433,7 +419,7 @@ class SettingsPage extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('アカウントを削除しました'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.holdGreen,
             duration: Duration(seconds: 2),
           ),
         );
@@ -596,7 +582,7 @@ class SettingsPage extends ConsumerWidget {
               '新しいパスワードでログインしてください。',
             ),
             duration: Duration(seconds: 5),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.holdGreen,
           ),
         );
       }
@@ -617,7 +603,7 @@ class SettingsPage extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.holdRed,
           ),
         );
       }
@@ -660,15 +646,15 @@ class _PasswordDialogState extends State<_PasswordDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('本人確認'),
+      title: Text('本人確認', style: AppText.heading(size: 16)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'セキュリティのため、パスワードを再入力してください。',
-              style: TextStyle(fontSize: 14),
+              style: AppText.body(size: 14),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -677,7 +663,6 @@ class _PasswordDialogState extends State<_PasswordDialog> {
               autofocus: true,
               decoration: InputDecoration(
                 labelText: 'パスワード',
-                border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(
                     _isPasswordVisible
@@ -705,8 +690,9 @@ class _PasswordDialogState extends State<_PasswordDialog> {
         ElevatedButton(
           onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red[600],
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.holdRed,
+            foregroundColor: AppColors.onHoldRed,
+            textStyle: AppText.label(size: 14),
           ),
           child: const Text('削除を実行'),
         ),
@@ -737,48 +723,50 @@ class _EmailChangeDialogState extends State<_EmailChangeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('メールアドレス変更'),
+      title: Text('メールアドレス変更', style: AppText.heading(size: 16)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'セキュリティのため、新しいメールアドレスと現在のパスワードを入力してください。',
-              style: TextStyle(fontSize: 14),
+              style: AppText.body(size: 14),
             ),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
-                border: Border.all(color: Colors.orange.shade200),
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.wareme,
+                border: Border.all(color: AppColors.holdRed),
+                borderRadius: BorderRadius.circular(AppRadius.card),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.warning, color: Colors.orange, size: 20),
-                      SizedBox(width: 8),
+                      const Icon(Icons.warning,
+                          color: AppColors.holdRed, size: 20),
+                      const SizedBox(width: 8),
                       Text(
                         '重要なお知らせ',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
+                        style: AppText.body(
+                          size: 13,
+                          weight: FontWeight.w700,
+                          color: AppColors.holdRed,
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     '認証メールの送信を押下すると、強制的にログアウトされます。',
-                    style: TextStyle(fontSize: 13),
+                    style: AppText.body(size: 13),
                   ),
                   Text(
                     '認証メールの認証を押下したあと、新しいメールアドレスでログインし直してください。',
-                    style: TextStyle(fontSize: 13),
+                    style: AppText.body(size: 13),
                   ),
                 ],
               ),
@@ -790,7 +778,6 @@ class _EmailChangeDialogState extends State<_EmailChangeDialog> {
               autofocus: true,
               decoration: const InputDecoration(
                 labelText: '新しいメールアドレス',
-                border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.email),
               ),
             ),
@@ -800,7 +787,6 @@ class _EmailChangeDialogState extends State<_EmailChangeDialog> {
               obscureText: !_isPasswordVisible,
               decoration: InputDecoration(
                 labelText: '現在のパスワード（再認証用）',
-                border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.lock),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -863,32 +849,34 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('パスワード変更'),
+      title: Text('パスワード変更', style: AppText.heading(size: 16)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'パスワードを変更します。以下を入力してください。',
-              style: TextStyle(fontSize: 14),
+              style: AppText.body(size: 14),
             ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.shade200),
+                color: AppColors.wareme,
+                borderRadius: BorderRadius.circular(AppRadius.card),
+                border: Border.all(color: AppColors.holdRed),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.warning_amber, color: Colors.orange, size: 20),
-                  SizedBox(width: 8),
+                  const Icon(Icons.warning_amber,
+                      color: AppColors.holdRed, size: 20),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '変更後は自動的にログアウトされます。\n新しいパスワードで再ログインしてください。',
-                      style: TextStyle(fontSize: 12, color: Colors.orange),
+                      style:
+                          AppText.caption(size: 12, color: AppColors.holdRed),
                     ),
                   ),
                 ],
@@ -900,7 +888,6 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
               obscureText: !_isCurrentPasswordVisible,
               decoration: InputDecoration(
                 labelText: '現在のパスワード',
-                border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.lock_outline),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -922,7 +909,6 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
               obscureText: !_isNewPasswordVisible,
               decoration: InputDecoration(
                 labelText: '新しいパスワード',
-                border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.lock),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -944,7 +930,6 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
               obscureText: !_isConfirmPasswordVisible,
               decoration: InputDecoration(
                 labelText: '新しいパスワード（確認）',
-                border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.lock),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -961,9 +946,9 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               '※パスワードは6文字以上で入力してください',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: AppText.caption(size: 12),
             ),
           ],
         ),

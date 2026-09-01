@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/gym.dart';
 import '../components/gym/gym_list_card.dart';
 import '../../shared/services/navigation_service.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 
 /// ジム検索結果ページ
 ///
@@ -27,32 +29,35 @@ class GymSearchResultPage extends ConsumerWidget {
     if (gyms.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0xFFFEF7FF),
-          surfaceTintColor: const Color(0xFFFEF7FF),
+          backgroundColor: AppColors.iwa,
+          surfaceTintColor: AppColors.iwa,
           iconTheme: const IconThemeData(
-            color: Colors.black, // 戻るボタンを黒色に変更
+            color: AppColors.chalk,
           ),
-          title: const Text(
+          title: Text(
             '検索結果',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: AppText.heading(size: 17),
           ),
         ),
-        body: const Center(
-          child: Text('該当するジムはありません'),
+        body: Center(
+          child: Text(
+            '該当するジムはありません',
+            style: AppText.body(size: 14, color: AppColors.sunabokori),
+          ),
         ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
         iconTheme: const IconThemeData(
-          color: Colors.black, // 戻るボタンを黒色に変更
+          color: AppColors.chalk,
         ),
         title: Text(
           '検索結果（${gyms.length}件）',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: AppText.heading(size: 17),
         ),
       ),
       body: ListView.builder(

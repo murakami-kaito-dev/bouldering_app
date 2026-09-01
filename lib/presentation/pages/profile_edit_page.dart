@@ -11,6 +11,8 @@ import '../providers/dependency_injection.dart';
 import '../components/common/loading_widget.dart';
 import '../components/common/error_widget.dart';
 import '../components/gym/gym_photo_strip.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 import '../../shared/utils/navigation_helper.dart';
 import '../../shared/utils/ng_word_validator.dart';
 
@@ -69,25 +71,32 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'プロフィール編集',
-          style: TextStyle(color: Colors.black),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        foregroundColor: Colors.black,
+        title: Text('プロフィール編集', style: AppText.heading(size: 17)),
         actions: [
-          TextButton(
-            onPressed: _hasChanges && !_isSaving ? _saveProfile : null,
-            child: _isSaving
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text(
-                    '保存',
-                    style: TextStyle(color: Colors.black),
-                  ),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(
+              child: ElevatedButton(
+                onPressed: _hasChanges && !_isSaving ? _saveProfile : null,
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(
+                        '保存',
+                        style: AppText.label(
+                            size: 13, color: AppColors.onKabeBlue),
+                      ),
+              ),
+            ),
           ),
         ],
       ),
@@ -108,7 +117,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
   Widget _buildEditForm(User? user, AsyncValue<List<Gym>> gymListState) {
     if (user == null) {
-      return const Center(child: Text('ユーザー情報が見つかりません'));
+      return Center(
+        child: Text('ユーザー情報が見つかりません', style: AppText.body(size: 14)),
+      );
     }
 
     return SingleChildScrollView(
@@ -144,9 +155,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       children: [
         Text(
           'プロフィール画像',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: AppText.caption(size: 11, weight: FontWeight.w700),
         ),
         const SizedBox(height: 16),
         Center(
@@ -171,13 +180,13 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                 right: 0,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
+                    color: AppColors.kabeBlue,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(color: AppColors.setsuri, width: 2),
                   ),
                   child: IconButton(
                     onPressed: _pickProfileImage,
-                    icon: const Icon(Icons.camera_alt, color: Colors.white),
+                    icon: const Icon(Icons.camera_alt, color: AppColors.onKabeBlue),
                     iconSize: 20,
                   ),
                 ),
@@ -195,16 +204,14 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       children: [
         Text(
           'ユーザー名',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: AppText.caption(size: 11, weight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: _userNameController,
+          style: AppText.body(size: 14),
           decoration: const InputDecoration(
             hintText: 'ユーザー名を入力',
-            border: OutlineInputBorder(),
             contentPadding: EdgeInsets.all(16),
           ),
           maxLength: 30,
@@ -220,16 +227,14 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       children: [
         Text(
           '自己紹介',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: AppText.caption(size: 11, weight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: _introductionController,
+          style: AppText.body(size: 14),
           decoration: const InputDecoration(
             hintText: '自己紹介を入力してください\n好きな課題の種類、目標グレード、ボルダリング歴など',
-            border: OutlineInputBorder(),
             contentPadding: EdgeInsets.all(16),
           ),
           maxLines: 4,
@@ -246,9 +251,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       children: [
         Text(
           'ホームジム',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: AppText.caption(size: 11, weight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         if (_selectedHomeGym != null)
@@ -286,16 +289,12 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                 children: [
                   Text(
                     _selectedHomeGym!.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: AppText.body(size: 14, weight: FontWeight.w700),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     _selectedHomeGym!.fullAddress,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    style: AppText.caption(size: 12),
                   ),
                 ],
               ),
@@ -305,7 +304,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                 setState(() => _selectedHomeGym = null);
                 _onFieldChanged();
               },
-              icon: const Icon(Icons.close),
+              icon: const Icon(Icons.close, color: AppColors.sunabokori),
             ),
           ],
         ),
@@ -319,23 +318,22 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(4),
+          color: AppColors.setsuri,
+          border: Border.all(color: AppColors.wareme),
+          borderRadius: BorderRadius.circular(AppRadius.card),
         ),
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.search, color: Colors.grey),
-            SizedBox(width: 12),
+            const Icon(Icons.search, color: AppColors.sunabokori),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 'ホームジムを選択してください',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: AppText.body(size: 14, color: AppColors.sunabokori),
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+            const Icon(Icons.arrow_forward_ios,
+                size: 16, color: AppColors.sunabokori),
           ],
         ),
       ),
@@ -390,16 +388,14 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       children: [
         Text(
           'お気に入りのジム',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: AppText.caption(size: 11, weight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: _favoriteGymsController,
+          style: AppText.body(size: 14),
           decoration: const InputDecoration(
             hintText: 'お気に入りのジムを紹介してください\n例: クライミングジム・ロックス\nこのジムは初心者にも優しいです',
-            border: OutlineInputBorder(),
             contentPadding: EdgeInsets.all(16),
           ),
           maxLines: 4,
@@ -416,9 +412,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       children: [
         Text(
           'アカウント情報',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: AppText.caption(size: 11, weight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         Card(
@@ -451,15 +445,13 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           width: 100,
           child: Text(
             label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            style: AppText.caption(size: 12),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: AppText.body(size: 13),
           ),
         ),
       ],
@@ -472,9 +464,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       children: [
         Text(
           '生年月日(非公開)',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: AppText.caption(size: 11, weight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         GestureDetector(
@@ -485,23 +475,24 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(4),
+              color: AppColors.setsuri,
+              border: Border.all(color: AppColors.wareme),
+              borderRadius: BorderRadius.circular(AppRadius.card),
             ),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today, color: Colors.grey),
+                const Icon(Icons.calendar_today, color: AppColors.sunabokori),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     (_selectedBirthday ?? user.birthday) != null
                         ? "${(_selectedBirthday ?? user.birthday)!.year}年${(_selectedBirthday ?? user.birthday)!.month}月${(_selectedBirthday ?? user.birthday)!.day}日"
                         : "未設定",
-                    style: const TextStyle(fontSize: 16),
+                    style: AppText.body(size: 14),
                   ),
                 ),
                 const Icon(Icons.arrow_forward_ios,
-                    size: 16, color: Colors.grey),
+                    size: 16, color: AppColors.sunabokori),
               ],
             ),
           ),
@@ -533,9 +524,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       children: [
         Text(
           '性別(非公開)',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: AppText.caption(size: 11, weight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         GestureDetector(
@@ -546,21 +535,22 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(4),
+              color: AppColors.setsuri,
+              border: Border.all(color: AppColors.wareme),
+              borderRadius: BorderRadius.circular(AppRadius.card),
             ),
             child: Row(
               children: [
-                const Icon(Icons.person, color: Colors.grey),
+                const Icon(Icons.person, color: AppColors.sunabokori),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     genderText,
-                    style: const TextStyle(fontSize: 16),
+                    style: AppText.body(size: 14),
                   ),
                 ),
                 const Icon(Icons.arrow_forward_ios,
-                    size: 16, color: Colors.grey),
+                    size: 16, color: AppColors.sunabokori),
               ],
             ),
           ),
@@ -575,9 +565,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       children: [
         Text(
           'ボルダリング開始日',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: AppText.caption(size: 11, weight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         GestureDetector(
@@ -588,12 +576,13 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(4),
+              color: AppColors.setsuri,
+              border: Border.all(color: AppColors.wareme),
+              borderRadius: BorderRadius.circular(AppRadius.card),
             ),
             child: Row(
               children: [
-                const Icon(Icons.fitness_center, color: Colors.grey),
+                const Icon(Icons.fitness_center, color: AppColors.sunabokori),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -601,11 +590,11 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                     (_selectedBoulStartDate ?? user.boulStartDate) != null
                         ? "${(_selectedBoulStartDate ?? user.boulStartDate)!.year}年${(_selectedBoulStartDate ?? user.boulStartDate)!.month}月${(_selectedBoulStartDate ?? user.boulStartDate)!.day}日"
                         : "未設定",
-                    style: const TextStyle(fontSize: 16),
+                    style: AppText.body(size: 14),
                   ),
                 ),
                 const Icon(Icons.arrow_forward_ios,
-                    size: 16, color: Colors.grey),
+                    size: 16, color: AppColors.sunabokori),
               ],
             ),
           ),
@@ -703,12 +692,12 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     final selectedGender = await showDialog<int>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('性別を選択'),
+        title: Text('性別を選択', style: AppText.heading(size: 15)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              title: const Text('未回答'),
+              title: Text('未回答', style: AppText.body(size: 14)),
               leading: Radio<int>(
                 value: 0,
                 groupValue: currentGender, // 現在選択中の値を反映
@@ -716,7 +705,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
               ),
             ),
             ListTile(
-              title: const Text('男性'),
+              title: Text('男性', style: AppText.body(size: 14)),
               leading: Radio<int>(
                 value: 1,
                 groupValue: currentGender, // 現在選択中の値を反映
@@ -724,7 +713,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
               ),
             ),
             ListTile(
-              title: const Text('女性'),
+              title: Text('女性', style: AppText.body(size: 14)),
               leading: Radio<int>(
                 value: 2,
                 groupValue: currentGender, // 現在選択中の値を反映
@@ -763,7 +752,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('画像選択に失敗しました: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.holdRed,
           ),
         );
       }
@@ -782,7 +771,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('ユーザー名の入力は必須です'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.holdRed,
             ),
           );
         }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../common/image_viewer.dart';
+import '../../theme/app_tokens.dart';
+import '../../theme/app_text.dart';
 
 /// ■ クラス
 /// - マイページで(他ユーザーも含む),アイコンとユーザー名を表示する
@@ -74,14 +76,7 @@ class UserLogoAndName extends StatelessWidget {
           // 名前
           Text(
             displayUserName,
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 24,
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w500,
-              height: 1.2,
-              letterSpacing: -0.50,
-            ),
+            style: AppText.heading(size: 20),
           ),
         ],
       ),
@@ -94,12 +89,12 @@ class UserLogoAndName extends StatelessWidget {
       width: 72,
       height: 72,
       decoration: const BoxDecoration(
-        color: Color(0xFFEEEEEE),
+        color: AppColors.wareme,
         shape: BoxShape.circle,
       ),
       child: const Icon(
         Icons.person,
-        color: Colors.grey,
+        color: AppColors.sunabokori,
         size: 40,
       ),
     );

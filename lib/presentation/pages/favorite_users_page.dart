@@ -4,6 +4,8 @@ import '../../domain/entities/user.dart';
 import '../components/user/favorite_user_card.dart';
 import '../providers/favorite_users_list_provider.dart';
 import '../providers/favorite_user_provider.dart';
+import '../theme/app_text.dart';
+import '../theme/app_tokens.dart';
 
 /// お気に入りユーザー一覧ページ
 /// 
@@ -52,20 +54,17 @@ class _FavoriteUsersPageState extends ConsumerState<FavoriteUsersPage>
     final favoriteUsersState = ref.watch(favoriteUsersListProvider);
     
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
+      backgroundColor: AppColors.iwa,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFEF7FF),
-        surfaceTintColor: const Color(0xFFFEF7FF),
-        title: const Text(
+        backgroundColor: AppColors.iwa,
+        surfaceTintColor: AppColors.iwa,
+        title: Text(
           'お気に入り',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppText.heading(size: 17),
         ),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.chalk),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -145,23 +144,18 @@ class _FavoriteUsersPageState extends ConsumerState<FavoriteUsersPage>
             Icon(
               Icons.favorite_border,
               size: 80,
-              color: Colors.grey[400],
+              color: AppColors.sunabokori,
             ),
             const SizedBox(height: 24),
             Text(
               'お気に入りユーザーがいません',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppText.heading(size: 15, color: AppColors.sunabokori),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'ユーザーをお気に入り登録すると\nここに表示されます',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
-              ),
+              style: AppText.caption(size: 12),
               textAlign: TextAlign.center,
             ),
           ],
@@ -180,22 +174,17 @@ class _FavoriteUsersPageState extends ConsumerState<FavoriteUsersPage>
             const Icon(
               Icons.error_outline,
               size: 80,
-              color: Colors.red,
+              color: AppColors.holdRed,
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'エラーが発生しました',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppText.heading(size: 15),
             ),
             const SizedBox(height: 8),
             Text(
               errorMessage,
-              style: TextStyle(
-                color: Colors.grey[600],
-              ),
+              style: AppText.caption(size: 12),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -203,7 +192,10 @@ class _FavoriteUsersPageState extends ConsumerState<FavoriteUsersPage>
               onPressed: () {
                 ref.read(favoriteUsersListProvider.notifier).refresh();
               },
-              child: const Text('再試行'),
+              child: Text(
+                '再試行',
+                style: AppText.label(size: 14, color: AppColors.onKabeBlue),
+              ),
             ),
           ],
         ),

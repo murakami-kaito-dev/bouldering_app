@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../common/gym_category.dart';
+import '../../theme/app_tokens.dart';
 
 /// ジムタイプ選択UIコンポーネント
 /// 
@@ -21,11 +22,11 @@ class GymTypeSelector extends StatelessWidget {
   final Map<String, bool> selectedTypes;
   final ValueChanged<Map<String, bool>> onTypeChanged;
 
-  /// ジムタイプとカラーのマッピング
-  static const Map<String, int> _typeColorMap = {
-    'ボルダリング': 0xFFFF0F00,
-    'リード': 0xFF00A24C,
-    'スピード': 0xFF0057FF,
+  /// ジムタイプとカラーのマッピング（ホールド3色）
+  static const Map<String, Color> _typeColorMap = {
+    'ボルダリング': AppColors.holdRed,
+    'リード': AppColors.holdGreen,
+    'スピード': AppColors.holdCyan,
   };
 
   @override
@@ -45,7 +46,7 @@ class GymTypeSelector extends StatelessWidget {
   }
 
   /// ジムタイプボタン構築
-  Widget _buildTypeButton(String type, int colorCode) {
+  Widget _buildTypeButton(String type, Color color) {
     final isSelected = selectedTypes[type] ?? false;
     
     return GestureDetector(
@@ -56,7 +57,7 @@ class GymTypeSelector extends StatelessWidget {
       },
       child: GymCategory(
         category: type,
-        colorCode: colorCode,
+        color: color,
         isSelected: isSelected,
         isTappable: true,
         onTap: () {

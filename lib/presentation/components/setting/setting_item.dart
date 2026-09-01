@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_tokens.dart';
+import '../../theme/app_text.dart';
 
 /// 設定項目ウィジェット
 /// 
@@ -26,38 +28,38 @@ class SettingItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Color(0xFFE0E0E0),
-              width: 1,
-            ),
+    // 「岩と粉」: リスト項目は罫線区切りでなくカード面で表現する
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.setsuri,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.wareme),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                text,
+                style: AppText.body(
+                  size: 14,
+                  weight: FontWeight.w500,
+                  color: textColor ?? AppColors.chalk,
+                ),
+              ),
+              if (showArrow)
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: textColor ?? AppColors.sunabokori,
+                  size: 16,
+                ),
+            ],
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              text,
-              style: TextStyle(
-                color: textColor ?? Colors.black,
-                fontSize: 16,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            if (showArrow)
-              Icon(
-                Icons.arrow_forward_ios,
-                color: textColor ?? Colors.grey,
-                size: 16,
-              ),
-          ],
         ),
       ),
     );

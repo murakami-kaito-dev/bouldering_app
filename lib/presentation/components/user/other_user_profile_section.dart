@@ -9,6 +9,8 @@ import '../../providers/favorite_user_provider.dart';
 import 'user_logo_and_name.dart';
 import '../common/button.dart';
 import '../this_month_boul_log.dart';
+import '../../theme/app_tokens.dart';
+import '../../theme/app_text.dart';
 
 /// 他ユーザープロフィールセクション
 ///
@@ -97,9 +99,9 @@ class _OtherUserProfileSectionState
                         buttonName: isFavorite ? "お気に入り登録解除" : "お気に入り登録",
                         buttonWidth: MediaQuery.of(context).size.width - 32,
                         buttonHeight: 36,
-                        buttonColorCode: isFavorite ? 0xFF0056FF : 0xFFE3DCE4,
+                        buttonColorCode: isFavorite ? 0xFF5B8CFF : 0xFF2D313A,
                         buttonTextColorCode:
-                            isFavorite ? 0xFFFFFFFF : 0xFF000000,
+                            isFavorite ? 0xFF0C1A3A : 0xFFF2F0EA,
                       ),
                       const SizedBox(height: 8),
                     ],
@@ -120,29 +122,15 @@ class _OtherUserProfileSectionState
                   softWrap: true,
                   overflow: TextOverflow.visible,
                   maxLines: null,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 12,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                    letterSpacing: -0.50,
-                  ),
+                  style: AppText.body(size: 13, height: 1.5),
                 ),
               ),
               const SizedBox(height: 12),
 
               // 好きなジム欄
-              const Text(
+              Text(
                 "好きなジム",
-                style: TextStyle(
-                  color: Color(0xFF8D8D8D),
-                  fontSize: 12,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.bold,
-                  height: 1.4,
-                  letterSpacing: -0.50,
-                ),
+                style: AppText.caption(size: 11, weight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               SizedBox(
@@ -155,14 +143,7 @@ class _OtherUserProfileSectionState
                   softWrap: true,
                   overflow: TextOverflow.visible,
                   maxLines: null,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 12,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                    letterSpacing: -0.50,
-                  ),
+                  style: AppText.body(size: 13, height: 1.5),
                 ),
               ),
               const SizedBox(height: 8),
@@ -170,12 +151,13 @@ class _OtherUserProfileSectionState
               // ボル活歴
               Row(
                 children: [
-                  const Icon(Icons.date_range, size: 16, color: Colors.grey),
+                  const Icon(Icons.date_range,
+                      size: 16, color: AppColors.sunabokori),
                   const SizedBox(width: 8),
-                  const Text("ボルダリング歴：", style: TextStyle(fontSize: 12)),
+                  Text("ボルダリング歴：", style: AppText.caption(size: 12)),
                   Text(
                     calculateExperience(otherUser?.boulStartDate),
-                    style: const TextStyle(fontSize: 12),
+                    style: AppText.body(size: 12),
                   ),
                 ],
               ),
@@ -185,9 +167,9 @@ class _OtherUserProfileSectionState
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.home, size: 16, color: Colors.grey),
+                  const Icon(Icons.home, size: 16, color: AppColors.sunabokori),
                   const SizedBox(width: 8),
-                  const Text("ホームジム：", style: TextStyle(fontSize: 12)),
+                  Text("ホームジム：", style: AppText.caption(size: 12)),
                   Expanded(
                     child: GestureDetector(
                       onTap: otherUser?.homeGymId != null
@@ -198,13 +180,11 @@ class _OtherUserProfileSectionState
                           : null,
                       child: Text(
                         getHomeGymName(otherUser?.homeGymId, gymMap),
-                        style: TextStyle(
+                        style: AppText.body(
+                          size: 12,
                           color: otherUser?.homeGymId != null
-                              ? Colors.blue
-                              : Colors.black,
-                          fontSize: 12,
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w500,
+                              ? AppColors.kabeBlue
+                              : AppColors.chalk,
                         ),
                         overflow: TextOverflow.visible,
                         softWrap: true,
@@ -238,19 +218,15 @@ class _OtherUserProfileSectionState
                     : Icons.error_outline,
                 size: 64,
                 color: error.toString().contains('USER_WITHDRAWN')
-                    ? Colors.grey[400]
-                    : Colors.red[400],
+                    ? AppColors.sunabokori
+                    : AppColors.holdRed,
               ),
               const SizedBox(height: 20),
               Text(
                 error.toString().contains('USER_WITHDRAWN')
                     ? 'このユーザーページを取得することができませんでした'
                     : 'ユーザー情報の読み込みに失敗しました',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
+                style: AppText.heading(size: 15, color: AppColors.sunabokori),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -258,10 +234,7 @@ class _OtherUserProfileSectionState
                 error.toString().contains('USER_WITHDRAWN')
                     ? '退会した可能性があります'
                     : '通信エラーが発生しました',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: AppText.caption(size: 12),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -269,12 +242,9 @@ class _OtherUserProfileSectionState
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: const Text(
+                child: Text(
                   '戻る',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF0056FF),
-                  ),
+                  style: AppText.body(size: 14, color: AppColors.kabeBlue),
                 ),
               ),
             ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/gym_tweets_provider.dart';
 import '../common/boul_log.dart';
+import '../../theme/app_tokens.dart';
 
 /// ジム別ツイートセクション
 ///
@@ -69,7 +70,7 @@ class GymTweetsSectionState extends ConsumerState<GymTweetsSection> {
     if (gymTweetsState.isLoading && gymTweetsState.tweets.isEmpty) {
       return const Center(
         child: CircularProgressIndicator(
-          color: Colors.purple,
+          color: AppColors.kabeBlue,
         ),
       );
     }
@@ -83,14 +84,14 @@ class GymTweetsSectionState extends ConsumerState<GymTweetsSection> {
             const Icon(
               Icons.error_outline,
               size: 64,
-              color: Colors.red,
+              color: AppColors.holdRed,
             ),
             const SizedBox(height: 16),
             Text(
               gymTweetsState.error!,
               style: const TextStyle(
                 fontSize: 16,
-                color: Colors.grey,
+                color: AppColors.sunabokori,
               ),
               textAlign: TextAlign.center,
             ),
@@ -123,14 +124,14 @@ class GymTweetsSectionState extends ConsumerState<GymTweetsSection> {
                     Icon(
                       Icons.article_outlined,
                       size: 64,
-                      color: Colors.grey,
+                      color: AppColors.sunabokori,
                     ),
                     SizedBox(height: 16),
                     Text(
                       'まだボル活の投稿がありません',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey,
+                        color: AppColors.sunabokori,
                       ),
                     ),
                     SizedBox(height: 8),
@@ -138,7 +139,7 @@ class GymTweetsSectionState extends ConsumerState<GymTweetsSection> {
                       '最初の投稿者になりましょう！',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey,
+                        color: AppColors.sunabokori,
                       ),
                     ),
                   ],
@@ -164,7 +165,7 @@ class GymTweetsSectionState extends ConsumerState<GymTweetsSection> {
               padding: EdgeInsets.all(16.0),
               child: Center(
                 child: CircularProgressIndicator(
-                  color: Colors.purple,
+                  color: AppColors.kabeBlue,
                 ),
               ),
             );

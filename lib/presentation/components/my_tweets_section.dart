@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/user_provider.dart';
 import '../providers/my_tweets_provider.dart';
 import 'common/boul_log.dart';
+import '../theme/app_tokens.dart';
 
 /// マイツイートセクション
 ///
@@ -107,14 +108,14 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                           Icon(
                             Icons.library_books_outlined,
                             size: 64,
-                            color: Colors.grey,
+                            color: AppColors.sunabokori,
                           ),
                           SizedBox(height: 16),
                           Text(
                             'まだボル活記録がありません',
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.grey,
+                              color: AppColors.sunabokori,
                             ),
                           ),
                           SizedBox(height: 8),
@@ -122,7 +123,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                             'ジムに行って記録を投稿してみましょう！',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey,
+                              color: AppColors.sunabokori,
                             ),
                           ),
                         ],
@@ -175,14 +176,14 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
             Icon(
               Icons.error_outline,
               size: 64,
-              color: Colors.red,
+              color: AppColors.holdRed,
             ),
             SizedBox(height: 16),
             Text(
               'ツイートの読み込みに失敗しました',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey,
+                color: AppColors.sunabokori,
               ),
             ),
           ],

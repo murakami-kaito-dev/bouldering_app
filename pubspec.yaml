@@ -61,15 +61,14 @@ flutter_icons:
 
 flutter:
   assets:
-    - lib/view/assets/app_main_icon.svg
-    - lib/view/assets/rock_selected.svg
-    - lib/view/assets/rock_unselected.svg
+    - lib/view/assets/climber_nav.svg
     - lib/view/assets/map_image.png
     - lib/view/assets/date_range.svg
     - lib/view/assets/home_gim_icon.svg
     - assets/keys/gcs_storage_dev.json
     - assets/keys/gcs_storage_prod.json
     - assets/
+    - assets/google_fonts/
   uses-material-design: true
 
 dependency_overrides:

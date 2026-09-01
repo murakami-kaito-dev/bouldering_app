@@ -7,7 +7,8 @@ import '../../providers/gym_provider.dart';
 import '../../pages/favorite_users_page.dart';
 import '../../pages/favorited_by_users_page.dart';
 import 'user_logo_and_name.dart';
-import '../common/button.dart';
+import '../../theme/app_tokens.dart';
+import '../../theme/app_text.dart';
 import '../this_month_boul_log.dart';
 
 /// ユーザープロフィールセクション
@@ -43,16 +44,16 @@ class UserProfileSection extends ConsumerWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(8.0),
-              color: Colors.orange.shade100,
+              color: AppColors.wareme,
               child: Row(
                 children: [
-                  const Icon(Icons.warning, color: Colors.orange, size: 20),
+                  const Icon(Icons.warning, color: AppColors.holdRed, size: 20),
                   const SizedBox(width: 8),
-                  Expanded(
+                  const Expanded(
                     child: Text(
                       'プロフィールの一部が更新できませんでした',
                       style: TextStyle(
-                          color: Colors.orange.shade800, fontSize: 12),
+                          color: AppColors.holdRed, fontSize: 12),
                     ),
                   ),
                   TextButton(
@@ -90,16 +91,16 @@ class UserProfileSection extends ConsumerWidget {
               const Icon(
                 Icons.error_outline,
                 size: 48,
-                color: Colors.red,
+                color: AppColors.holdRed,
               ),
               const SizedBox(height: 16),
               Text(
                 error.toString().contains('プロフィール更新')
                     ? 'プロフィール更新に失敗しました。再度お試しください。'
                     : 'ユーザー情報の読み込みに失敗しました',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
-                  color: Colors.grey[600],
+                  color: AppColors.sunabokori,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -144,41 +145,17 @@ class UserProfileSection extends ConsumerWidget {
 
           // お気に入り・お気にいられ欄
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Button(
-                onPressedFunction: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FavoriteUsersPage(),
-                    ),
-                  );
-                },
-                buttonName: "お気に入り",
-                buttonWidth: ((MediaQuery.of(context).size.width) / 2) - 24,
-                buttonHeight: 28,
-                buttonColorCode: 0xFFE3DCE4,
-                buttonTextColorCode: 0xFF000000,
-              ),
-              Button(
-                onPressedFunction: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FavoritedByUsersPage(),
-                    ),
-                  );
-                },
-                buttonName: "お気に入られ",
-                buttonWidth: ((MediaQuery.of(context).size.width) / 2) - 24,
-                buttonHeight: 28,
-                buttonColorCode: 0xFFE3DCE4,
-                buttonTextColorCode: 0xFF000000,
-              ),
+              Expanded(
+                  child: _relationButton(
+                      context, 'お気に入り', const FavoriteUsersPage())),
+              const SizedBox(width: 10),
+              Expanded(
+                  child: _relationButton(
+                      context, 'お気に入られ', const FavoritedByUsersPage())),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
 
           // 自己紹介文
           SizedBox(
@@ -189,33 +166,15 @@ class UserProfileSection extends ConsumerWidget {
                   : " - ",
               textAlign: TextAlign.left,
               softWrap: true,
-              overflow: TextOverflow.visible,
-              maxLines: null,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 12,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w500,
-                height: 1.4,
-                letterSpacing: -0.50,
-              ),
+              style: AppText.body(size: 13),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // 好きなジム欄
-          const Text(
-            "好きなジム",
-            style: TextStyle(
-              color: Color(0xFF8D8D8D),
-              fontSize: 12,
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.bold,
-              height: 1.4,
-              letterSpacing: -0.50,
-            ),
-          ),
-          const SizedBox(height: 8),
+          Text("好きなジム",
+              style: AppText.caption(size: 11, weight: FontWeight.w700)),
+          const SizedBox(height: 4),
           SizedBox(
             width: double.infinity,
             child: Text(
@@ -224,29 +183,22 @@ class UserProfileSection extends ConsumerWidget {
                   : " - ",
               textAlign: TextAlign.left,
               softWrap: true,
-              overflow: TextOverflow.visible,
-              maxLines: null,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 12,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w500,
-                height: 1.4,
-                letterSpacing: -0.50,
-              ),
+              style: AppText.body(size: 13),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
           // ボル活歴
           Row(
             children: [
               // SVGアイコンの代わりにIconを使用（SVGファイルが存在しないため）
-              const Icon(Icons.date_range, size: 16, color: Colors.grey),
+              const Icon(Icons.date_range,
+                  size: 15, color: AppColors.sunabokori),
               const SizedBox(width: 8),
-              const Text("ボルダリング歴：", style: TextStyle(fontSize: 12)),
+              Text("ボルダリング歴", style: AppText.caption(size: 12)),
+              const SizedBox(width: 8),
               Text(calculateExperience(user?.boulStartDate),
-                  style: const TextStyle(fontSize: 12)),
+                  style: AppText.body(size: 13, weight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: 8),
@@ -256,9 +208,10 @@ class UserProfileSection extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // SVGアイコンの代わりにIconを使用
-              const Icon(Icons.home, size: 16, color: Colors.grey),
+              const Icon(Icons.home, size: 15, color: AppColors.sunabokori),
               const SizedBox(width: 8),
-              const Text("ホームジム：", style: TextStyle(fontSize: 12)),
+              Text("ホームジム", style: AppText.caption(size: 12)),
+              const SizedBox(width: 8),
               Expanded(
                 child: GestureDetector(
                   onTap: user?.homeGymId != null && user?.homeGymId != 0
@@ -268,15 +221,13 @@ class UserProfileSection extends ConsumerWidget {
                       : null,
                   child: Text(
                     getHomeGymName(user?.homeGymId, gymMap),
-                    style: TextStyle(
+                    style: AppText.body(
+                      size: 13,
+                      weight: FontWeight.w600,
                       color: (user?.homeGymId != null && user?.homeGymId != 0)
-                          ? Colors.blue
-                          : Colors.black,
-                      fontSize: 12,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w500,
+                          ? AppColors.kabeBlue
+                          : AppColors.chalk,
                     ),
-                    overflow: TextOverflow.visible,
                     softWrap: true,
                   ),
                 ),
@@ -286,6 +237,23 @@ class UserProfileSection extends ConsumerWidget {
           const SizedBox(height: 16),
         ],
       ),
+    );
+  }
+
+  /// お気に入り/お気に入られへの遷移ボタン（静かなピル）
+  Widget _relationButton(BuildContext context, String label, Widget page) {
+    return OutlinedButton(
+      onPressed: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => page),
+      ),
+      style: OutlinedButton.styleFrom(
+        side: const BorderSide(color: AppColors.wareme),
+        foregroundColor: AppColors.chalk,
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        shape: const StadiumBorder(),
+      ),
+      child: Text(label, style: AppText.label(size: 12)),
     );
   }
 }

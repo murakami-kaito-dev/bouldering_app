@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../shared/utils/navigation_helper.dart';
 import '../../../shared/utils/gym_hours_utils.dart';
 import '../common/gym_category.dart';
+import '../common/pressable.dart';
 import '../../../domain/entities/gym.dart';
+import '../../theme/app_tokens.dart';
+import '../../theme/app_text.dart';
 import 'gym_photo_strip.dart';
 
 /// イキタイジム専用カードコンポーネント
@@ -28,8 +31,15 @@ class FavoriteGymCard extends StatelessWidget {
     // 営業状態を判定（統一されたロジック使用）
     final isOpened = GymHoursUtils.isCurrentlyOpen(gym.hours);
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
+    return Pressable(
+        child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.setsuri,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.wareme),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -43,19 +53,12 @@ class FavoriteGymCard extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: gym.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+                    style: AppText.heading(size: 16),
                   ),
                   const TextSpan(text: ' '),
                   TextSpan(
                     text: '[${gym.prefecture}]',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
+                    style: AppText.caption(size: 12),
                   ),
                 ],
               ),
@@ -71,7 +74,7 @@ class FavoriteGymCard extends StatelessWidget {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'ボルダリング',
-                    colorCode: 0xFFFF0F00,
+                    color: AppColors.holdRed,
                   ),
                 ),
               if (gym.isLeadGym)
@@ -79,42 +82,57 @@ class FavoriteGymCard extends StatelessWidget {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'リード',
-                    colorCode: 0xFF00A24C,
+                    color: AppColors.holdGreen,
                   ),
                 ),
               if (gym.isSpeedGym)
                 const GymCategory(
                   category: 'スピード',
-                  colorCode: 0xFF0057FF,
+                  color: AppColors.holdCyan,
                 ),
             ],
           ),
           const SizedBox(height: 8),
 
           // ジム写真（自前写真 or Google Places API）
-          GymPhotoStrip(gymId: gym.id),
+          // 写真1.7枚分が見える幅（ジム詳細と同じ見せ方に統一）
+              LayoutBuilder(builder: (context, constraints) {
+                final photoWidth = constraints.maxWidth / 1.7 - 8;
+                return GymPhotoStrip(
+                  gymId: gym.id,
+                  photoWidth: photoWidth,
+                  height: photoWidth * 0.75, // 4:3比率
+                );
+              }),
           const SizedBox(height: 8),
 
           // ジム利用情報
           Row(
             children: [
-              const Icon(Icons.currency_yen, size: 18),
+              const Icon(Icons.currency_yen,
+                  size: 18, color: AppColors.sunabokori),
               const SizedBox(width: 4),
-              Text('${gym.minimumFee}〜'), // minimumFeeはnon-nullable（?? は不要のため削除）
+              Text(
+                '${gym.minimumFee}〜', // minimumFeeはnon-nullable（?? は不要のため削除）
+                style: AppText.number(size: 16),
+              ),
               const SizedBox(width: 16),
-              const Icon(Icons.access_time, size: 18),
+              const Icon(Icons.access_time,
+                  size: 18, color: AppColors.sunabokori),
               const SizedBox(width: 4),
               isOpened
-                  ? const Text('OPEN',
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ))
-                  : const Text(
+                  ? Text(
+                      'OPEN',
+                      style: AppText.label(
+                        size: 13,
+                        color: AppColors.holdGreen,
+                      ),
+                    )
+                  : Text(
                       "CLOSE",
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
+                      style: AppText.label(
+                        size: 13,
+                        color: AppColors.holdRed,
                       ),
                     ),
             ],
@@ -123,59 +141,34 @@ class FavoriteGymCard extends StatelessWidget {
 
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // イキタイカウント数
-              const Text(
+              Text(
                 'イキタイ',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+                style: AppText.caption(size: 12, weight: FontWeight.w700),
               ),
               const SizedBox(width: 4),
               Text(
                 '${gym.ikitaiCount}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
-                  height: 1.25,
-                ),
+                style: AppText.number(size: 18, color: AppColors.kabeBlue),
               ),
               const SizedBox(width: 16),
 
               // ボル活ツイート数
-              const Text(
+              Text(
                 'ボル活',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+                style: AppText.caption(size: 12, weight: FontWeight.w700),
               ),
               const SizedBox(width: 4),
               Text(
                 '${gym.boulCount}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
-                  height: 1.25,
-                ),
+                style: AppText.number(size: 18, color: AppColors.kabeBlue),
               )
             ],
           ),
-          const SizedBox(height: 8),
-
-          // 下線
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: 1,
-            color: const Color(0xFFB1B1B1),
-          ),
         ],
       ),
-    );
+    ));
   }
 }

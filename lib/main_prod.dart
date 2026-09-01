@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'shared/config/environment_config.dart';
@@ -23,6 +26,18 @@ import 'presentation/pages/app.dart';
 void main() async {
   // Flutter フレームワークの初期化
   WidgetsFlutterBinding.ensureInitialized();
+
+  // フォントは assets/google_fonts に同梱（初回起動が圏外でも書体が揃う。
+  // ランタイム取得を無効化し、OFLライセンスをライセンス画面に登録）
+  GoogleFonts.config.allowRuntimeFetching = false;
+  LicenseRegistry.addLicense(() async* {
+    final zen = await rootBundle
+        .loadString('assets/google_fonts/OFL-ZenKakuGothicNew.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], zen);
+    final barlow = await rootBundle
+        .loadString('assets/google_fonts/OFL-BarlowCondensed.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], barlow);
+  });
 
   // 画像メモリキャッシュ上限を明示（既定100MB→50MB）。
   // バックグラウンド時にiOSへプロセスを終了されにくくするためのメモリ削減策

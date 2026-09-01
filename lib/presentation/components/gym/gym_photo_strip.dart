@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../domain/entities/gym_photo.dart';
 import '../../providers/gym_photos_provider.dart';
 import '../common/image_viewer.dart';
+import '../../theme/app_tokens.dart';
 
 /// ジム写真の横スクロール表示（一覧カード・地図カード・詳細画面で共用）
 ///
@@ -42,7 +43,7 @@ class GymPhotoStrip extends ConsumerWidget {
     return SizedBox(
       height: height,
       child: photosAsync.when(
-        loading: () => _placeholder(label: null, showSpinner: true),
+        loading: () => _placeholder(label: null),
         error: (_, __) => _placeholder(label: '写真なし'),
         data: (set) {
           if (set.isEmpty) return _placeholder(label: '写真なし');
@@ -93,18 +94,18 @@ class GymPhotoStrip extends ConsumerWidget {
             // 表示サイズ相当で縮小デコードし、メモリキャッシュに乗せ続ける
             // （原寸デコードによるキャッシュ追い出し=毎回ローディングを防ぐ）
             memCacheWidth: 400,
+            // スピナーは出さない: 静かな面→200msフェードイン（枚数分のクルクルを廃止）
+            fadeInDuration: const Duration(milliseconds: 200),
             placeholder: (context, url) => Container(
               width: photoWidth,
               height: height,
-              color: Colors.grey[300],
-              child: const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2)),
+              color: AppColors.wareme,
             ),
             errorWidget: (context, url, error) => Container(
               width: photoWidth,
               height: height,
-              color: Colors.grey[300],
-              child: const Icon(Icons.broken_image, color: Colors.grey),
+              color: AppColors.wareme,
+              child: const Icon(Icons.broken_image, color: AppColors.sunabokori),
             ),
           ),
           // Google写真の帰属表示（Places API規約で必須）
@@ -121,7 +122,7 @@ class GymPhotoStrip extends ConsumerWidget {
                 ),
                 child: const Text(
                   'Google',
-                  style: TextStyle(color: Colors.white, fontSize: 9),
+                  style: TextStyle(color: AppColors.chalk, fontSize: 9),
                 ),
               ),
             ),
@@ -130,24 +131,20 @@ class GymPhotoStrip extends ConsumerWidget {
     );
   }
 
-  Widget _placeholder({String? label, bool showSpinner = false}) {
+  Widget _placeholder({String? label}) {
     return Row(
       children: [
         Container(
           width: photoWidth,
           height: height,
           decoration: BoxDecoration(
-            color: Colors.grey[300],
+            color: AppColors.wareme,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
-            child: showSpinner
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2))
-                : Text(label ?? '',
-                    style: TextStyle(color: Colors.grey[700], fontSize: 14)),
+            child: Text(label ?? '',
+                style:
+                    const TextStyle(color: AppColors.sunabokori, fontSize: 14)),
           ),
         ),
       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../theme/app_tokens.dart';
 
 /// 画像拡大表示ウィジェット
 ///
@@ -86,14 +87,13 @@ class ImageViewer extends StatelessWidget {
                         child: CachedNetworkImage(
                           imageUrl: imageUrls[index],
                           fit: BoxFit.contain,
-                          placeholder: (context, url) => const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          ),
+                          // スピナーは出さない: 黒地のまま→フェードイン
+                          fadeInDuration: const Duration(milliseconds: 250),
+                          placeholder: (context, url) =>
+                              const SizedBox.expand(),
                           errorWidget: (context, url, error) => const Icon(
                             Icons.error,
-                            color: Colors.white,
+                            color: AppColors.chalk,
                             size: 48,
                           ),
                         ),
@@ -113,14 +113,14 @@ class ImageViewer extends StatelessWidget {
                 color: Colors.black54,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
+                  color: AppColors.chalk.withOpacity(0.3),
                   width: 1,
                 ),
               ),
               child: IconButton(
                 icon: const Icon(
                   Icons.close,
-                  color: Colors.white,
+                  color: AppColors.chalk,
                   size: 24,
                 ),
                 onPressed: () => Navigator.of(context).pop(),

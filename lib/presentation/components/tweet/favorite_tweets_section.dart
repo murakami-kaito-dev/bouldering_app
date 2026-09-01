@@ -6,6 +6,7 @@ import '../common/app_logo.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/favorite_user_tweets_provider.dart';
+import '../../theme/app_tokens.dart';
 
 class FavoriteTweetsSection extends ConsumerStatefulWidget {
   const FavoriteTweetsSection({super.key});
@@ -68,7 +69,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                 'イワノボリタイに登録しよう',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFF0056FF),
+                  color: AppColors.kabeBlue,
                   fontSize: 20,
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w700,
@@ -82,7 +83,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                 'ログインしてユーザーを\nお気に入り登録しよう!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.black,
+                  color: AppColors.chalk,
                   fontSize: 20,
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w700,
@@ -96,7 +97,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                 'お気に入り登録したユーザーの\nツイートを見ることができます！',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.black,
+                  color: AppColors.chalk,
                   fontSize: 20,
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w700,
@@ -139,7 +140,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                       'ユーザーをお気に入り登録しよう！',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Color(0xFF0056FF),
+                        color: AppColors.kabeBlue,
                         fontSize: 20,
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w700,
@@ -153,7 +154,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                       'お気に入り登録して\n他の人の活動を見てみましょう！',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.black,
+                        color: AppColors.chalk,
                         fontSize: 20,
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w700,

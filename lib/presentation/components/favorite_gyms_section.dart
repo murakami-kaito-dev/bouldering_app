@@ -4,6 +4,7 @@ import '../providers/user_provider.dart';
 import '../providers/dependency_injection.dart';
 import 'gym/favorite_gym_card.dart';
 import '../../domain/entities/gym.dart';
+import '../theme/app_tokens.dart';
 
 // Mock実装（テスト時のみ使用）
 // import '../../shared/data/mock_data.dart';
@@ -104,14 +105,14 @@ class FavoriteGymsSectionState extends ConsumerState<FavoriteGymsSection> {
                       Icon(
                         Icons.favorite_border,
                         size: 64,
-                        color: Colors.grey,
+                        color: AppColors.sunabokori,
                       ),
                       SizedBox(height: 16),
                       Text(
                         'まだイキタイジムがありません',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.grey,
+                          color: AppColors.sunabokori,
                         ),
                       ),
                       SizedBox(height: 8),
@@ -119,7 +120,7 @@ class FavoriteGymsSectionState extends ConsumerState<FavoriteGymsSection> {
                         'ジム詳細ページで「イキタイ」ボタンを押して登録してください',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey,
+                          color: AppColors.sunabokori,
                         ),
                         textAlign: TextAlign.center,
                       ),
