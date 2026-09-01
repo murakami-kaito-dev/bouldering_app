@@ -61,9 +61,7 @@ flutter_icons:
 
 flutter:
   assets:
-    - lib/view/assets/app_main_icon.svg
-    - lib/view/assets/rock_selected.svg
-    - lib/view/assets/rock_unselected.svg
+    - lib/view/assets/climber_nav.svg
     - lib/view/assets/map_image.png
     - lib/view/assets/date_range.svg
     - lib/view/assets/home_gim_icon.svg

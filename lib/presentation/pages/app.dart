@@ -375,12 +375,15 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
             label: '投稿',
           ),
           BottomNavigationBarItem(
+            // 登攀グリフ（Noun Project由来・単色）。選択で壁ブルー、非選択で砂埃
             icon: SvgPicture.asset(
-              _currentIndex == 3
-                  ? 'lib/view/assets/rock_selected.svg'
-                  : 'lib/view/assets/rock_unselected.svg',
+              'lib/view/assets/climber_nav.svg',
               width: 24,
               height: 24,
+              colorFilter: ColorFilter.mode(
+                _currentIndex == 3 ? AppColors.kabeBlue : AppColors.sunabokori,
+                BlendMode.srcIn,
+              ),
             ),
             label: 'マイページ',
           ),
