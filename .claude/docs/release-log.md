@@ -3,6 +3,15 @@
 バージョン・ビルド番号の変更と配信の記録。新しいものを上に積む（1エントリ＝1ビルド番号）。
 ※ 2026-08-21 に git 履歴・docs から遡って復元。git からは「配信したか」は分からないため、不明なものは不明と明記。
 
+## 【本番版】2.0.0 (build 11) — 2026-09-01 · TestFlight（イワノボリタイ・本番アプリ初のTestFlight）
+
+- 開発版 build 11 と同一コード（main）を本番構成でビルド（flavor "Runner Prod" / ENVIRONMENT=prod / main_prod.dart、プロファイル「Bouldering App Distribution v2」手動署名）
+- **本番アプリ（com.km.boulderingapp / ASC 6753177257）へ初のTestFlight配信**。内部グループ「内部テスト」（全ビルド自動配信）を新規作成し、テスター2名（devと同一）を追加
+- バックエンドは同日デプロイの `supabase-v2.0.0`（rev 00023）+ prod DB反映済みの状態で動作（deployment-log 2026-09-01 参照）
+
+**配信**: TestFlight にアップロード済み（Delivery UUID `abf94aee-2f96-41ac-be03-65b65b78b6f5`、エラー0）→ **Apple処理 VALID**
+**状態**: 内部テスター配信（審査提出はまだ。実機確認OK後に App Store 申請予定 = URL変更I-10・v2.0.0タグ必須）
+
 ## 【開発版】2.0.0 (build 11) — 2026-09-01 · TestFlight（イワノボリタイ Dev）
 
 - **地図初回オープン時の2段階測位補正を取り下げ**（ユーザー実機確認で効果なしと判断）。初回オープン時の現在地ズレは原因未特定のまま保留（台帳G-12に記録）。build 10のその他の内容（みんなのボル活の白画面解消等）は全て維持

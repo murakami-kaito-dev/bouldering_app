@@ -18,6 +18,15 @@
 
 ---
 
+## 2026-09-01 — バックエンド v2.0.0 prodデプロイ（ジム写真機能の本番反映完了）
+
+- **イメージ**: `supabase-v2.0.0` をビルド・push（差分: ジム写真API新設のみ。既存APIは無変更）。ビルド前に PR #44 の .dockerignore 修正を取り込み、**イメージ内にenvファイルが無いことを実測で確認**（S-3対策の効果検証済み）
+- **デプロイ**: Cloud Run `bouldering-api-prod` **rev 00023**（無停止切替・トラフィック100%）。既存環境変数を維持し `PLACES_API_KEY`（prod専用キー）のみ追加
+- **検証（prod実測）**: `/health` 200・database connected / `/api/gyms` **430件・313不在・345あり** / `/api/gyms/3/photos` source=google・5枚 / 既存API（ジム詳細200・ツイート取得OK）デグレなし
+- **ロールバック手段**: 旧タグ `supabase-v1.0.0`（rev 00022）への再デプロイで即時復旧可能
+
+---
+
 ## 2026-09-01 — ジム写真機能 Phase 4-前半: prod インフラ・DB反映（v2.0.0準備）
 
 - **インフラ（prod / bouldering-app-prod-ca5d7）**: Places API (New)・API Keys API を有効化。専用APIキー `places-server-prod` を新規作成（places.googleapis.com のみに制限。キー文字列は `.local/places_api_key_prod.txt`、リソース名は `.local/places_key_resource_prod.txt`、Git管理外）。実リクエスト1回で200/place取得を確認
