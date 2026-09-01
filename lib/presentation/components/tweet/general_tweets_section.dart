@@ -54,12 +54,33 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
       return const Center(child: CircularProgressIndicator());
     }
 
+    // 取得失敗で1件も表示できない場合（オフライン起動など）は再読み込み動線を出す
+    // （以前は真っ白なリストのまま復旧手段がなかった）
+    if (generalTweets.isEmpty && generalTweetsState.hasError) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('読み込みに失敗しました'),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () =>
+                  ref.read(generalTweetsProvider.notifier).refreshTweets(),
+              child: const Text('再読み込み'),
+            ),
+          ],
+        ),
+      );
+    }
+
     return RefreshIndicator(
       onRefresh: () async {
         await ref.read(generalTweetsProvider.notifier).refreshTweets();
       },
       child: ListView.builder(
         controller: _generalTweetsScrollController,
+        // 件数が少なくても引っ張って更新できるようにする
+        physics: const AlwaysScrollableScrollPhysics(),
         itemCount: generalTweets.length + (hasMoreGeneralTweets ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == generalTweets.length) {

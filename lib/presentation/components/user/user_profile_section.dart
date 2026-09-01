@@ -29,8 +29,11 @@ class UserProfileSection extends ConsumerWidget {
     final gymMap = ref.watch(gymMapProvider);
 
     // エラー状態でも前回のデータがある場合は表示を続ける
-    if (userState.hasError && userState.value != null) {
-      final user = userState.value;
+    // 注意: エラー状態の AsyncValue に .value でアクセスすると例外が再スローされ、
+    // build中の例外＝release版ではグレー一色のエラー画面になる（Riverpod 2.x仕様）。
+    // 必ず valueOrNull を使うこと
+    if (userState.hasError && userState.valueOrNull != null) {
+      final user = userState.valueOrNull;
 
       // エラーメッセージを表示しつつ、基本的なUIも表示
       return SliverToBoxAdapter(

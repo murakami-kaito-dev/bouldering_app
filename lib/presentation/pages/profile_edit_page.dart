@@ -655,7 +655,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
   Future<void> _showDatePicker(String type) async {
     final now = DateTime.now();
-    final user = ref.read(userProvider).value;
+    final user = ref.read(userProvider).valueOrNull;
 
     DateTime initialDate;
     DateTime firstDate;
@@ -694,7 +694,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
   }
 
   Future<void> _showGenderSelectionDialog() async {
-    final user = ref.read(userProvider).value;
+    final user = ref.read(userProvider).valueOrNull;
     if (user == null) return;
 
     // 現在選択されている値を優先的に使用（選択済みなら_selectedGender、そうでなければDBの値）
@@ -837,7 +837,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         final updateUserIconUseCase = ref.read(updateUserIconUseCaseProvider);
 
         // 現在ログイン中のユーザー情報を取得
-        final currentUser = ref.read(userProvider).value;
+        final currentUser = ref.read(userProvider).valueOrNull;
 
         if (currentUser != null) {
           try {

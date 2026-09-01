@@ -27,11 +27,16 @@ class GeneralTweetsState {
   final bool isFirstFetch;
   final String? nextCursor;
 
+  /// 直近の取得が失敗したか（オフライン等）。
+  /// 「本当にデータがない（空）」と「取得に失敗した」を区別するために持つ
+  final bool hasError;
+
   GeneralTweetsState({
     required this.generalTweets,
     required this.hasMore,
     required this.isFirstFetch,
     this.nextCursor,
+    this.hasError = false,
   });
 }
 
@@ -85,11 +90,15 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
         );
       }
     } catch (error) {
+      // 取得失敗（オフライン等）。hasMore:false で止めるが hasError を立てて
+      // 「データ終端」と区別する（以前は区別がなく、オフライン起動時に
+      // 真っ白のまま復旧手段がない状態になっていた）
       state = GeneralTweetsState(
         generalTweets: state.generalTweets,
         hasMore: false,
         isFirstFetch: false,
         nextCursor: state.nextCursor,
+        hasError: true,
       );
     } finally {
       _isLoading = false;
@@ -98,6 +107,16 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
 
   void fetchMoreGeneralTweets() {
     _fetchMoreGeneralTweets();
+  }
+
+  /// 初回取得が失敗して1件も表示できていない場合のみ取得し直す
+  ///
+  /// オフライン起動からの自己回復用（アプリ復帰時に app.dart から呼ばれる）。
+  /// 正常に表示できている場合は何もしない（余計な再取得をしない）
+  Future<void> retryInitialIfFailed() async {
+    if (state.hasError && state.generalTweets.isEmpty) {
+      await refreshTweets();
+    }
   }
 
   /// Pull-to-Refresh対応：ツイート一覧を初期化して再取得

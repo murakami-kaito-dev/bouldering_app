@@ -11,6 +11,7 @@ import '../../domain/services/image_picker_service.dart';
 // Infrastructure
 import '../../infrastructure/services/api_client.dart';
 import '../../infrastructure/services/gym_cache_service.dart';
+import '../../infrastructure/services/gym_photos_cache_service.dart';
 import '../../infrastructure/services/storage_service.dart';
 import '../../infrastructure/services/firebase_auth_service.dart';
 import '../../infrastructure/services/image_picker_service_impl.dart';
@@ -140,11 +141,21 @@ final gymCacheServiceProvider = Provider<GymCacheService>((ref) {
   return GymCacheService();
 });
 
+/// ジム写真キャッシュサービスのProvider
+final gymPhotosCacheServiceProvider = Provider<GymPhotosCacheService>((ref) {
+  return GymPhotosCacheService();
+});
+
 final gymDataSourceProvider = Provider<GymDataSource>((ref) {
   final apiClient = ref.read(apiClientProvider);
   final cacheService = ref.read(gymCacheServiceProvider);
 
-  return GymDataSource(apiClient, cacheService: cacheService);
+  final photosCacheService = ref.read(gymPhotosCacheServiceProvider);
+  return GymDataSource(
+    apiClient,
+    cacheService: cacheService,
+    photosCacheService: photosCacheService,
+  );
 });
 
 /// ツイートデータソースProvider
