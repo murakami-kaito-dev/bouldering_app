@@ -56,7 +56,7 @@ class MyPage extends ConsumerWidget {
       );
     }
 
-    if (userState.value == null) {
+    if (userState.valueOrNull == null) {
       // ユーザー情報の読み込み中（起動直後・再読み込み中）
       return const Scaffold(
         backgroundColor: Color(0xFFFEF7FF),

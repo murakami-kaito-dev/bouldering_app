@@ -45,7 +45,9 @@ class GymDataSource {
   /// 処理フロー:
   /// 1. REST API: GET /api/gyms/{gymId}/photos
   ///    バックエンドが「自前写真（GCS） or Google Places API」を判定して返す
-  /// 2. 取得失敗時は「写真なし」として扱う（写真は補助情報のため画面全体は壊さない）
+  /// 2. 取得失敗時は例外を上位へ伝播する（Provider側が一定時間後の再試行を管理。
+  ///    以前は空セットに丸めていたため、オフライン時の取得失敗が「写真なし」として
+  ///    アプリ再起動まで固定される不具合があった）
   Future<GymPhotoSet> getGymPhotos(int gymId) async {
     // 永続キャッシュ優先（cache-first + stale-while-revalidate）。
     // オフラインや通信不安定時でも、一度表示したジムの写真リストを出せるようにする
@@ -58,16 +60,11 @@ class GymDataSource {
       return GymPhotoSet.fromJson(cached.data);
     }
 
-    try {
-      final data = await _fetchGymPhotosRaw(gymId);
-      if (data != null) {
-        return GymPhotoSet.fromJson(data);
-      }
-      return GymPhotoSet.empty;
-    } catch (e) {
-      // 写真は必須情報ではないので、失敗しても空セットで継続する
-      return GymPhotoSet.empty;
+    final data = await _fetchGymPhotosRaw(gymId);
+    if (data != null) {
+      return GymPhotoSet.fromJson(data);
     }
+    return GymPhotoSet.empty;
   }
 
   /// 写真セットの生JSONをAPIから取得し、キャッシュへ保存する

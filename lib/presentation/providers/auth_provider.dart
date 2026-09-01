@@ -402,7 +402,11 @@ class AuthNotifier extends StateNotifier<bool> {
     if (user == null) return;
 
     final userState = ref.read(userProvider);
-    if (userState.isLoading || userState.value != null) return;
+    // 注意: エラー状態の AsyncValue に .value でアクセスすると保持している例外が
+    // その場で再スローされる（Riverpod 2.x の仕様）。ここでそれを踏むと
+    // login() に到達する前に黙って死に、「再読み込みが全く効かない」状態になる。
+    // 必ず valueOrNull を使うこと
+    if (userState.isLoading || userState.valueOrNull != null) return;
 
     await ref.read(userProvider.notifier).login(user.uid);
   }
