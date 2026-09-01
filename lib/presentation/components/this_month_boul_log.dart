@@ -4,16 +4,17 @@ import '../pages/statistics_report_page.dart';
 import '../providers/statistics_provider.dart';
 import '../components/common/loading_widget.dart';
 import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 
 /// 今月のボル活コンポーネント
-/// 
+///
 /// 役割:
 /// - ユーザーの今月のボルダリング活動統計を表示
 /// - ボル活回数、施設数、週間ペースを表示
-/// 
-/// クリーンアーキテクチャにおける位置づけ:
-/// - Presentation層のComponent
-/// - ユーザー統計情報表示に特化したUI部品
+///
+/// 見た目（岩と粉 Phase 2b）:
+/// - 青ベタ面をやめ、節理面のカードに。主役はコンデンス書体の数字
+/// - 青は「数字」と「統計レポートへのリンク」にだけ使う（色の役割ルール）
 class ThisMonthBoulLog extends ConsumerWidget {
   final String userId; // 統計を表示する対象ユーザーのID（必須）
   final int monthsAgo;
@@ -50,118 +51,90 @@ class ThisMonthBoulLog extends ConsumerWidget {
     String gyms,
     String pace,
   ) {
-    return Center(
-      child: Container(
-        width: 400,
-        padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
-        decoration: ShapeDecoration(
-          color: AppColors.kabeBlue,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    // 今月のボル活 テキスト
-                    const Text(
-                      '今月のボル活',
-                      style: TextStyle(
-                        color: AppColors.onKabeBlue,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.50,
-                      ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+      decoration: BoxDecoration(
+        color: AppColors.setsuri,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.wareme),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('今月のボル活', style: AppText.caption(size: 12)),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          StatisticsReportPage(userId: userId),
                     ),
-                    // 統計情報更新ボタン（Mock実装では非表示）
-                    // TODO: 本格実装時はリフレッシュボタンを実装
+                  );
+                },
+                child: Row(
+                  children: [
+                    Text('統計レポート',
+                        style: AppText.caption(
+                            size: 12, color: AppColors.kabeBlue)),
+                    const Icon(Icons.chevron_right,
+                        size: 16, color: AppColors.kabeBlue),
                   ],
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StatisticsReportPage(userId: userId),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    '統計レポート >',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      color: AppColors.onKabeBlue,
-                      fontSize: 12,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.50,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
 
-            // ボル活・施設数・ペース 表記部分
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildStatsItem('ボル活', visits, '回'),
-                _buildStatsItem('施設数', gyms, '施設'),
-                _buildStatsItem('ペース', pace, '回 / 週'),
-              ],
-            ),
-          ],
-        ),
+          // ボル活・施設数・ペース（数字が顔）
+          Row(
+            children: [
+              Expanded(child: _buildStatsItem('ボル活', visits, '回')),
+              _divider(),
+              Expanded(child: _buildStatsItem('施設', gyms, '施設')),
+              _divider(),
+              Expanded(child: _buildStatsItem('ペース', pace, '回/週')),
+            ],
+          ),
+        ],
       ),
     );
   }
 
+  Widget _divider() => Container(
+        width: 1,
+        height: 34,
+        color: AppColors.wareme,
+        margin: const EdgeInsets.symmetric(horizontal: 12),
+      );
+
   /// ボル活・施設数・(ボル活)ペースを表示するウィジェット
   Widget _buildStatsItem(String title, String value, String unit) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: AppColors.onKabeBlue,
-            fontSize: 16,
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.50,
-          ),
-        ),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
           children: [
             Text(
               value,
-              style: const TextStyle(
-                color: AppColors.onKabeBlue,
-                fontSize: 24,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.50,
+              style: AppText.number(
+                size: 30,
+                color: AppColors.kabeBlue,
+                weight: FontWeight.w600,
               ),
             ),
-            const SizedBox(width: 4),
-            Text(
-              unit,
-              style: const TextStyle(
-                color: AppColors.onKabeBlue,
-                fontSize: 14,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.50,
-              ),
-            ),
+            const SizedBox(width: 3),
+            Text(unit, style: AppText.caption(size: 11)),
           ],
         ),
+        const SizedBox(height: 2),
+        Text(title, style: AppText.caption(size: 11)),
       ],
     );
   }

@@ -9,6 +9,7 @@ import '../../../shared/utils/navigation_helper.dart';
 import '../../pages/activity_post_page.dart';
 import '../../pages/report_page.dart';
 import '../../theme/app_tokens.dart';
+import '../../theme/app_text.dart';
 import 'image_viewer.dart';
 
 class BoulLog extends ConsumerStatefulWidget {
@@ -72,8 +73,14 @@ class _BoulLogState extends ConsumerState<BoulLog> {
       error: (_, __) => null,
     );
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 14),
+      decoration: BoxDecoration(
+        color: AppColors.setsuri,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.wareme),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -109,18 +116,35 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                       },
                       child: Text(
                         widget.userName,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppText.body(size: 15, weight: FontWeight.w700),
                       ),
                     ),
-                    Text(
-                      widget.visitedDate,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.sunabokori,
-                      ),
+                    const SizedBox(height: 2),
+                    // メタ行: 訪問日・ジム名（ジム名タップで詳細へ）
+                    Row(
+                      children: [
+                        Text(widget.visitedDate,
+                            style: AppText.number(
+                                size: 13,
+                                color: AppColors.sunabokori,
+                                weight: FontWeight.w500)),
+                        Text('・', style: AppText.caption(size: 12)),
+                        Flexible(
+                          child: GestureDetector(
+                            onTap: () {
+                              NavigationHelper.toGymDetail(
+                                  context, widget.gymId);
+                            },
+                            child: Text(
+                              '${widget.gymName}［${widget.prefecture}］',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppText.caption(
+                                  size: 12, weight: FontWeight.w600),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -325,48 +349,18 @@ class _BoulLogState extends ConsumerState<BoulLog> {
           const SizedBox(height: 8),
 
           Padding(
-            padding: const EdgeInsets.only(left: 56.0),
+            padding: const EdgeInsets.only(right: 6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ジム名・場所
-                GestureDetector(
-                  onTap: () async {
-                    // ジム詳細ページに遷移
-                    NavigationHelper.toGymDetail(context, widget.gymId);
-                  },
-                  child: RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: widget.gymName,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: AppColors.kabeBlue,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' [${widget.prefecture}]',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.sunabokori,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-
                 // 活動内容
-                widget.content.isEmpty
-                    ? const SizedBox(height: 16) // 最小高さ確保
-                    : Text(
-                        widget.content,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                const SizedBox(height: 8),
+                if (widget.content.isNotEmpty) ...[
+                  Text(
+                    widget.content,
+                    style: AppText.body(size: 14),
+                  ),
+                  const SizedBox(height: 10),
+                ],
 
                 // 画像がある場合だけ表示（横スクロール）
                 if (_imageUrls.isNotEmpty)
@@ -394,7 +388,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                             child: Hero(
                               tag: '${widget.contextPrefix ?? 'general'}_tweet_media_${widget.userId}_${widget.tweetId}_$index',
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(10),
                                 child: CachedNetworkImage(
                                   imageUrl: imageUrl,
                                   width: 200,
@@ -419,14 +413,6 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                   ),
               ],
             ),
-          ),
-          const SizedBox(height: 8),
-
-          // 下線
-          Container(
-            width: MediaQuery.of(context).size.width - 16,
-            height: 1,
-            color: AppColors.sunabokori,
           ),
         ],
       ),

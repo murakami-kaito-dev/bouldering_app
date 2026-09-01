@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../shared/config/environment_config.dart';
 import '../../shared/constants/app_routes.dart';
 import '../providers/auth_provider.dart';
@@ -97,6 +98,10 @@ class BoulderingApp extends ConsumerWidget {
     return ThemeData(
       brightness: Brightness.dark,
       primaryColor: AppColors.kabeBlue,
+      // 全文字の基本書体を Zen Kaku Gothic New に（個別の強調は AppText を使う）
+      textTheme: GoogleFonts.zenKakuGothicNewTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ).apply(bodyColor: AppColors.chalk, displayColor: AppColors.chalk),
       colorScheme: const ColorScheme.dark(
         primary: AppColors.kabeBlue,
         onPrimary: AppColors.onKabeBlue,

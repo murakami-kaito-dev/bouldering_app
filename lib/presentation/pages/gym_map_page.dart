@@ -397,7 +397,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                                 padding: const EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'ボルダリング',
-                                  colorCode: AppColors.holdRed.value,
+                                  color: AppColors.holdRed,
                                 ),
                               ),
                             if (gym.isLeadGym)
@@ -405,7 +405,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                                 padding: const EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'リード',
-                                  colorCode: AppColors.holdGreen.value,
+                                  color: AppColors.holdGreen,
                                 ),
                               ),
                             if (gym.isSpeedGym)
@@ -413,7 +413,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                                 padding: const EdgeInsets.only(right: 8.0),
                                 child: GymCategory(
                                   category: 'スピード',
-                                  colorCode: AppColors.holdCyan.value,
+                                  color: AppColors.holdCyan,
                                 ),
                               ),
                           ],

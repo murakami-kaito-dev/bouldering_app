@@ -11,6 +11,7 @@ import '../components/gym/gym_photo_strip.dart';
 import '../../domain/entities/gym.dart';
 import 'activity_post_page.dart';
 import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 
 // Mock実装（テスト時のみ使用）
 // Mock環境用の簡単な表示コンポーネントをここにインポート
@@ -178,7 +179,6 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
               child: SwitcherTab(
                 leftTabName: "施設情報",
                 rightTabName: "ボル活",
-                colorCode: 0xFF15171B, // AppColors.iwa（int型パラメータのため同値リテラル）
               ),
             ),
             Padding(
@@ -216,7 +216,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'ボルダリング',
-                    colorCode: 0xFFFF7264, // AppColors.holdRed（int型パラメータのため同値リテラル）
+                    color: AppColors.holdRed,
                   ),
                 ),
               if (gymInfo.isLeadGym)
@@ -224,7 +224,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'リード',
-                    colorCode: 0xFF3FCF8E, // AppColors.holdGreen（int型パラメータのため同値リテラル）
+                    color: AppColors.holdGreen,
                   ),
                 ),
               if (gymInfo.isSpeedGym)
@@ -232,7 +232,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'スピード',
-                    colorCode: 0xFF3EC6E0, // AppColors.holdCyan（int型パラメータのため同値リテラル）
+                    color: AppColors.holdCyan,
                   ),
                 ),
             ],
@@ -307,12 +307,22 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
       left: 0,
       right: 0,
       child: Container(
-        padding: const EdgeInsets.all(16),
-        color: Colors.transparent,
+        padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
+        decoration: BoxDecoration(
+          // 下端の読みやすさ確保（内容の上に浮くバーなのでスクリムを敷く）
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.iwa.withOpacity(0),
+              AppColors.iwa.withOpacity(0.9),
+            ],
+          ),
+        ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            OutlinedButton(
+            Expanded(
+                child: OutlinedButton(
               onPressed: () async {
                 // 実際のイキタイ登録/解除処理を実装
                 final currentUser = ref.read(currentUserProvider);
@@ -373,21 +383,30 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                 }
               },
               style: OutlinedButton.styleFrom(
-                backgroundColor:
-                    _isFavoriteRegistered ? AppColors.kabeBlue : AppColors.setsuri,
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                backgroundColor: _isFavoriteRegistered
+                    ? AppColors.kabeBlue
+                    : AppColors.setsuri,
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                shape: const StadiumBorder(),
                 side: BorderSide(
-                  color: _isFavoriteRegistered ? AppColors.kabeBlue : AppColors.sunabokori,
+                  color: _isFavoriteRegistered
+                      ? AppColors.kabeBlue
+                      : AppColors.wareme,
                 ),
               ),
               child: Text(
-                'イキタイ',
-                style: TextStyle(
-                  color: _isFavoriteRegistered ? AppColors.onKabeBlue : AppColors.kabeBlue,
+                _isFavoriteRegistered ? 'イキタイ登録済み' : 'イキタイに追加',
+                style: AppText.label(
+                  size: 14,
+                  color: _isFavoriteRegistered
+                      ? AppColors.onKabeBlue
+                      : AppColors.chalk,
                 ),
               ),
-            ),
-            ElevatedButton(
+            )),
+            const SizedBox(width: 12),
+            Expanded(
+                child: ElevatedButton(
               onPressed: () {
                 // ボル活投稿をモーダルシートで開く（ジムが事前選択された状態）
                 showActivityPostSheet(
@@ -396,11 +415,13 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                padding: const EdgeInsets.symmetric(vertical: 13),
                 backgroundColor: AppColors.kabeBlue,
               ),
-              child: const Text('ボル活投稿', style: TextStyle(color: AppColors.onKabeBlue)),
-            ),
+              child: Text('ボル活を投稿',
+                  style:
+                      AppText.label(size: 14, color: AppColors.onKabeBlue)),
+            )),
           ],
         ),
       ),
@@ -526,30 +547,33 @@ class GymIkitaiBoullogCount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+            child: _statTile('イキタイ', ikitaiCount, AppColors.kabeBlue)),
+        const SizedBox(width: 10),
+        Expanded(
+            child: _statTile('ボル活', boullogCount, AppColors.holdRed)),
+      ],
+    );
+  }
+
+  /// 統計タイル（数字が顔。イキタイ=壁ブルー / ボル活=ホールド赤）
+  Widget _statTile(String label, String value, Color numberColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.sunabokori),
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.setsuri,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.wareme),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('イキタイ ', style: TextStyle(fontWeight: FontWeight.bold)),
-          Text(
-            ikitaiCount,
-            style: const TextStyle(
-                color: AppColors.kabeBlue, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(width: 8),
-          Container(width: 1, height: 16, color: AppColors.wareme),
-          const SizedBox(width: 8),
-          const Text('ボル活 ', style: TextStyle(fontWeight: FontWeight.bold)),
-          Text(
-            boullogCount,
-            style: const TextStyle(
-                color: AppColors.kabeBlue, fontWeight: FontWeight.bold),
-          ),
+          Text(value,
+              style: AppText.number(size: 28, color: numberColor)),
+          const SizedBox(height: 2),
+          Text(label, style: AppText.caption(size: 11)),
         ],
       ),
     );

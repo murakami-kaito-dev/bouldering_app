@@ -4,6 +4,7 @@ import '../components/user/user_profile_section.dart';
 import '../components/my_tweets_section.dart';
 import '../components/favorite_gyms_section.dart';
 import '../theme/app_tokens.dart';
+import '../theme/app_text.dart';
 import 'settings_page.dart';
 
 /// ログイン時のマイページ
@@ -61,19 +62,17 @@ class LoggedInMyPage extends ConsumerWidget {
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: _SliverAppBarDelegate(
-                    const TabBar(
-                      tabs: [
+                    TabBar(
+                      tabs: const [
                         Tab(text: "ボル活"),
                         Tab(text: "イキタイ"),
                       ],
-                      labelStyle: TextStyle(
-                        color: AppColors.kabeBlue,
-                        fontSize: 20,
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w900,
-                        height: 1.4,
-                        letterSpacing: -0.50,
-                      ),
+                      indicatorColor: AppColors.kabeBlue,
+                      indicatorWeight: 3,
+                      labelColor: AppColors.chalk,
+                      unselectedLabelColor: AppColors.sunabokori,
+                      labelStyle: AppText.heading(size: 16),
+                      unselectedLabelStyle: AppText.heading(size: 16),
                     ),
                   ),
                 ),

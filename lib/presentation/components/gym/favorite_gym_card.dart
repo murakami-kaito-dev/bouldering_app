@@ -72,7 +72,7 @@ class FavoriteGymCard extends StatelessWidget {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'ボルダリング',
-                    colorCode: 0xFFFF7264,
+                    color: AppColors.holdRed,
                   ),
                 ),
               if (gym.isLeadGym)
@@ -80,13 +80,13 @@ class FavoriteGymCard extends StatelessWidget {
                   padding: EdgeInsets.only(right: 8.0),
                   child: GymCategory(
                     category: 'リード',
-                    colorCode: 0xFF3FCF8E,
+                    color: AppColors.holdGreen,
                   ),
                 ),
               if (gym.isSpeedGym)
                 const GymCategory(
                   category: 'スピード',
-                  colorCode: 0xFF3EC6E0,
+                  color: AppColors.holdCyan,
                 ),
             ],
           ),

@@ -43,6 +43,20 @@ class AppColors {
 
   /// ホールドシアン: スピード種別
   static const holdCyan = Color(0xFF3EC6E0);
+
+  // --- テープ・ボタンなど有彩色の面の上に載せる濃色文字（可読性の保証） ---
+
+  /// ホールド赤の上の文字色
+  static const onHoldRed = Color(0xFF33100C);
+
+  /// ホールド緑の上の文字色
+  static const onHoldGreen = Color(0xFF0B2B1C);
+
+  /// ホールドシアンの上の文字色
+  static const onHoldCyan = Color(0xFF08232A);
+
+  /// チョーク面の上の文字色
+  static const onChalk = Color(0xFF26292F);
 }
 
 /// 角丸は3種だけ
