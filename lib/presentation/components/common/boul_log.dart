@@ -399,10 +399,16 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                                   // 表示200px×最大DPR3相当に縮小デコードしてキャッシュに乗せ続ける。
                                   // （拡大表示のImageViewerは原寸デコードのままで別管理）
                                   memCacheWidth: 600,
-                                  placeholder: (context, url) => const Center(
-                                      child: CircularProgressIndicator()),
+                                  // スピナーは出さない: 静かな面→フェードイン
+                                  fadeInDuration:
+                                      const Duration(milliseconds: 200),
+                                  placeholder: (context, url) => Container(
+                                      color: AppColors.wareme),
                                   errorWidget: (context, url, error) =>
-                                      const Icon(Icons.error),
+                                      Container(
+                                          color: AppColors.wareme,
+                                          child: const Icon(Icons.broken_image,
+                                              color: AppColors.sunabokori)),
                                 ),
                               ),
                             ),

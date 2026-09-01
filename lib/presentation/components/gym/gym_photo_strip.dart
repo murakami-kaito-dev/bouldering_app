@@ -43,7 +43,7 @@ class GymPhotoStrip extends ConsumerWidget {
     return SizedBox(
       height: height,
       child: photosAsync.when(
-        loading: () => _placeholder(label: null, showSpinner: true),
+        loading: () => _placeholder(label: null),
         error: (_, __) => _placeholder(label: '写真なし'),
         data: (set) {
           if (set.isEmpty) return _placeholder(label: '写真なし');
@@ -94,12 +94,12 @@ class GymPhotoStrip extends ConsumerWidget {
             // 表示サイズ相当で縮小デコードし、メモリキャッシュに乗せ続ける
             // （原寸デコードによるキャッシュ追い出し=毎回ローディングを防ぐ）
             memCacheWidth: 400,
+            // スピナーは出さない: 静かな面→200msフェードイン（枚数分のクルクルを廃止）
+            fadeInDuration: const Duration(milliseconds: 200),
             placeholder: (context, url) => Container(
               width: photoWidth,
               height: height,
               color: AppColors.wareme,
-              child: const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2)),
             ),
             errorWidget: (context, url, error) => Container(
               width: photoWidth,
@@ -131,7 +131,7 @@ class GymPhotoStrip extends ConsumerWidget {
     );
   }
 
-  Widget _placeholder({String? label, bool showSpinner = false}) {
+  Widget _placeholder({String? label}) {
     return Row(
       children: [
         Container(
@@ -142,13 +142,9 @@ class GymPhotoStrip extends ConsumerWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
-            child: showSpinner
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2))
-                : Text(label ?? '',
-                    style: TextStyle(color: AppColors.sunabokori, fontSize: 14)),
+            child: Text(label ?? '',
+                style:
+                    const TextStyle(color: AppColors.sunabokori, fontSize: 14)),
           ),
         ),
       ],

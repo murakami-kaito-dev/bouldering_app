@@ -140,8 +140,9 @@ class GymSearchPage extends ConsumerWidget {
     return Container(
       width: double.infinity,
       // 条件表示の有無に関わらず一定の高さを確保
-      height: 90,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      // （下padding広め＝「◯件 検索」をボタン高の約半分ぶん上に見せる）
+      height: 114,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

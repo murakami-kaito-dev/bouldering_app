@@ -93,7 +93,15 @@ class FavoriteGymCard extends StatelessWidget {
           const SizedBox(height: 8),
 
           // ジム写真（自前写真 or Google Places API）
-          GymPhotoStrip(gymId: gym.id),
+          // 写真1.7枚分が見える幅（ジム詳細と同じ見せ方に統一）
+              LayoutBuilder(builder: (context, constraints) {
+                final photoWidth = constraints.maxWidth / 1.7 - 8;
+                return GymPhotoStrip(
+                  gymId: gym.id,
+                  photoWidth: photoWidth,
+                  height: photoWidth * 0.75, // 4:3比率
+                );
+              }),
           const SizedBox(height: 8),
 
           // ジム利用情報
