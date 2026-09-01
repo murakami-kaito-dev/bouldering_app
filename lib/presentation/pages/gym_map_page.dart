@@ -124,6 +124,10 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
         // ],
       ),
       body: Stack(
+        // 重要: fitを指定しないとStackは「位置指定なしの子＝GoogleMap」の
+        // サイズに縮む。地図プラットフォームビューの初期化中は高さが不定なため、
+        // パネルごと上に詰まるレイアウト崩れが起きる。常に画面全体へ強制する
+        fit: StackFit.expand,
         children: [
           // Google Map（常に表示。マーカーはデータ到着時に追加）
           _buildGoogleMap(sortedGyms, cardListHeight),
