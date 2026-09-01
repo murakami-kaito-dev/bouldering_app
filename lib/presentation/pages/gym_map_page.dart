@@ -181,13 +181,8 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
         // 従来の「現在地→マーカー」の順ではピンが一切立たなくなっていた
         await _updateMarkers(gyms);
 
-        // 現在地に移動（取得できなければ初期位置=東京駅のまま）
-        final currentLocation = await _getCurrentLocation();
-        if (currentLocation != null) {
-          await _mapController?.animateCamera(
-            CameraUpdate.newLatLngZoom(currentLocation, 12.0),
-          );
-        }
+        // 現在地に移動（2段階。取得できなければ初期位置=東京駅のまま）
+        await _moveToCurrentLocationOnOpen();
       },
       initialCameraPosition: CameraPosition(
         target: _center,
@@ -202,35 +197,87 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
     );
   }
 
-  /// 現在位置を取得
-  Future<LatLng?> _getCurrentLocation() async {
+  /// 位置情報の利用許可を確認する（未許可なら要求する）
+  Future<bool> _ensureLocationPermission() async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return null;
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return false;
 
-      LocationPermission permission = await Geolocator.checkPermission();
+      var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         permission = await Geolocator.requestPermission();
-        if (permission != LocationPermission.whileInUse &&
-            permission != LocationPermission.always) {
-          return null;
-        }
       }
+      return permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always;
+    } catch (_) {
+      return false;
+    }
+  }
 
+  /// 現在位置を取得（現在地ボタン用: 応答速度優先）
+  ///
+  /// 最大5秒だけ新鮮な測位を待ち、間に合わなければ最後に取得できた位置で代用する
+  /// （機内モード等でGPS測位が完了しなくても現在地系の機能を動かすため）
+  Future<LatLng?> _getCurrentLocation() async {
+    if (!await _ensureLocationPermission()) return null;
+
+    try {
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.medium,
         timeLimit: const Duration(seconds: 5), // オフライン時等に無限待ちしない
       );
       return LatLng(position.latitude, position.longitude);
     } catch (e) {
-      // 取得失敗・タイムアウト時は、最後に取得できた位置で代用する
-      // （機内モード等でGPS測位が完了しなくても現在地系の機能を動かすため）
       try {
         final last = await Geolocator.getLastKnownPosition();
         if (last != null) return LatLng(last.latitude, last.longitude);
       } catch (_) {}
       return null;
+    }
+  }
+
+  /// 地図を開いた直後のカメラ移動（2段階）
+  ///
+  /// 1段階目: 直近の既知位置があれば即移動（ユーザーを待たせない）
+  /// 2段階目: 新鮮な測位の完了を待って、本当の現在地へ移動し直す
+  ///
+  /// 既知位置は「前回どこかで測位した古い場所」のことがあり、これだけに頼ると
+  /// 初回オープン時（GPSが温まっておらず測位に時間がかかる）に現在地とズレた
+  /// 場所が中央に表示されるため、必ず2段階目で補正する
+  Future<void> _moveToCurrentLocationOnOpen() async {
+    if (!await _ensureLocationPermission()) return;
+
+    LatLng? shown;
+    try {
+      final last = await Geolocator.getLastKnownPosition();
+      if (last != null) {
+        shown = LatLng(last.latitude, last.longitude);
+        await _mapController?.animateCamera(
+          CameraUpdate.newLatLngZoom(shown, 12.0),
+        );
+      }
+    } catch (_) {}
+
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 15),
+      );
+      final fresh = LatLng(position.latitude, position.longitude);
+
+      // 1段階目とほぼ同じ位置なら動かさない（無駄なカメラ移動を避ける）
+      if (shown != null &&
+          (shown.latitude - fresh.latitude).abs() < 0.001 &&
+          (shown.longitude - fresh.longitude).abs() < 0.001) {
+        return;
+      }
+      if (!mounted) return;
+      await _mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(fresh, 12.0),
+      );
+    } catch (_) {
+      // 新鮮な測位が取れない場合は1段階目（既知位置 or 初期位置）のまま
     }
   }
 
