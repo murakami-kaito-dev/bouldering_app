@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 import 'gym_selection_page.dart';
+import 'icon_crop_page.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/entities/gym.dart';
 import '../providers/user_provider.dart';
@@ -741,11 +742,22 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
       final selectedImage = await selectProfileImageUseCase.execute();
 
-      if (selectedImage != null) {
-        setState(() {
-          _selectedProfileImage = selectedImage;
-        });
-        _onFieldChanged();
+      if (selectedImage != null && mounted) {
+        // 選択後にトリミング＋表示サイズプレビュー画面を挟む
+        final croppedImage = await Navigator.push<File>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => IconCropPage(imageFile: selectedImage),
+          ),
+        );
+
+        // 戻る（キャンセル）時は何もしない
+        if (croppedImage != null) {
+          setState(() {
+            _selectedProfileImage = croppedImage;
+          });
+          _onFieldChanged();
+        }
       }
     } catch (e) {
       if (mounted) {
