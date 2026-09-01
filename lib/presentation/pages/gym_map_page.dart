@@ -48,6 +48,12 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   final ScrollController _scrollController = ScrollController();
   int _focusedGymIndex = -1;
 
+  /// 画面遷移アニメーション完了後にtrue。
+  /// Google Mapのネイティブビュー生成と430本のピン転送は重く、遷移中に走ると
+  /// フレームが止まる（フリーズ感）ため、遷移が終わるまで地図を作らない
+  bool _mapReady = false;
+  bool _mapGateScheduled = false;
+
   // Google Maps関連
   Set<Marker> _markers = {};
   final LatLng _center = const LatLng(35.681236, 139.767125); // 東京駅
@@ -78,6 +84,28 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
     } catch (e) {
       _customGymMarker =
           BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_mapGateScheduled) return;
+    _mapGateScheduled = true;
+
+    final route = ModalRoute.of(context);
+    final animation = route?.animation;
+    if (animation == null || animation.status == AnimationStatus.completed) {
+      _mapReady = true;
+    } else {
+      void onStatus(AnimationStatus status) {
+        if (status == AnimationStatus.completed) {
+          animation.removeStatusListener(onStatus);
+          if (mounted) setState(() => _mapReady = true);
+        }
+      }
+
+      animation.addStatusListener(onStatus);
     }
   }
 
@@ -129,8 +157,17 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
         // パネルごと上に詰まるレイアウト崩れが起きる。常に画面全体へ強制する
         fit: StackFit.expand,
         children: [
-          // Google Map（常に表示。マーカーはデータ到着時に追加）
-          _buildGoogleMap(sortedGyms, cardListHeight),
+          // Google Map。遷移完了までは岩肌のプレースホルダ（生成の重さを
+          // 遷移アニメーションと重ねない）。完了後にフェードで地図を表示
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: _mapReady
+                ? _buildGoogleMap(sortedGyms, cardListHeight)
+                : const ColoredBox(
+                    key: ValueKey('map-placeholder'),
+                    color: AppColors.iwa,
+                  ),
+          ),
 
           // ジムカード横スクロール（下部・固定高でレイアウトを不動に）
           Positioned(
