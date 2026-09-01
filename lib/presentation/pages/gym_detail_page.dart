@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../components/common/switcher_tab.dart';
 import '../components/common/gym_category.dart';
+import '../components/common/pressable.dart';
 import '../providers/gym_provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/dependency_injection.dart';
@@ -322,7 +323,8 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
         child: Row(
           children: [
             Expanded(
-                child: OutlinedButton(
+                child: Pressable(
+                    child: OutlinedButton(
               onPressed: () async {
                 // 実際のイキタイ登録/解除処理を実装
                 final currentUser = ref.read(currentUserProvider);
@@ -403,10 +405,11 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
                       : AppColors.chalk,
                 ),
               ),
-            )),
+            ))),
             const SizedBox(width: 12),
             Expanded(
-                child: ElevatedButton(
+                child: Pressable(
+                    child: ElevatedButton(
               onPressed: () {
                 // ボル活投稿をモーダルシートで開く（ジムが事前選択された状態）
                 showActivityPostSheet(
@@ -421,7 +424,7 @@ class GymDetailPageState extends ConsumerState<GymDetailPage> {
               child: Text('ボル活を投稿',
                   style:
                       AppText.label(size: 14, color: AppColors.onKabeBlue)),
-            )),
+            ))),
           ],
         ),
       ),

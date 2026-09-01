@@ -13,6 +13,7 @@ import '../../shared/utils/image_url_validator.dart';
 import '../../shared/utils/ng_word_validator.dart';
 import '../theme/app_tokens.dart';
 import '../theme/app_text.dart';
+import '../components/common/chalk_puff.dart';
 
 /// ■ クラス
 /// - View
@@ -365,9 +366,9 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
 
                               // 投稿ページ初期化
                               if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('投稿が完了しました')),
-                                );
+                                // お祝い演出: チョークの粉が舞う（SnackBarの代わり。
+                                // ルートOverlayに出すのでシートを閉じても表示され続ける）
+                                showChalkPuffCelebration(context);
 
                                 // モーダル/ジム詳細からの場合は画面を閉じる
                                 // → シートが閉じる動きで「投稿できた」ことが伝わる

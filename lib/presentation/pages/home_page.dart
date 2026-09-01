@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_tokens.dart';
 import '../theme/app_text.dart';
 import '../../shared/constants/app_routes.dart';
+import '../components/common/pressable.dart';
 
 /// ホーム画面（ジム検索の起点）
 ///
@@ -49,7 +50,8 @@ class HomePage extends StatelessWidget {
               const SizedBox(height: 16),
 
               // 主役: 条件検索
-              Material(
+              Pressable(
+                  child: Material(
                 color: AppColors.setsuri,
                 shape: const StadiumBorder(
                   side: BorderSide(color: AppColors.wareme),
@@ -82,12 +84,13 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
+              )),
 
               const SizedBox(height: 14),
 
               // 地図検索: 没入プレビューカード（全体がタップ領域）
-              ClipRRect(
+              Pressable(
+                  child: ClipRRect(
                 borderRadius: BorderRadius.circular(AppRadius.card),
                 child: Stack(
                   children: [
@@ -151,7 +154,7 @@ class HomePage extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
+              )),
 
               const SizedBox(height: 32),
 

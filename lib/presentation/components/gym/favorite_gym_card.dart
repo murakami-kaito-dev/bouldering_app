@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/utils/navigation_helper.dart';
 import '../../../shared/utils/gym_hours_utils.dart';
 import '../common/gym_category.dart';
+import '../common/pressable.dart';
 import '../../../domain/entities/gym.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/app_text.dart';
@@ -30,7 +31,8 @@ class FavoriteGymCard extends StatelessWidget {
     // 営業状態を判定（統一されたロジック使用）
     final isOpened = GymHoursUtils.isCurrentlyOpen(gym.hours);
 
-    return Container(
+    return Pressable(
+        child: Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -167,6 +169,6 @@ class FavoriteGymCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

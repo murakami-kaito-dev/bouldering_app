@@ -356,7 +356,9 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: Stack(
+        children: [
+          BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: (int index) {
@@ -403,6 +405,39 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
         unselectedItemColor: AppColors.sunabokori,
         selectedLabelStyle: const TextStyle(fontSize: 12),
         unselectedLabelStyle: const TextStyle(fontSize: 12),
+          ),
+          // 選択中タブを示す「課題テープ」。タブ切替で横にスライドする
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: SizedBox(
+                height: 4,
+                child: AnimatedAlign(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutBack,
+                  // 4タブの各中心: x = -0.75 / -0.25 / +0.25 / +0.75
+                  // （投稿タブ(2)は選択されないため通過しない）
+                  alignment: Alignment(-0.75 + 0.5 * _currentIndex, -1),
+                  child: Transform(
+                    transform: Matrix4.skewX(-0.14),
+                    alignment: Alignment.center,
+                    child: Container(
+                      width: 34,
+                      height: 4,
+                      decoration: const BoxDecoration(
+                        color: AppColors.kabeBlue,
+                        borderRadius: BorderRadius.vertical(
+                            bottom: Radius.circular(3)),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../domain/entities/gym.dart';
 import '../common/gym_category.dart';
+import '../common/pressable.dart';
 import '../../../shared/utils/gym_hours_utils.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/app_text.dart';
@@ -30,7 +31,8 @@ class GymListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isOpen = GymHoursUtils.isCurrentlyOpen(gym.hours);
 
-    return Container(
+    return Pressable(
+        child: Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.setsuri,
@@ -162,6 +164,6 @@ class GymListCard extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }

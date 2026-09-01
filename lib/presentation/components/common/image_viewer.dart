@@ -87,11 +87,10 @@ class ImageViewer extends StatelessWidget {
                         child: CachedNetworkImage(
                           imageUrl: imageUrls[index],
                           fit: BoxFit.contain,
-                          placeholder: (context, url) => const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.chalk,
-                            ),
-                          ),
+                          // スピナーは出さない: 黒地のまま→フェードイン
+                          fadeInDuration: const Duration(milliseconds: 250),
+                          placeholder: (context, url) =>
+                              const SizedBox.expand(),
                           errorWidget: (context, url, error) => const Icon(
                             Icons.error,
                             color: AppColors.chalk,

@@ -68,6 +68,7 @@ flutter:
     - assets/keys/gcs_storage_dev.json
     - assets/keys/gcs_storage_prod.json
     - assets/
+    - assets/google_fonts/
   uses-material-design: true
 
 dependency_overrides:
