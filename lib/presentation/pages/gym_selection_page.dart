@@ -89,6 +89,9 @@ class _GymSelectionPageState extends ConsumerState<GymSelectionPage> {
 
   /// 地図からの選択画面を開き、選ばれたら呼び出し元へ返す
   Future<void> _openMapSelection() async {
+    // キーボードを閉じてから遷移する（開いたままだと遷移先の描画高が
+    // キーボードぶん縮み、閉じるのに合わせてレイアウトがズレて見える）
+    FocusManager.instance.primaryFocus?.unfocus();
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(

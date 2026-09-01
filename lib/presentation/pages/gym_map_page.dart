@@ -132,9 +132,16 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
     });
 
     final safeBottom = MediaQuery.of(context).viewPadding.bottom;
-    final cardListHeight = _cardListHeight(safeBottom);
+    // 浮遊カードの下端余白 + カード高（地図padding・現在地ボタンの基準）
+    final cardBottom = safeBottom + 12;
+    final cardListHeight = _floatingCardHeight + cardBottom;
 
     return Scaffold(
+      // 重要: 呼び出し元（ジム選択の検索欄等）でキーボードが開いたまま遷移すると、
+      // 既定(true)ではbodyがキーボード高ぶん縮んで描画され、下部カードが画面中央に
+      // 来る＋キーボードが閉じるのに合わせて位置がズレ続ける。地図画面は入力を
+      // 持たないため、キーボードでリサイズさせない
+      resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -169,19 +176,19 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                   ),
           ),
 
-          // ジムカード横スクロール（下部・固定高でレイアウトを不動に）
+          // ジムカード（地図の上に浮かぶ横スクロール。背景パネルなし）
           Positioned(
-            bottom: 0,
+            bottom: cardBottom,
             left: 0,
             right: 0,
-            child: _buildBottomPanel(
-                gymListState, sortedGyms, cardListHeight, safeBottom),
+            height: _floatingCardHeight,
+            child: _buildFloatingCards(gymListState, sortedGyms),
           ),
 
-          // 現在地ボタン（自前実装。パネル高に追従させ被りを防ぐ）
+          // 現在地ボタン（浮遊カードの直上に追従）
           Positioned(
             right: 16,
-            bottom: cardListHeight + 16,
+            bottom: cardListHeight + 12,
             child: FloatingActionButton(
               mini: true,
               heroTag: 'gym_map_my_location',
@@ -196,40 +203,43 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
     );
   }
 
-  /// カードパネルの高さ（選択モードは確定ボタンぶん加算・下部セーフエリア込み）
-  double _cardListHeight(double safeBottom) {
-    const headerAndHandle = 52.0;
-    const cardArea = 250.0;
-    final buttonExtra = widget.selectionMode ? 56.0 : 0.0;
-    return headerAndHandle + cardArea + buttonExtra + safeBottom;
-  }
+  /// 浮遊カードの高さ（選択モードは確定ボタンぶん加算）
+  double get _floatingCardHeight => widget.selectionMode ? 276.0 : 220.0;
 
-  /// 下部パネル（データ状態に依らず同じ高さ＝位置が動かない。中身だけ切替）
-  Widget _buildBottomPanel(
-    AsyncValue<List<Gym>> state,
-    List<Gym> gyms,
-    double height,
-    double safeBottom,
-  ) {
-    return Container(
-      height: height,
-      color: AppColors.setsuri,
-      padding: EdgeInsets.only(bottom: safeBottom),
-      child: gyms.isNotEmpty
-          ? _buildGymCardList(gyms)
-          : state.when(
-              data: (_) => const Center(child: Text('ジムがありません')),
-              loading: () => const Center(
-                child: LoadingWidget(message: 'ジム情報を読み込み中...'),
+  /// 地図の上に浮かぶジムカード列（位置・高さは常に固定。中身だけ状態で切替）
+  Widget _buildFloatingCards(AsyncValue<List<Gym>> state, List<Gym> gyms) {
+    if (gyms.isNotEmpty) return _buildGymCardList(gyms);
+
+    // データ未到着時は小さな浮遊チップだけ（レイアウトは不動）
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.setsuri,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(color: AppColors.wareme),
+        ),
+        child: state.when(
+          data: (_) => Text('ジムがありません', style: AppText.body(size: 13)),
+          loading: () => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              error: (error, stackTrace) => Center(
-                child: AppErrorWidget(
-                  message: 'ジム情報の取得に失敗しました',
-                  onRetry: () =>
-                      ref.read(gymListProvider.notifier).loadAllGyms(),
-                ),
-              ),
-            ),
+              const SizedBox(width: 10),
+              Text('ジム情報を読み込み中...', style: AppText.body(size: 13)),
+            ],
+          ),
+          error: (error, stackTrace) => GestureDetector(
+            onTap: () => ref.read(gymListProvider.notifier).loadAllGyms(),
+            child: Text('取得に失敗しました（タップで再試行）',
+                style: AppText.body(size: 13, color: AppColors.holdRed)),
+          ),
+        ),
+      ),
     );
   }
 
@@ -373,48 +383,7 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
   }
 
   Widget _buildGymCardList(List<Gym> gyms) {
-    return Column(
-      children: [
-          // ハンドルバー
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.wareme,
-              borderRadius: BorderRadius.circular(AppRadius.tape),
-            ),
-          ),
-
-          // ヘッダー
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Text(
-                  widget.selectionMode
-                      ? 'ピンをタップしてジムを選ぶ'
-                      : '近くのジム (${gyms.length}件)',
-                  style: AppText.heading(size: 15),
-                ),
-                const Spacer(),
-                // TODO: 全件表示機能の実装は不要の可能性あり
-                // TextButton(
-                //   onPressed: () {
-                //     // TODO: 全件表示ページへの遷移
-                //     ScaffoldMessenger.of(context).showSnackBar(
-                //       const SnackBar(content: Text('全件表示機能は実装予定です')),
-                //     );
-                //   },
-                //   child: const Text('すべて見る'),
-                // ),
-              ],
-            ),
-          ),
-
-          // ジムカード横スクロール
-          Expanded(
-            child: ListView.builder(
+    return ListView.builder(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -435,11 +404,11 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                     border: _focusedGymIndex == index
                         ? Border.all(color: AppColors.kabeBlue, width: 2)
                         : Border.all(color: AppColors.wareme),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
+                        color: Colors.black.withOpacity(0.35),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
@@ -555,9 +524,6 @@ class _GymMapPageState extends ConsumerState<GymMapPage> {
                   ),
                 );
               },
-            ),
-          ),
-        ],
     );
   }
 
