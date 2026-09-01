@@ -180,6 +180,11 @@ class AppRoot extends ConsumerStatefulWidget {
 class _AppRootState extends ConsumerState<AppRoot> {
   bool _splashDone = false;
 
+  /// スプラッシュ中に読み込んだ「前回選択タブ」。
+  /// 本体の初期タブとして渡す（後からsetStateで切り替えるとホームが1フレーム
+  /// 見えてチラつくため、最初の描画から前回タブで始める）
+  int _initialTab = 0;
+
   /// スプラッシュの最低表示時間（チラつき防止 + ブランド表示）
   static const Duration _minSplashDuration = Duration(milliseconds: 1000);
 
@@ -209,11 +214,25 @@ class _AppRootState extends ConsumerState<AppRoot> {
       Future.delayed(_minSplashDuration),
       // 読込完了かタイムアウトの早い方。オフラインでも必ず先へ進む
       gymReady.future.timeout(_gymLoadTimeout, onTimeout: () {}),
+      _loadLastTab(), // 前回タブの復元もスプラッシュ中に済ませる
     ]);
     subscription.close();
 
     if (mounted) {
       setState(() => _splashDone = true);
+    }
+  }
+
+  /// 前回選択タブを読み込む（失敗時はホームのまま）
+  Future<void> _loadLastTab() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getInt(ScaffoldWithNavBar.lastTabIndexKey);
+      if (saved != null && saved >= 0 && saved < 4 && saved != 2) {
+        _initialTab = saved;
+      }
+    } catch (_) {
+      // 復元失敗時はホームタブのまま（起動を妨げない）
     }
   }
 
@@ -226,7 +245,7 @@ class _AppRootState extends ConsumerState<AppRoot> {
     }
 
     return termsState.hasAccepted
-        ? const ScaffoldWithNavBar()
+        ? ScaffoldWithNavBar(initialIndex: _initialTab)
         : const TermsAgreementPage();
   }
 }
@@ -235,7 +254,13 @@ class _AppRootState extends ConsumerState<AppRoot> {
 ///
 /// アプリライフサイクルを監視してトークン失効を検知
 class ScaffoldWithNavBar extends ConsumerStatefulWidget {
-  const ScaffoldWithNavBar({super.key});
+  const ScaffoldWithNavBar({super.key, this.initialIndex = 0});
+
+  /// 起動時に表示するタブ（AppRootがスプラッシュ中に前回タブを読み込んで渡す）
+  final int initialIndex;
+
+  /// タブ復元用の保存キー（AppRootからも参照）
+  static const String lastTabIndexKey = 'last_tab_index';
 
   @override
   ConsumerState<ScaffoldWithNavBar> createState() => _ScaffoldWithNavBarState();
@@ -243,7 +268,7 @@ class ScaffoldWithNavBar extends ConsumerStatefulWidget {
 
 class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
     with WidgetsBindingObserver {
-  int _currentIndex = 0;
+  late int _currentIndex = widget.initialIndex;
 
   final List<Widget> _pages = [
     const HomePage(),
@@ -267,27 +292,8 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
     // ここで一度 read して生成しておかないと、マイページを開くまで復元処理が走らず、
     // 投稿ページ等が「未ログイン」表示のままになる不具合があった。
     ref.read(authProvider);
-
-    // 前回選択タブの復元（コールドスタート後も元いた場所に戻れるように）
-    _restoreLastTab();
-  }
-
-  /// タブ復元用の保存キー
-  static const String _lastTabIndexKey = 'last_tab_index';
-
-  /// 前回選択タブを復元する
-  Future<void> _restoreLastTab() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getInt(_lastTabIndexKey);
-      if (!mounted || saved == null) return;
-      if (saved == 2) return; // 投稿タブは実体が無いため復元しない（保存もしていない）
-      if (saved >= 0 && saved < _pages.length && saved != _currentIndex) {
-        setState(() => _currentIndex = saved);
-      }
-    } catch (_) {
-      // 復元失敗時はホームタブのまま（起動を妨げない）
-    }
+    // 前回選択タブの復元は AppRoot がスプラッシュ中に行い initialIndex で受け取る
+    // （ここで非同期に切り替えるとホームが1フレーム見えてチラつくため廃止）
   }
 
   /// 選択タブを保存する。投稿タブ(index 2)は保存しない
@@ -296,7 +302,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
     if (index == 2) return;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt(_lastTabIndexKey, index);
+      await prefs.setInt(ScaffoldWithNavBar.lastTabIndexKey, index);
     } catch (_) {
       // 保存失敗は無視（次回はホームタブから始まるだけ）
     }
