@@ -4,6 +4,7 @@ import '../../domain/entities/bouldering_stats.dart';
 import '../providers/statistics_provider.dart';
 import '../theme/app_tokens.dart';
 import '../theme/app_text.dart';
+import '../components/common/tape_chip.dart';
 import 'gym_detail_page.dart';
 
 /// 統計レポートページ
@@ -45,20 +46,22 @@ class StatisticsReportPage extends ConsumerWidget {
           child: Column(
             children: [
               const SizedBox(height: 16),
-              // 今月: 数字を壁ブルーで強調（青カード面は廃止、節理面＋色数字）
+              // 数字は今月・昨月とも同じ色（同じ種類の情報は同じ見た目）。
+              // 期間の状態は色ではなく課題テープの文言で示す:
+              //   今月 = 「進行中」（壁ブルー） / 昨月 = 「確定」（くすんだ面）
               _buildStatsContainer(
                 context,
                 "今月のボル活 - ${now.year}.${now.month} -",
                 currentMonthStats,
-                AppColors.kabeBlue,
+                const TapeChip(label: '進行中', color: AppColors.kabeBlue),
               ),
               const SizedBox(height: 16),
-              // 昨月: 数字はchalk（過去の記録は控えめに）
               _buildStatsContainer(
                 context,
                 "昨月のボル活 - ${previousMonth.year}.${previousMonth.month} -",
                 previousMonthStats,
-                AppColors.chalk,
+                const TapeChip(
+                    label: '確定', color: AppColors.wareme, selected: false),
               ),
               const SizedBox(height: 24),
             ],
@@ -72,7 +75,7 @@ class StatisticsReportPage extends ConsumerWidget {
     BuildContext context,
     String title,
     AsyncValue<BoulderingStats> asyncStats,
-    Color accentColor,
+    TapeChip periodTape,
   ) {
     String visits = "-";
     String gyms = "-";
@@ -120,10 +123,17 @@ class StatisticsReportPage extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 今月のボル活/昨月のボル活
-          Text(
-            title,
-            style: AppText.heading(size: 15),
+          // 今月のボル活/昨月のボル活 ＋ 期間の状態テープ（進行中/確定）
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppText.heading(size: 15),
+                ),
+              ),
+              periodTape,
+            ],
           ),
           const SizedBox(height: 12),
 
@@ -131,9 +141,9 @@ class StatisticsReportPage extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatsItem('ボル活', visits, '回', accentColor),
-              _buildStatsItem('施設数', gyms, '施設', accentColor),
-              _buildStatsItem('ペース', pace, '回/週', accentColor),
+              _buildStatsItem('ボル活', visits, '回'),
+              _buildStatsItem('施設数', gyms, '施設'),
+              _buildStatsItem('ペース', pace, '回/週'),
             ],
           ),
           const SizedBox(height: 8),
@@ -223,7 +233,7 @@ class StatisticsReportPage extends ConsumerWidget {
   }
 
   Widget _buildStatsItem(
-      String title, String value, String unit, Color accentColor) {
+      String title, String value, String unit) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -238,7 +248,8 @@ class StatisticsReportPage extends ConsumerWidget {
           children: [
             Text(
               value,
-              style: AppText.number(size: 30, color: accentColor),
+              // 数字はチョーク固定。壁ブルーは「押せるもの・進行中の印」にだけ使う
+              style: AppText.number(size: 30, color: AppColors.chalk),
             ),
             const SizedBox(width: 3),
             Text(
