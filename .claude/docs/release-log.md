@@ -3,7 +3,7 @@
 バージョン・ビルド番号の変更と配信の記録。新しいものを上に積む（1エントリ＝1ビルド番号）。
 ※ 2026-08-21 に git 履歴・docs から遡って復元。git からは「配信したか」は分からないため、不明なものは不明と明記。
 
-## 【本番版】3.0.0 (build 12) — 2026-09-02 · アーカイブ生成済み（アップロード・提出待ち）
+## 【本番版】3.0.0 (build 12) — 2026-09-02 · IPA生成済み（アップロード・提出待ち）
 
 - **見た目の全面リニューアル「岩と粉」ダークテーマ**（PR #48）: デザイントークン新設・全画面のタイポグラフィ/配色統一・スプラッシュ画像化・岩アイコン一掃（登攀グリフへ）・投稿完了演出/テープスライド/押下スプリング・フォント同梱
 - **ホームジムを地図から選択**（PR #49）: プロフィール編集のホームジム設定に地図からの視覚的選択を追加
@@ -11,8 +11,10 @@
 - 地図画面の表示崩れ・遷移のもたつきを改善（PR #49。0msアニメの根本原因はIssue #50で保留）
 - バージョンを 2.0.0 → **3.0.0** へ（見た目が大きく変わるメジャー更新のため）。build 11 まで使用済みのため build 12
 
-**配信**: iOSアーカイブ生成済み（`flutter build ipa ... --export-method app-store` で 3.0.0/build 12 を検証・`build/ios/archive/Bouldering App.xcarchive`）。**アップロード未実施**（Xcode Organizer からの配布はユーザー手動。IPA直書き出しは配布用プロファイル要でCLI不可）
-**状態**: 審査未提出（アップロード → App Store Connect でメタデータ/スクショ設定 → ユーザーが申請ボタン押下）
+**配信**: **App Store配布用IPA生成済み** → `build/ios/ipa/bouldering_app.ipa`（Apple Distribution署名・Version 3.0.0/Build 12/`com.km.boulderingapp` 検証済み）。**アップロード未実施**（Transporterでアップロード or altool。Apple資格情報が要るためユーザー実施）
+- ビルド手順: `flutter build ios --flavor "Runner Prod" --dart-define=ENVIRONMENT=prod --target lib/main_prod.dart --release` → アーカイブ `flutter build ipa ...` → `xcodebuild -exportArchive -exportOptionsPlist ios/ExportOptions-appstore.plist -allowProvisioningUpdates`
+- 注意: 本番配布プロファイル「Bouldering App Distribution v2」はローカル未インストールだが、`-allowProvisioningUpdates` でXcode経由自動解決してIPA書き出し成功。アーカイブ自体もApple Distribution証明書で署名済み
+**状態**: 審査未提出（IPAアップロード → App Store Connect でメタデータ/スクショ設定 → ユーザーが申請ボタン押下）
 **提出時の必須作業**: 提出コミット（release/v3.0.0 の版上げコミット）に `v3.0.0` タグを付けて push
 
 ## 【本番版】2.0.0 (build 11) — 2026-09-01 · TestFlight（イワノボリタイ・本番アプリ初のTestFlight）
