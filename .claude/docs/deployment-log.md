@@ -18,6 +18,27 @@
 
 ---
 
+## 2026-09-02 — 月次統計「ペース(回/週)」の計算修正（dev→prod 両方デプロイ済み・アプリ変更なし）
+
+- **目的**: 過去の月の「ペース（回/週）」が異常値になるバグの修正（refactor-candidates **B-21** / action-items **G-13**）
+- **原因**: `PostgresUserRepository.getMonthlyStats` の週平均クエリが、`monthsAgo` に関わらず分母を `EXTRACT(DAY FROM CURRENT_DATE)/7` に固定していた。分子は対象月の回数なのに分母だけ「今日の日付」から作られるため、月初ほど過去月の値が膨らんでいた
+- **修正**（PR #55 / コミット `b0c07d0`）:
+  - 過去の月（`monthsAgo >= 1`）は **その月の日数**（8月なら31日）を週換算した値で割る
+  - 今月（`monthsAgo === 0`）は **従来どおり経過日数**で割る（月初に値が大きくなるのは仕様としてユーザーが承認済み）
+  - 週平均の分子を `total_visits` と同じ `DATE(visited_date)` 単位の集計に統一（従来は生の timestamp で GROUP BY しており不統一）
+- **ビルド方法の例外**: Docker Desktop がハングして応答しなかったため、**ローカル docker build ではなく Cloud Build（`gcloud builds submit`）でイメージを作成**。Dockerfile・Artifact Registry・Cloud Run は従来と同一のため成果物は同等。秘密の混入防止に `backend/.gcloudignore` を新規作成し `.env*` を除外（このファイルは `.gitignore:104` の `**/.gcloudignore` により Git 管理外。クローン直後は手動作成が必要）
+
+| 環境 | イメージタグ | Cloud Run | 検証結果 |
+|---|---|---|---|
+| dev | `dev-20260902-b0c07d0` | rev 00063 → **00064** | 先月 **13.9 → 0.9**（4回/(31/7)=0.903）／今月 3.4 据え置き／運営者 先月25回 → 5.6（=25/(31/7)）で正 |
+| prod | `supabase-v3.0.0` | rev 00023 → **00024** | 2025年10月分 **3.4 → 0.2**（1回/(31/7)=0.226）／`/health` healthy・`/api/gyms`・`/api/tweets`・`/api/gyms/:id/photos`・`/api/gyms/:id` すべて 200 |
+
+- **APIの増減なし**（内部ロジックのみの変更）のため、API一覧スプレッドシートの更新は不要
+- **アプリ側の変更は不要**。審査中の v3.0.0（build 12）を含む既存アプリに、この修正が即時反映される
+- **同種バグの横展開確認**: バックエンド全体で `CURRENT_DATE` を集計の割り算に使う箇所は他になし（残りは `updated_at` 更新用の `CURRENT_TIMESTAMP` のみ）
+
+---
+
 ## 2026-09-01 — gyms の fee / equipment_rental_fee 表記統一（dev→prod・アプリ変更なし）
 
 - **目的**: ジムごとにバラバラだった料金/レンタル料の自由記述を、統一フォーマット（金額=`1,800円`形式・区切り`：`・見出し`【】`・データなし=`情報なし`・税込は元記載時のみ`（税込）`）に整形し可読性を上げる（DBデータのみの変更。lib/バックエンドのコード変更なし）

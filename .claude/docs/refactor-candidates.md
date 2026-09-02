@@ -31,7 +31,7 @@
 | B-18 | `lib/presentation/components/tweet/favorite_tweets_section.dart:211` | エラー時に永久スピナー（`error: (_,__) => CircularProgressIndicator()`） | 高 |
 | B-19 | `lib/presentation/components/user/other_user_tweets_section.dart:44` | スクロール判定が厳密等値`==`（他は`>= -100`）でページング発火しにくい | 高 |
 | B-20 | `lib/presentation/components/user/other_user_profile_section.dart:193-204` | homeGymId=0の扱いが他画面と不統一（0でも青リンク+無効遷移） | 高 |
-| B-21 | `backend/src/infrastructure/repositories/PostgresUserRepository.ts:209-210` | 月次統計の「ペース（回/週）」が **常に当月の経過日数** `EXTRACT(DAY FROM CURRENT_DATE)/7` で割られる → 先月分でも当月日数で計算され（例: 9/2時点で先月4回→13.9回/週）、月初は極端に膨らむ。先月は月の日数、当月は経過日数で割るべき | 高（バグ確定・2026-09-02 スクショ撮影中に発見） |
+| B-21 | `backend/src/infrastructure/repositories/PostgresUserRepository.ts:209-210` | 月次統計の「ペース（回/週）」が **常に当月の経過日数** `EXTRACT(DAY FROM CURRENT_DATE)/7` で割られる → 先月分でも当月日数で計算され（例: 9/2時点で先月4回→13.9回/週）、月初は極端に膨らむ。先月は月の日数、当月は経過日数で割るべき | **修正済み 2026-09-02**（PR #55・dev/prod デプロイ済み。過去月はその月の日数で割るよう変更） |
 
 ## 1. フロントエンド: 未使用ファイル（丸ごと削除候補）
 
