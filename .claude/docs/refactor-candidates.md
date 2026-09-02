@@ -15,7 +15,7 @@
 | B-2 | `backend/src/routes/gyms.ts` | `GET /:gym_id` が先に定義されているため `GET /ikitai-counts` / `GET /boul-counts` に**到達不能**（フロント未使用で実害なし。修正か削除かの判断要） | 高 |
 | B-3 | `backend/src/routes/reports.ts:19` | `POST /api/reports` に `authenticate` がなく、`reporter_user_id` をボディで受ける → **なりすまし通報可能** | 高（セキュリティ） |
 | B-4 | `backend/src/routes/internal_tasks.ts:44-72` | `verifyCloudTasksAuth` がOIDC検証未実装（TODOのまま）→ **外部から任意ユーザーのGCSメディア一括削除可能** | 高（セキュリティ） |
-| B-5 | `backend/.dockerignore` | `.env.dev`/`.env.prod`/`dist` が除外されておらず**DBパスワード入りenvがDockerイメージに焼き込まれる** | 高（セキュリティ） |
+| B-5 | `backend/.dockerignore` | ~~`.env.dev`/`.env.prod` がイメージに焼き込まれる~~ → **2026-09-03 実ファイル精読で解消済みを確認**（`.env` と `.env*` が除外済みのため `.env.dev`/`.env.prod` は入らない）。残るのは `dist` 未除外のみで、`RUN npm run build` が上書きするため実害なし | ~~高~~ **解消済み（記述が古かった）** |
 | B-6 | `lib/shared/config/environment_config.dart:124,136` | **DBパスワード平文ハードコード（Git追跡下）**。当該`databaseConfig`は未使用なので削除で解決するが、Git履歴に残るためローテーション要否は要判断 | 高（セキュリティ） |
 | B-7 | `pubspec.yaml:69-70` + `lib/infrastructure/services/storage_service.dart:232` | GCSサービスアカウント鍵をアセット同梱（バイナリから抽出可能）。署名付きURL方式への移行は設計変更を伴う | 要判断（セキュリティ） |
 | B-8 | `lib/infrastructure/datasources/gym_datasource.dart:326-329` | ハーバーサイン距離計算が数学的に誤り（`sin`不使用）→ 半径フィルタが仕様通り効かない | 高（バグ） |
