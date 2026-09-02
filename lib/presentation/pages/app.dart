@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,6 +48,15 @@ class BoulderingApp extends ConsumerWidget {
     return MaterialApp(
       title: 'ボルダリングアプリ${EnvironmentConfig.appVersionSuffix}',
       theme: _buildTheme(),
+      // 日付ピッカー等の Material 標準UIを日本語表記にする（端末の言語設定に関わらず固定）。
+      // 未設定だと showDatePicker が英語（Select date / MM/DD/YYYY）で表示される
+      locale: const Locale('ja', 'JP'),
+      supportedLocales: const [Locale('ja', 'JP')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       debugShowCheckedModeBanner:
           EnvironmentConfig.isDevelopment, // 開発環境でのみデバッグバナー表示
       // 起動ゲート: スプラッシュ表示とジムデータ先行読込を担う（Issue #21）
