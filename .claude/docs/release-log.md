@@ -10,13 +10,14 @@
 - **プロフィール画像のトリミング＋実寸プレビュー**（PR #51）: アイコン設定時に位置・大きさを調整、実際の表示サイズをプレビュー
 - 地図画面の表示崩れ・遷移のもたつきを改善（PR #49。0msアニメの根本原因はIssue #50で保留）
 - バージョンを 2.0.0 → **3.0.0** へ（見た目が大きく変わるメジャー更新のため）。build 11 まで使用済みのため build 12
+- **対象デバイスを iPhone のみに変更**（TARGETED_DEVICE_FAMILY 1,2 → 1。iPad では iPhone アプリとして互換モードでインストール可）。ユーザー判断（2026-09-02）。過去版がユニバーサルだったため Apple が更新を弾く可能性あり → Transporter のアップロード検証結果で確定。弾かれたら 1,2 に戻して iPad スクショを使用
 
 **配信**: **App Store配布用IPA生成済み** → `build/ios/ipa/bouldering_app.ipa`（Apple Distribution署名・Version 3.0.0/Build 12/`com.km.boulderingapp` 検証済み）。**アップロード未実施**（Transporterでアップロード or altool。Apple資格情報が要るためユーザー実施）
 - ビルド手順: `flutter build ios --flavor "Runner Prod" --dart-define=ENVIRONMENT=prod --target lib/main_prod.dart --release` → アーカイブ `flutter build ipa ...` → `xcodebuild -exportArchive -exportOptionsPlist ios/ExportOptions-appstore.plist -allowProvisioningUpdates`
 - 注意: 本番配布プロファイル「Bouldering App Distribution v2」はローカル未インストールだが、`-allowProvisioningUpdates` でXcode経由自動解決してIPA書き出し成功。アーカイブ自体もApple Distribution証明書で署名済み
 **状態**: 審査未提出（IPAアップロード → App Store Connect でメタデータ/スクショ設定 → ユーザーが申請ボタン押下）
 **提出時の必須作業**: 提出コミット（release/v3.0.0 の版上げコミット）に `v3.0.0` タグを付けて push
-**ストア素材（2026-09-02 生成済み・同日フィードバック反映済み）**: iPhone 6.9" 8枚（1320×2868）/ iPad 13" 8枚（2064×2752）/ App Preview（886×1920・約27秒・H.264）→ `docs/app_store/screenshots/v3.0.0/`（Git非管理）。掲載順: ヒーロー(地図)／条件検索／ジム詳細／ボル活／マイページ／統計レポート／ホームジム地図選択／投稿。文言案 → `docs_public/appstore-metadata-v3.0.0.md`。撮影は dev シミュレータ＋撮影用アカウント「ノボリタロウ」＋別ユーザー6名（dev のみ・投稿計23件）。統計レポート/マイページの数値は撮影ビルド限定の表示フィクスチャ（B-21のペース計算バグ回避）。撮影用の一時パッチは全て戻し済み（analyze 0・通常起動確認済み）
+**ストア素材（2026-09-02 生成済み・同日フィードバック反映済み）**: iPhone 6.9" 8枚（1320×2868）/ iPad 13" 8枚（2064×2752・iPhone専用化に伴い今回は未使用）/ App Preview（886×1920・約27秒・H.264・**v3.0.0 では提出せず次回リリースで使用**。ステータスバー除去版を作成済み）→ `docs/app_store/screenshots/v3.0.0/`（Git非管理）。掲載順: ヒーロー(地図)／条件検索／ジム詳細／ボル活／マイページ／統計レポート／ホームジム地図選択／投稿。文言案 → `docs_public/appstore-metadata-v3.0.0.md`。撮影は dev シミュレータ＋撮影用アカウント「ノボリタロウ」＋別ユーザー6名（dev のみ・投稿計23件）。統計レポート/マイページの数値は撮影ビルド限定の表示フィクスチャ（B-21のペース計算バグ回避）。撮影用の一時パッチは全て戻し済み（analyze 0・通常起動確認済み）
 
 ## 【本番版】2.0.0 (build 11) — 2026-09-01 · TestFlight（イワノボリタイ・本番アプリ初のTestFlight）
 
