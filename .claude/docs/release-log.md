@@ -10,12 +10,12 @@
 - **プロフィール画像のトリミング＋実寸プレビュー**（PR #51）: アイコン設定時に位置・大きさを調整、実際の表示サイズをプレビュー
 - 地図画面の表示崩れ・遷移のもたつきを改善（PR #49。0msアニメの根本原因はIssue #50で保留）
 - バージョンを 2.0.0 → **3.0.0** へ（見た目が大きく変わるメジャー更新のため）。build 11 まで使用済みのため build 12
-- **対象デバイスの iPhone 専用化は Apple に拒否され撤回**（2026-09-02 altool 検証 409: 「以前対応していたデバイスを外す更新は不可」QA1623）→ TARGETED_DEVICE_FAMILY を 1,2 に戻して再ビルド。iPad 13" スクショも提出に使用
+- **対象デバイスは iPhone+iPad のユニバーサル維持で確定**（ユーザー判断 2026-09-02）。iPhone 専用化は Apple に拒否され撤回（2026-09-02 altool 検証 409: 「以前対応していたデバイスを外す更新は不可」QA1623）→ TARGETED_DEVICE_FAMILY を 1,2 に戻して再ビルド。iPad 13" スクショも提出に使用
 
 **配信**: **App Store Connect にアップロード済み**（2026-09-02 20:16 JST・altool・Delivery UUID `6c498a82-9a4b-40aa-a52c-323a194754ea`・エラー0）。ユニバーサル版（UIDeviceFamily 1,2）・Apple Distribution 署名・Version 3.0.0 / Build 12。※ iPhone 専用版は altool 検証 409（QA1623）で拒否されたため未アップロード（build 12 は消費されず）
 - ビルド手順: `flutter build ios --flavor "Runner Prod" --dart-define=ENVIRONMENT=prod --target lib/main_prod.dart --release` → アーカイブ `flutter build ipa ...` → `xcodebuild -exportArchive -exportOptionsPlist ios/ExportOptions-appstore.plist -allowProvisioningUpdates`
 - 注意: 本番配布プロファイル「Bouldering App Distribution v2」はローカル未インストールだが、`-allowProvisioningUpdates` でXcode経由自動解決してIPA書き出し成功。アーカイブ自体もApple Distribution証明書で署名済み
-**状態**: 審査未提出・**申請ボタン手前まで準備済み**。ASC に 3.0.0 バージョン作成（PREPARE_FOR_SUBMISSION）、What's New／プロモーションテキスト／説明／キーワード／サブタイトル／著作権(2026)を設定、スクリーンショット iPhone 6.9" 8枚＋iPad 13" 8枚を登録（旧 6.5"/5.8"/iPad 12.9" セットは削除）、審査用連絡先・デモアカウントは 2.0.0 から引き継ぎ。ビルド 12 は Apple 処理 VALID（20:20 JST）後に 3.0.0 へ紐付け済み（暗号化申告 false・コンプライアンス質問なし）。旧 2.0.0 メタデータは `.local/asc/metadata-backup-2.0.0-ja.json` に退避
+**状態**: **審査提出の直前まで完了（未提出）**。ASC の 3.0.0 は appStoreState=READY_FOR_REVIEW、reviewSubmission 作成済み（3.0.0 を項目として追加＝「審査へ追加」相当、submitted=未設定）。設定済み: ビルド12紐付け／What's New・プロモーションテキスト・説明・キーワード・サブタイトル・著作権(2026)／スクリーンショット iPhone 6.9" 8枚＋iPad 13" 8枚（旧6.5"/5.8"/12.9"セットは削除）／審査メモを3.0.0の内容へ更新（従来は1.0.1の記述が残存）。引き継ぎ: 審査用連絡先・デモアカウント・カテゴリ(SPORTS/HEALTH_AND_FITNESS)・年齢制限(userGeneratedContent)・価格。旧2.0.0メタデータは `.local/asc/metadata-backup-2.0.0-ja.json` に退避。残: ユーザーが ASC で「提出」を押す → その後 `v3.0.0` タグを提出コミット `841886f` に付与して push
 **提出時の必須作業**: 提出コミット（release/v3.0.0 の版上げコミット）に `v3.0.0` タグを付けて push
 **ストア素材（2026-09-02 生成済み・同日フィードバック反映済み）**: iPhone 6.9" 8枚（1320×2868）/ iPad 13" 8枚（2064×2752）/ App Preview（886×1920・約27秒・H.264・**v3.0.0 では提出せず次回リリースで使用**。ステータスバー除去版を作成済み）→ `docs/app_store/screenshots/v3.0.0/`（Git非管理）。掲載順: ヒーロー(地図)／条件検索／ジム詳細／ボル活／マイページ／統計レポート／ホームジム地図選択／投稿。文言案 → `docs_public/appstore-metadata-v3.0.0.md`。撮影は dev シミュレータ＋撮影用アカウント「ノボリタロウ」＋別ユーザー6名（dev のみ・投稿計23件）。統計レポート/マイページの数値は撮影ビルド限定の表示フィクスチャ（B-21のペース計算バグ回避）。撮影用の一時パッチは全て戻し済み（analyze 0・通常起動確認済み）
 
