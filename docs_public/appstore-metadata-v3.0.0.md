@@ -58,6 +58,6 @@ App Store Connect の各欄にそのまま貼れる文面。文字数制限は A
 
 - 生成物の置き場: `docs/app_store/screenshots/v3.0.0/`（Git 非管理）
   - `iphone_6.9/ip_01_hero.png` 〜 `ip_08_post.png`（1320×2868）
-  - `ipad_13/ipad_01_hero.png` 〜 `ipad_08_post.png`（2064×2752）
-  - `preview/preview_iphone_886x1920.mp4`（App Preview・iPhone 6.9/6.7インチ枠）
+  - `ipad_13/ipad_01_hero.png` 〜 `ipad_08_post.png`（2064×2752）※ v3.0.0 は iPhone 専用化のため未使用（Apple に弾かれて 1,2 へ戻す場合に使用）
+  - `preview/preview_iphone_886x1920.mp4`（App Preview）※ v3.0.0 では提出せず次回リリースで使用。`preview_iphone_886x1920_nobar.mp4` はステータスバー除去版
 - 見出しの並び（掲載順）: 01 ヒーロー（地図） / 02 条件検索 / 03 ジム詳細 / 04 ボル活 / 05 マイページ / 06 統計レポート / 07 ホームジム地図選択 / 08 投稿
