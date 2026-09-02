@@ -5,6 +5,7 @@ import '../providers/statistics_provider.dart';
 import '../components/common/loading_widget.dart';
 import '../theme/app_tokens.dart';
 import '../theme/app_text.dart';
+import 'common/tape_chip.dart';
 
 /// 今月のボル活コンポーネント
 ///
@@ -14,7 +15,8 @@ import '../theme/app_text.dart';
 ///
 /// 見た目（岩と粉 Phase 2b）:
 /// - 青ベタ面をやめ、節理面のカードに。主役はコンデンス書体の数字
-/// - 青は「数字」と「統計レポートへのリンク」にだけ使う（色の役割ルール）
+/// - 数字はチョーク（統計レポート画面と同じ見た目）。青は「統計レポートへのリンク」と
+///   「進行中」テープにだけ使う（色の役割ルール: 青＝押せるもの・進行中の印）
 class ThisMonthBoulLog extends ConsumerWidget {
   final String userId; // 統計を表示する対象ユーザーのID（必須）
   final int monthsAgo;
@@ -65,7 +67,14 @@ class ThisMonthBoulLog extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('今月のボル活', style: AppText.caption(size: 12)),
+              Row(
+                children: [
+                  Text('今月のボル活', style: AppText.caption(size: 12)),
+                  const SizedBox(width: 8),
+                  const TapeChip(
+                      label: '進行中', color: AppColors.kabeBlue, fontSize: 10),
+                ],
+              ),
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -125,7 +134,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
               value,
               style: AppText.number(
                 size: 30,
-                color: AppColors.kabeBlue,
+                color: AppColors.chalk,
                 weight: FontWeight.w600,
               ),
             ),
