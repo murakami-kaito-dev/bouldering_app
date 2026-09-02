@@ -139,8 +139,12 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                               '${widget.gymName}［${widget.prefecture}］',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
+                              // タップでジム詳細へ遷移する＝リンクなので壁ブルー
+                              // （統計レポートの TOP5・マイページのホームジムと同じ扱い）
                               style: AppText.caption(
-                                  size: 12, weight: FontWeight.w600),
+                                  size: 12,
+                                  weight: FontWeight.w600,
+                                  color: AppColors.kabeBlue),
                             ),
                           ),
                         ),
