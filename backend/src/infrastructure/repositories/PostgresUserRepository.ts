@@ -181,6 +181,18 @@ export class PostgresUserRepository implements IUserRepository {
       const endDate = new Date(startDate);
       endDate.setMonth(endDate.getMonth() + 1); // 翌月の1日
 
+      // 週平均の分母に使う「週数」の元になる日数を決める
+      // - 今月(monthsAgo=0): 経過日数（月初ほど値が大きくなるのは仕様として許容）
+      // - 過去の月(monthsAgo>=1): その月の日数（例: 8月なら31日）
+      //   ※ 従来は過去の月でも CURRENT_DATE の経過日数で割っていたため、
+      //      月初に先月分が異常な値になっていた（例: 9/2時点で先月4回→13.9回/週）
+      const isCurrentMonth = monthsAgo === 0;
+      const daysInTargetMonth = new Date(
+        startDate.getFullYear(),
+        startDate.getMonth() + 1,
+        0
+      ).getDate();
+
       // 1. ボル活回数の計算
       const totalVisitsResult = await db.query(
         `SELECT COALESCE(SUM(daily_gym_count), 0) AS total_visits
@@ -206,17 +218,23 @@ export class PostgresUserRepository implements IUserRepository {
       );
 
       // 3. 週平均回数の計算
+      // 「ボル活回数 ÷ 対象月の週数」。分子は 1.（total_visits）と同じ集計に揃える
+      const denominatorDaysSql = isCurrentMonth
+        ? 'EXTRACT(DAY FROM CURRENT_DATE)::numeric'
+        : '$4::numeric';
       const weeklyVisitRateResult = await db.query(
-        `SELECT TRUNC(COALESCE(SUM(daily_gym_count), 0)::numeric / (EXTRACT(DAY FROM CURRENT_DATE)::numeric / 7), 1) AS weekly_average
+        `SELECT TRUNC(COALESCE(SUM(daily_gym_count), 0)::numeric / (${denominatorDaysSql} / 7), 1) AS weekly_average
          FROM (
-           SELECT t.visited_date, COUNT(DISTINCT t.gym_id) AS daily_gym_count
+           SELECT DATE(t.visited_date) AS visit_day, COUNT(DISTINCT t.gym_id) AS daily_gym_count
            FROM tweets t
            WHERE t.user_id = $1
              AND t.visited_date >= $2
              AND t.visited_date < $3
-           GROUP BY t.visited_date
+           GROUP BY visit_day
          ) AS daily_counts`,
-        [userId, startDate.toISOString(), endDate.toISOString()]
+        isCurrentMonth
+          ? [userId, startDate.toISOString(), endDate.toISOString()]
+          : [userId, startDate.toISOString(), endDate.toISOString(), daysInTargetMonth]
       );
 
       // 4. TOP5 訪問ジムの計算
