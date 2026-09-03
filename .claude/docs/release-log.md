@@ -3,7 +3,7 @@
 バージョン・ビルド番号の変更と配信の記録。新しいものを上に積む（1エントリ＝1ビルド番号）。
 ※ 2026-08-21 に git 履歴・docs から遡って復元。git からは「配信したか」は分からないため、不明なものは不明と明記。
 
-## 【本番版】3.0.0 (build 12) — 2026-09-02 · App Store Connect アップロード済み（審査提出待ち）
+## 【本番版】3.0.0 (build 12) — 2026-09-02 · App Store **公開済み**（2026-09-03 ユーザー報告）
 
 - **見た目の全面リニューアル「岩と粉」ダークテーマ**（PR #48）: デザイントークン新設・全画面のタイポグラフィ/配色統一・スプラッシュ画像化・岩アイコン一掃（登攀グリフへ）・投稿完了演出/テープスライド/押下スプリング・フォント同梱
 - **ホームジムを地図から選択**（PR #49）: プロフィール編集のホームジム設定に地図からの視覚的選択を追加
@@ -15,7 +15,8 @@
 **配信**: **App Store Connect にアップロード済み**（2026-09-02 20:16 JST・altool・Delivery UUID `6c498a82-9a4b-40aa-a52c-323a194754ea`・エラー0）。ユニバーサル版（UIDeviceFamily 1,2）・Apple Distribution 署名・Version 3.0.0 / Build 12。※ iPhone 専用版は altool 検証 409（QA1623）で拒否されたため未アップロード（build 12 は消費されず）
 - ビルド手順: `flutter build ios --flavor "Runner Prod" --dart-define=ENVIRONMENT=prod --target lib/main_prod.dart --release` → アーカイブ `flutter build ipa ...` → `xcodebuild -exportArchive -exportOptionsPlist ios/ExportOptions-appstore.plist -allowProvisioningUpdates`
 - 注意: 本番配布プロファイル「Bouldering App Distribution v2」はローカル未インストールだが、`-allowProvisioningUpdates` でXcode経由自動解決してIPA書き出し成功。アーカイブ自体もApple Distribution証明書で署名済み
-**状態**: **審査提出済み → WAITING_FOR_REVIEW**（2026-09-02 20:45 JST 提出・ユーザーが ASC で実施）。提出コミット `841886f` に `v3.0.0` タグ付与・push 済み。
+**状態**: **審査通過・App Store 公開済み**（2026-09-03 ユーザー報告。提出 2026-09-02 20:45 JST → 翌日公開）。提出コミット `841886f` に `v3.0.0` タグ付与済み。
+- v3.0.0 公開後に main へ入った未リリース変更: #55 ペース計算修正（バックエンドは dev/prod デプロイ済み）／#56 日付ピッカー日本語化／#57 統計の数字色統一＋進行中/確定テープ／#59 ボル活カードのジム名をリンク色／#61 読込中の骨組み表示（PR中）。次回リリース（v3.0.1 想定）に同梱
 - 提出内容: ビルド12／What's New・プロモーションテキスト・説明・キーワード・サブタイトル・著作権(2026)／スクリーンショット iPhone 6.9" 8枚＋iPad 13" 8枚（旧6.5"/5.8"/12.9"セットは削除）／審査メモを3.0.0の内容へ更新（従来は1.0.1の記述が残存）
 - 引き継ぎ: 審査用連絡先・デモアカウント・カテゴリ(SPORTS/HEALTH_AND_FITNESS)・年齢制限(userGeneratedContent)・価格。旧2.0.0メタデータは `.local/asc/metadata-backup-2.0.0-ja.json` に退避
 - **配信対象（恒久方針）**: iPhone+iPad のユニバーサル固定（iPhone専用化はApple拒否）。**Apple Silicon Mac / Apple Vision Pro は配信不可**に設定（2026-09-02・今後も不可）
