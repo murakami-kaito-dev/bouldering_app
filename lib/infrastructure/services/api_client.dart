@@ -124,8 +124,11 @@ class ApiClient {
 
       // レスポンスの処理
       return _handleResponse(response);
+    } on ApiException {
+      // ステータスコード付きの API エラーはそのまま伝える（呼び出し側が 404=未登録 / 409=重複 を判定する）
+      rethrow;
     } catch (e) {
-      // エラーを上位層に伝播
+      // タイムアウト・通信断などはメッセージを付けて伝える
       throw ApiException('APIリクエストに失敗しました: $e');
     }
   }
@@ -162,8 +165,11 @@ class ApiClient {
 
       // レスポンスの処理
       return _handleResponse(response);
+    } on ApiException {
+      // ステータスコード付きの API エラーはそのまま伝える（呼び出し側が 404=未登録 / 409=重複 を判定する）
+      rethrow;
     } catch (e) {
-      // エラーを上位層に伝播
+      // タイムアウト・通信断などはメッセージを付けて伝える
       throw ApiException('APIリクエストに失敗しました: $e');
     }
   }
@@ -199,8 +205,11 @@ class ApiClient {
 
       // レスポンスの処理
       return _handleResponse(response);
+    } on ApiException {
+      // ステータスコード付きの API エラーはそのまま伝える（呼び出し側が 404=未登録 / 409=重複 を判定する）
+      rethrow;
     } catch (e) {
-      // エラーを上位層に伝播
+      // タイムアウト・通信断などはメッセージを付けて伝える
       throw ApiException('APIリクエストに失敗しました: $e');
     }
   }
@@ -236,8 +245,11 @@ class ApiClient {
 
       // レスポンスの処理
       return _handleResponse(response);
+    } on ApiException {
+      // ステータスコード付きの API エラーはそのまま伝える（呼び出し側が 404=未登録 / 409=重複 を判定する）
+      rethrow;
     } catch (e) {
-      // エラーを上位層に伝播
+      // タイムアウト・通信断などはメッセージを付けて伝える
       throw ApiException('APIリクエストに失敗しました: $e');
     }
   }
@@ -270,8 +282,11 @@ class ApiClient {
 
       // レスポンスの処理
       return _handleResponse(response);
+    } on ApiException {
+      // ステータスコード付きの API エラーはそのまま伝える（呼び出し側が 404=未登録 / 409=重複 を判定する）
+      rethrow;
     } catch (e) {
-      // エラーを上位层に伝播
+      // タイムアウト・通信断などはメッセージを付けて伝える
       throw ApiException('APIリクエストに失敗しました: $e');
     }
   }
