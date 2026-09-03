@@ -6,7 +6,9 @@ import '../../theme/app_tokens.dart';
 ///
 /// 役割:
 /// - 複数画像の拡大表示とスワイプ機能
-/// - ピンチズーム機能（1.0x - 5.0x）
+/// - ピンチズーム機能（1.0x - 5.0x）。拡大した写真は元の枠に収めず、画面の外へはみ出す
+///   （InteractiveViewer を画面全体に広げ、クリップしない。画像サイズの箱に閉じ込めると
+///    「枠の中で写真だけが拡大される」見え方になる）
 /// - Hero アニメーション対応
 /// - タップして閉じる機能
 ///
@@ -75,27 +77,26 @@ class ImageViewer extends StatelessWidget {
             itemCount: imageUrls.length,
             itemBuilder: (context, index) {
               return GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  color: Colors.transparent,
+                // ズームの箱は画面全体。拡大した写真は元の枠を越えて画面外へはみ出す
+                child: InteractiveViewer(
+                  minScale: 1.0,
+                  maxScale: 5.0,
+                  clipBehavior: Clip.none,
                   child: Center(
                     child: Hero(
                       tag: '${heroTagPrefix}_$index',
-                      child: InteractiveViewer(
-                        minScale: 1.0,
-                        maxScale: 5.0,
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrls[index],
-                          fit: BoxFit.contain,
-                          // スピナーは出さない: 黒地のまま→フェードイン
-                          fadeInDuration: const Duration(milliseconds: 250),
-                          placeholder: (context, url) =>
-                              const SizedBox.expand(),
-                          errorWidget: (context, url, error) => const Icon(
-                            Icons.error,
-                            color: AppColors.chalk,
-                            size: 48,
-                          ),
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrls[index],
+                        fit: BoxFit.contain,
+                        // スピナーは出さない: 黒地のまま→フェードイン
+                        fadeInDuration: const Duration(milliseconds: 250),
+                        placeholder: (context, url) => const SizedBox.expand(),
+                        errorWidget: (context, url, error) => const Icon(
+                          Icons.error,
+                          color: AppColors.chalk,
+                          size: 48,
                         ),
                       ),
                     ),
