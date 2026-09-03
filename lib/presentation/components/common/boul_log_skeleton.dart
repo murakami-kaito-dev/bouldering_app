@@ -68,8 +68,10 @@ class BoulLogSkeleton extends StatelessWidget {
 }
 
 /// 一覧の初回読込中に出す骨組みのリスト（スクロール不可・件数固定）
+///
+/// 件数は画面いっぱいに枠が並ぶ 6 枚（3 枚だと下半分が空いて「一覧が短い」ように見える）
 class BoulLogSkeletonList extends StatelessWidget {
-  const BoulLogSkeletonList({super.key, this.count = 3});
+  const BoulLogSkeletonList({super.key, this.count = 6});
 
   final int count;
 
