@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/user_provider.dart';
 import '../providers/dependency_injection.dart';
 import 'gym/favorite_gym_card.dart';
+import 'gym/favorite_gym_skeleton.dart';
 import '../../domain/entities/gym.dart';
 import '../../domain/entities/user.dart';
 import '../theme/app_tokens.dart';
@@ -98,8 +99,10 @@ class FavoriteGymsSectionState extends ConsumerState<FavoriteGymsSection> {
       }
     });
 
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+    // 取得中、およびユーザー情報がまだ来ておらず一度も取得していない間は、
+    // スピナーや「まだイキタイジムがありません」ではなくカードと同じ寸法の骨組みを置く
+    if (_isLoading || _loadedUserId == null) {
+      return const FavoriteGymSkeletonList();
     }
 
     return RefreshIndicator(
