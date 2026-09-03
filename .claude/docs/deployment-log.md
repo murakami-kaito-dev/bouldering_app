@@ -22,7 +22,7 @@
 
 - **目的**: Google / Apple ログインへの移行に伴い、メールアドレスを「任意登録」にする（PR `feature/sns-login-google-apple`）
 - **DB（dev Supabase）**: `ALTER TABLE public.users ALTER COLUMN email DROP NOT NULL;` を実行（2026-09-03、バックエンドの接続設定経由）。UNIQUE 制約 `users_new_email_key` とインデックスは維持。既存 9 行は変更なし。**prod DB は未実施**（本番切替時に同じ SQL を実行する）
-- **バックエンド**: `POST /users` を要認証（本人 uid のみ）・email 任意に、`PATCH /users/:id/email` を「トークンの確認済みメールのみ保存／null で解除／重複は 409」に変更。ローカル起動（`ts-node`、Docker 不使用）でトークン無しの POST/PATCH が 401 になることを確認。**Cloud Run（dev）へのデプロイは未実施**（アプリ側の実機確認後に実施予定）
+- **バックエンド**: `POST /users` を要認証（本人 uid のみ）・email 任意に、`PATCH /users/:id/email` を「トークンの確認済みメールのみ保存／null で解除／重複は 409」に変更。ローカル起動（`ts-node`、Docker 不使用）でトークン無しの POST/PATCH が 401 になることを確認。**Cloud Run（dev）へデプロイ済み**: イメージ `dev-20260903-a431705`（Cloud Build。1回目は Google 側の INTERNAL_ERROR で失敗、再実行で SUCCESS）→ `bouldering-api-dev` rev 00064 → **00066**。検証: `/health` healthy／トークン無し `POST /users`・`PATCH .../email` → 401／公開の `GET /users/:id/profile`・`GET /tweets` → 200。**prod は未デプロイ**（本番切替時）
 - **Firebase（dev）**: Google / Apple プロバイダ有効化・アカウントリンク設定変更（ユーザー実施）。`GoogleService-Info.plist`（dev）を CLIENT_ID 付きに差し替え（Firebase CLI）
 - **Apple Developer**: dev App ID に Sign In with Apple capability を追加（App Store Connect API）
 
