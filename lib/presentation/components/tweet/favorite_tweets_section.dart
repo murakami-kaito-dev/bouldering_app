@@ -1,5 +1,6 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
+import '../common/boul_log_skeleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../common/boul_log.dart';
 import '../common/app_logo.dart';
@@ -117,7 +118,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
 
         // 初回呼び出し時のみ，ローディング表示でツイート取得していることをユーザーに知らせる
         if (favoriteUserTweetsState.isFirstFetch) {
-          return const Center(child: CircularProgressIndicator());
+          return const BoulLogSkeletonList();
         }
 
         return RefreshIndicator(
@@ -208,7 +209,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                 ),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const BoulLogSkeletonList(),
       // ユーザー情報の取得失敗（オフライン起動など）。
       // 以前はスピナーを出し続けて回復不能に見えたため、再読み込み動線を出す
       error: (_, __) => Center(

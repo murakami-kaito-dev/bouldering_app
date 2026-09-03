@@ -4,6 +4,7 @@ import '../providers/user_provider.dart';
 import '../providers/my_tweets_provider.dart';
 import 'common/boul_log.dart';
 import '../theme/app_tokens.dart';
+import 'common/boul_log_skeleton.dart';
 
 /// マイツイートセクション
 ///
@@ -85,7 +86,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
 
         // ローディング状態の処理
         if (myTweetsState.isFirstFetch && tweets.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return const BoulLogSkeletonList();
         }
 
         // エラー状態の処理
@@ -166,9 +167,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                 ),
         );
       },
-      loading: () => const Center(
-        child: CircularProgressIndicator(),
-      ),
+      loading: () => const BoulLogSkeletonList(),
       error: (error, stackTrace) => const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

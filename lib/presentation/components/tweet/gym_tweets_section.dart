@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../common/boul_log_skeleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/gym_tweets_provider.dart';
 import '../common/boul_log.dart';
@@ -68,11 +69,7 @@ class GymTweetsSectionState extends ConsumerState<GymTweetsSection> {
 
     // 初回ローディング表示
     if (gymTweetsState.isLoading && gymTweetsState.tweets.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: AppColors.kabeBlue,
-        ),
-      );
+      return const BoulLogSkeletonList();
     }
 
     // エラー表示

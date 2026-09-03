@@ -48,7 +48,12 @@ class UserLogoAndName extends StatelessWidget {
             child: Hero(
               tag: 'profile_icon_${userId ?? userName.hashCode}_0',
               child: ClipOval(
-                child: (_isValidUrl(userLogo))
+                // 画像の初回フレームが来るまでも同寸の円を敷いておく（場所取り）
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  color: AppColors.wareme,
+                  child: (_isValidUrl(userLogo))
                     // 縮小デコード+ディスクキャッシュ
                     ? Image(
                         image: ResizeImage(
@@ -68,6 +73,7 @@ class UserLogoAndName extends StatelessWidget {
                         },
                       )
                     : _buildPlaceholderIcon(),
+                ),
               ),
             ),
           ),

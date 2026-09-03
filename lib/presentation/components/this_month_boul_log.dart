@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../pages/statistics_report_page.dart';
 import '../providers/statistics_provider.dart';
-import '../components/common/loading_widget.dart';
 import '../theme/app_tokens.dart';
 import '../theme/app_text.dart';
 import 'common/tape_chip.dart';
@@ -34,8 +33,10 @@ class ThisMonthBoulLog extends ConsumerWidget {
       monthsAgo: monthsAgo,
     )));
 
+    // 読込中もカードの枠・見出し・単位は先に置き、数値だけを取得後に表示する
+    // （スピナー→カードの差し替えで画面が大きく組み変わるのを避ける）
     return statisticsAsync.when(
-      loading: () => const LoadingWidget(),
+      loading: () => _buildContainer(context, null, null, null),
       error: (error, stackTrace) => _buildContainer(context, '0', '0', '0.0'),
       data: (statistics) => _buildContainer(
         context,
@@ -49,9 +50,9 @@ class ThisMonthBoulLog extends ConsumerWidget {
   /// 今月のボル活を表示するウィジェット
   Widget _buildContainer(
     BuildContext context,
-    String visits,
-    String gyms,
-    String pace,
+    String? visits, // null = 取得中（数値は非表示・場所だけ確保）
+    String? gyms,
+    String? pace,
   ) {
     return Container(
       width: double.infinity,
@@ -122,7 +123,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
       );
 
   /// ボル活・施設数・(ボル活)ペースを表示するウィジェット
-  Widget _buildStatsItem(String title, String value, String unit) {
+  Widget _buildStatsItem(String title, String? value, String unit) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -130,12 +131,17 @@ class ThisMonthBoulLog extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
           children: [
-            Text(
-              value,
-              style: AppText.number(
-                size: 30,
-                color: AppColors.chalk,
-                weight: FontWeight.w600,
+            // 取得中は同じ大きさの透明な数字で高さ・ベースラインを確保しておき、
+            // 取得できた瞬間にその値へ差し替える（レイアウトは動かない）
+            Opacity(
+              opacity: value == null ? 0 : 1,
+              child: Text(
+                value ?? '0',
+                style: AppText.number(
+                  size: 30,
+                  color: AppColors.chalk,
+                  weight: FontWeight.w600,
+                ),
               ),
             ),
             const SizedBox(width: 3),

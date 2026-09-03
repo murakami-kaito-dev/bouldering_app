@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../common/boul_log_skeleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../common/boul_log.dart';
 import '../../providers/other_user_tweets_provider.dart';
@@ -87,12 +88,7 @@ class _OtherUserTweetsSectionState extends ConsumerState<OtherUserTweetsSection>
     }
 
     if (tweetsState.tweets.isEmpty && tweetsState.isLoading) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32.0),
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const BoulLogSkeletonList();
     }
 
     if (tweetsState.tweets.isEmpty) {
