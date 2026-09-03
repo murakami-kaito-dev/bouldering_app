@@ -20,7 +20,11 @@ class FirebaseAuthService implements AuthService {
   /// [firebaseAuth] / [googleSignIn] はテスト時にモック可能
   FirebaseAuthService({FirebaseAuth? firebaseAuth, GoogleSignIn? googleSignIn})
       : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn();
+        _googleSignIn = googleSignIn ?? GoogleSignIn() {
+    // Firebase が送るメール（確認メール等）を日本語テンプレートにする
+    // （未指定だと英語の「Verify your email for …」で届く）
+    _firebaseAuth.setLanguageCode('ja');
+  }
 
   @override
   User? get currentUser => _firebaseAuth.currentUser;
