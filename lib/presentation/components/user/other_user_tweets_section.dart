@@ -88,7 +88,9 @@ class _OtherUserTweetsSectionState extends ConsumerState<OtherUserTweetsSection>
     }
 
     // 初回取得中は骨組みを表示（スピナーは出さない）
-    if (tweetsState.tweets.isEmpty && tweetsState.isLoading) {
+    // 注意: OtherUserTweetsNotifier は初回取得で isLoading を true にしないので、
+    // isFirstFetch で判定する（isLoading だと初回に「まだ投稿がありません」が一瞬出る）
+    if (tweetsState.isFirstFetch && tweetsState.tweets.isEmpty) {
       return const BoulLogSkeletonList();
     }
 

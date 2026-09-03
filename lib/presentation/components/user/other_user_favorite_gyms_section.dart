@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/other_user_favorite_gyms_provider.dart';
 import '../gym/favorite_gym_card.dart';
+import '../gym/favorite_gym_skeleton.dart';
 import '../../theme/app_tokens.dart';
 
 /// 他ユーザーのイキタイジムセクション
@@ -26,9 +27,8 @@ class OtherUserFavoriteGymsSection extends ConsumerWidget {
     final favoriteGymsAsync = ref.watch(otherUserFavoriteGymsProvider(userId));
 
     return favoriteGymsAsync.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(),
-      ),
+      // 取得中はカードと同じ寸法の骨組みを置く（スピナーは出さない）
+      loading: () => const FavoriteGymSkeletonList(),
       error: (error, stackTrace) => const Center(
         child: Padding(
           padding: EdgeInsets.all(32.0),
