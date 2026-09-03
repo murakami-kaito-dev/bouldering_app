@@ -206,10 +206,43 @@ class _AppRootState extends ConsumerState<AppRoot> {
   /// ジム読込の待ち上限（オフライン等でもこれ以上は起動を待たせない）
   static const Duration _gymLoadTimeout = Duration(seconds: 4);
 
+  /// ホーム最初のフレームに必要なアセット（ロゴ・地図プレビュー）の先読み完了
+  ///
+  /// スプラッシュ中に ImageCache へ載せておく。これが無いとホームの最初の 1〜2
+  /// フレームは画像が無く（地図カードが黒く）、直後に画像が出てチラつく
+  final Completer<void> _homeAssetsReady = Completer<void>();
+  bool _homeAssetsWarmUpStarted = false;
+
+  /// アセット先読みの待ち上限（失敗・遅延しても起動は止めない）
+  static const Duration _homeAssetsTimeout = Duration(seconds: 2);
+
   @override
   void initState() {
     super.initState();
     _runStartupSequence();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // precacheImage は MediaQuery 等に依存するので initState ではなくここで一度だけ始める
+    if (!_homeAssetsWarmUpStarted) {
+      _homeAssetsWarmUpStarted = true;
+      _warmUpHomeAssets();
+    }
+  }
+
+  Future<void> _warmUpHomeAssets() async {
+    try {
+      await Future.wait([
+        precacheImage(HomePage.logoImage, context),
+        precacheImage(HomePage.mapImage, context),
+      ]);
+    } catch (_) {
+      // 読めなくても起動は止めない（画面側は従来どおり非同期で読む）
+    } finally {
+      if (!_homeAssetsReady.isCompleted) _homeAssetsReady.complete();
+    }
   }
 
   Future<void> _runStartupSequence() async {
@@ -230,6 +263,8 @@ class _AppRootState extends ConsumerState<AppRoot> {
       // 読込完了かタイムアウトの早い方。オフラインでも必ず先へ進む
       gymReady.future.timeout(_gymLoadTimeout, onTimeout: () {}),
       _loadLastTab(), // 前回タブの復元もスプラッシュ中に済ませる
+      // ホームの画像アセットもスプラッシュ中にデコードしておく
+      _homeAssetsReady.future.timeout(_homeAssetsTimeout, onTimeout: () {}),
     ]);
     subscription.close();
 
@@ -255,13 +290,51 @@ class _AppRootState extends ConsumerState<AppRoot> {
   Widget build(BuildContext context) {
     final termsState = ref.watch(termsAcceptanceProvider);
 
+    final Widget body;
     if (!_splashDone || termsState.isLoading) {
-      return const SplashPage();
+      body = const SplashPage();
+    } else {
+      body = termsState.hasAccepted
+          ? ScaffoldWithNavBar(initialIndex: _initialTab)
+          : const TermsAgreementPage();
     }
 
-    return termsState.hasAccepted
-        ? ScaffoldWithNavBar(initialIndex: _initialTab)
-        : const TermsAgreementPage();
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        body,
+        // マイページタブの登攀グリフ（SVG）を起動中から描画キャッシュに生かしておく。
+        // vector_graphics は「生きている同じ SVG」があればデコード済みのピクチャを
+        // 同期的に使い回すので、ナビバーが最初に出るフレームからアイコンが描ける
+        // （画像と違い SVG はバイト列を先読みしても初回デコードが非同期なため）
+        const Offstage(
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: _NavClimberGlyph(color: AppColors.sunabokori),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// マイページタブの登攀グリフ（Noun Project由来・単色）
+///
+/// ナビバーと AppRoot の先読み用で同じアセット・同じ寸法を使う（キャッシュキー一致）
+class _NavClimberGlyph extends StatelessWidget {
+  const _NavClimberGlyph({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return SvgPicture.asset(
+      'lib/view/assets/climber_nav.svg',
+      width: 24,
+      height: 24,
+      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+    );
   }
 }
 
@@ -399,14 +472,9 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
           ),
           BottomNavigationBarItem(
             // 登攀グリフ（Noun Project由来・単色）。選択で壁ブルー、非選択で砂埃
-            icon: SvgPicture.asset(
-              'lib/view/assets/climber_nav.svg',
-              width: 24,
-              height: 24,
-              colorFilter: ColorFilter.mode(
-                _currentIndex == 3 ? AppColors.kabeBlue : AppColors.sunabokori,
-                BlendMode.srcIn,
-              ),
+            icon: _NavClimberGlyph(
+              color:
+                  _currentIndex == 3 ? AppColors.kabeBlue : AppColors.sunabokori,
             ),
             label: 'マイページ',
           ),

@@ -15,6 +15,18 @@ import '../components/common/pressable.dart';
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
+  /// ロゴ（表示 34px。デコードは 3x 相当の 102px に縮小して軽くする）
+  ///
+  /// AppRoot がスプラッシュ中にこのプロバイダで precache するので、ホームの最初の
+  /// フレームから同期的に描ける（Issue #60 の続き: 起動直後のアセット遅延描画対策）。
+  /// 画面側と precache 側で同じプロバイダを使うこと（ImageCache のキーが一致する条件）
+  static const ImageProvider logoImage =
+      ResizeImage(AssetImage('assets/icon.png'), width: 102);
+
+  /// 地図カードのプレビュー画像（同上）
+  static const ImageProvider mapImage =
+      AssetImage('lib/view/assets/map_image.png');
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,11 +43,11 @@ class HomePage extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(9),
-                    child: Image.asset(
-                      'assets/icon.png',
+                    child: const Image(
+                      image: logoImage,
                       width: 34,
                       height: 34,
-                      cacheWidth: 102,
+                      gaplessPlayback: true,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -95,11 +107,12 @@ class HomePage extends StatelessWidget {
                 child: Stack(
                   children: [
                     // 地図プレビュー
-                    Image.asset(
-                      'lib/view/assets/map_image.png',
+                    const Image(
+                      image: mapImage,
                       width: double.infinity,
                       height: 170,
                       fit: BoxFit.cover,
+                      gaplessPlayback: true,
                     ),
                     // 下部スクリム（文字の可読性確保）
                     Positioned.fill(
