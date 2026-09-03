@@ -469,11 +469,14 @@ class SettingsPage extends ConsumerWidget {
             ),
           );
         case EmailRegistrationResult.verificationSent:
-          NavigationHelper.showErrorDialog(
-            context: context,
-            message: '確認メールを送信しました。\n'
+          // 正常な案内なので「エラー」ダイアログではなく通常のダイアログで出す
+          await _showInfoDialog(
+            context,
+            title: '確認メールを送信しました',
+            message: '「${result.email}」宛てに確認メールを送りました。\n'
                 'メール内のリンクを押すと本人確認が完了します。\n'
-                'その後、一度ログアウトされるので、再度ログインすると登録が完了します。',
+                'その後、一度ログアウトされるので、再度ログインすると登録が完了します。\n\n'
+                '届かない場合は迷惑メールフォルダも確認してください。',
           );
       }
     } catch (e) {
@@ -484,6 +487,23 @@ class SettingsPage extends ConsumerWidget {
         );
       }
     }
+  }
+
+  Future<void> _showInfoDialog(BuildContext context,
+      {required String title, required String message}) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title, style: AppText.heading(size: 16)),
+        content: Text(message, style: AppText.body(size: 14)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   String _emailErrorMessage(Object e) {
@@ -572,7 +592,8 @@ class _EmailRegisterDialogState extends State<_EmailRegisterDialog> {
           children: [
             Text(
               'お知らせの受け取りに使います（任意）。\n'
-              '入力したアドレスに確認メールを送り、リンクを押すと登録が完了します。',
+              '入力したアドレスに確認メールを送り、リンクを押すと登録が完了します。\n'
+              '本人確認のため、続けて Google / Apple のログイン画面が表示されることがあります。',
               style: AppText.body(size: 13),
             ),
             const SizedBox(height: 16),
