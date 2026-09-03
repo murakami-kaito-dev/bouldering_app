@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../theme/app_tokens.dart';
+import '../../theme/app_text.dart';
 
 /// アプリのロゴ表示（アイコン＋アプリ名）
 ///
 /// ログイン画面・未ログインのマイページ・空状態などで使用する。
 /// アイコンは新アプリアイコン（登攀シルエット）を使用。
 /// 背景が岩肌色のためアイコンの暗い地と馴染み、人物が浮かんで見える。
+/// アプリ名の書体はホームのロゴ行と同じ AppText.display（Zen Kaku Gothic New）。
+/// 以前は RocknRoll One だったが、フォント未同梱＋ランタイム取得無効のため
+/// 実機では常に端末標準の書体になっていたので、アプリ全体の書体に統一した。
 class AppLogo extends StatelessWidget {
   const AppLogo({super.key});
 
@@ -26,19 +28,13 @@ class AppLogo extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        // アプリ名テキスト
+        // アプリ名テキスト（アプリ共通の見出し書体）
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
             'イワノボリタイ',
             textAlign: TextAlign.center,
-            style: GoogleFonts.rocknRollOne(
-              color: AppColors.chalk,
-              fontSize: 28,
-              fontWeight: FontWeight.w400,
-              height: 1.2,
-              letterSpacing: -0.5,
-            ),
+            style: AppText.display(size: 28),
           ),
         ),
       ],
