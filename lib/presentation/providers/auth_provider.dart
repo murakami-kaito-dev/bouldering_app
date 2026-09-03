@@ -1,63 +1,59 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/services/auth_service.dart';
-import '../../domain/usecases/auth_usecases.dart';
+import '../../domain/exceptions/app_exceptions.dart';
 import 'user_provider.dart';
 import 'dependency_injection.dart' as di;
 
-/// 認証状態管理Provider (クリーンアーキテクチャ準拠版)
+/// 通知用メールアドレス登録の結果
+enum EmailRegistrationResult {
+  /// すでに本人確認済みのメールだったので、その場で登録できた
+  registered,
+
+  /// 確認メールを送った。リンク押下 → 再ログイン後に登録が完了する
+  verificationSent,
+}
+
+/// 認証状態管理Provider（Google / Apple のプロバイダ認証）
+///
+/// 役割:
+/// - Firebase Auth の認証状態（ログイン中か）を state（bool）で持つ
+/// - サインイン成功後、アプリ側ユーザー情報の読込（初回なら登録）を行う
+/// - 退会（プロバイダで再認証 → DB → Firebase の順に削除）
+/// - 通知用メールアドレスの登録（確認メールによる本人確認つき）
+///
+/// メール/パスワード方式は 2026-09 に撤廃。本人確認は各プロバイダが行い、
+/// メールアドレスは認証には使わない（設定画面から任意で登録する連絡先）。
 class AuthNotifier extends StateNotifier<bool> {
   final Ref ref;
   final AuthService _authService;
-  final LoginUseCase _loginUseCase;
-  final SignUpUseCase _signUpUseCase;
-  final ChangePasswordUseCase _changePasswordUseCase;
-  final PasswordResetUseCase _passwordResetUseCase;
 
-  bool _isSigningUp = false;
+  bool _isSigningIn = false; // サインイン処理中（authStateChanges との二重処理防止）
   bool _isDeleting = false; // 退会処理中フラグ
   Timer? _debounceTimer;
 
   StreamSubscription<User?>? _authSub;
   StreamSubscription<User?>? _userSub;
 
-  // エラーメッセージ定数（省略せず掲載）
-  static const String emailAlreadyInUse = "email-already-in-use";
-  static const String emailAlreadyInUseTitle = "すでにメールアドレスが登録されています";
-  static const String emailAlreadyInUseMessage = "入力されたメールアドレスはすでに使用されています。";
-  static const String invalidEmail = "invalid-email";
-  static const String invalidEmailTitle = "無効なメールアドレス";
-  static const String invalidEmailMessage = "入力されたメールアドレスは無効です。";
-  static const String userNotFound = "user-not-found";
-  static const String userNotFoundTitle = "ユーザーが見つかりません";
-  static const String userNotFoundMessage = "入力されたメールアドレスが見つかりません";
-  static const String wrongPassword = "wrong-password";
-  static const String wrongPasswordTitle = "パスワードエラー";
-  static const String wrongPasswordMessage = "パスワードが違います。";
+  /// 確認メール送信後、リンク押下→再ログインで登録を完了させるための保留メール
+  static const String pendingEmailKey = 'pending_email_registration';
+
+  // エラーメッセージ定数
   static const String networkRequestFailed = "network-request-failed";
   static const String networkRequestFailedTitle = "ネットワークエラー";
   static const String networkRequestFailedMessage =
       "サーバーとの通信に失敗しました。デバイスのネットワーク設定と環境を確認して、再度試してください。";
-  static const String otherErrorTitle = "不明なエラー";
+  static const String otherErrorTitle = "ログインに失敗しました";
   static const String otherErrorMessage =
-      "不明なエラーが発生しました。入力内容に誤りがないかを確認して、再度試してください。";
-  static const String weakPassword = "weak-password";
-  static const String weakPasswordTitle = "パスワードエラー";
-  static const String weakPasswordMessage = "パスワードが指定された条件を満たしていません。";
+      "ログインに失敗しました。時間をおいて再度お試しください。";
 
   AuthNotifier({
     required this.ref,
     required AuthService authService,
-    required LoginUseCase loginUseCase,
-    required SignUpUseCase signUpUseCase,
-    required ChangePasswordUseCase changePasswordUseCase,
-    required PasswordResetUseCase passwordResetUseCase,
   })  : _authService = authService,
-        _loginUseCase = loginUseCase,
-        _signUpUseCase = signUpUseCase,
-        _changePasswordUseCase = changePasswordUseCase,
-        _passwordResetUseCase = passwordResetUseCase,
         super(false) {
     _checkLoginStatus();
   }
@@ -69,32 +65,28 @@ class AuthNotifier extends StateNotifier<bool> {
     state = user != null;
     if (user != null) {
       // 既にログイン済みの場合はユーザー情報を読み込み（非同期で実行して初期化の競合を回避）
-      Future.microtask(() => ref.read(userProvider.notifier).login(user.uid));
+      Future.microtask(() => _loadUserQuietly(user));
     }
 
     // Firebase Auth の認証状態変更を監視
     _authSub = _authService.authStateChanges().listen((user) {
       // 認証状態を更新
       state = user != null;
-      
+
       if (user == null) {
         // ログアウト検知時：ユーザー情報をクリア
         ref.read(userProvider.notifier).logout();
       } else {
-        // ログイン検知時
-        if (_isSigningUp) {
-          // 新規登録フロー中はスキップ（signUpメソッド内で処理済み）
-          return;
-        }
-        // 通常のログイン：ユーザー情報を読み込み（非同期で実行）
-        Future.microtask(() => ref.read(userProvider.notifier).login(user.uid));
+        // サインイン処理中は signInWith() 側で読み込むのでスキップ
+        if (_isSigningIn) return;
+        Future.microtask(() => _loadUserQuietly(user));
       }
     });
 
-    // プロファイル更新（メール変更等）の監視
+    // プロファイル更新（メール確定等）の監視
     _userSub = _authService.userChanges().listen((user) {
       if (user == null) return;
-      
+
       // 連続発火防止のためデバウンス処理
       _debounceTimer?.cancel();
       _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
@@ -103,9 +95,19 @@ class AuthNotifier extends StateNotifier<bool> {
     });
   }
 
+  /// 起動時・状態変化時のユーザー読込（失敗は userProvider のエラー状態で画面に出る）
+  Future<void> _loadUserQuietly(User user) async {
+    try {
+      await ref.read(userProvider.notifier).loginOrRegister(user.uid);
+      await _completePendingEmailRegistration(user);
+    } catch (e) {
+      debugPrint('[AUTH] ユーザー情報の読込に失敗: $e');
+    }
+  }
+
   /// 旧トークンでの操作をガード
-  /// 
-  /// メール変更後など、別経路で認証された際の異常系処理
+  ///
+  /// メール確定後など、別経路で認証された際の異常系処理。
   /// トークンが失効している場合は強制ログアウトを実行
   Future<void> _handleProfileChangeGuard(User user) async {
     try {
@@ -122,73 +124,40 @@ class AuthNotifier extends StateNotifier<bool> {
 
   // --- パブリックAPI ---
 
-  /// ログイン処理
-  /// 
-  /// Firebase Authでの認証後、Cloud SQLとの同期を行う
-  Future<void> login(String email, String password) async {
+  /// Google / Apple でサインイン（初回ならアプリ側のユーザー情報も作る）
+  ///
+  /// 返り値: 成功で true。ユーザーがキャンセルしたら false
+  /// 例外: プロバイダ側・通信・DB 登録の失敗
+  Future<bool> signInWith(AuthProviderKind kind) async {
+    _isSigningIn = true;
     try {
-      // Firebase Authでログイン
-      final userCredential = await _authService.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      final user = userCredential.user!;
-      
-      // ユーザー情報を最新化
-      await user.reload();
-      final authEmail = user.email;
-
-      // Firebase Auth を信頼できる情報源として Cloud SQL を同期
-      if (authEmail != null) {
-        await ref
-            .read(userProvider.notifier)
-            .updateEmailByUid(user.uid, authEmail);
+      final credential = await _authService.signInWith(kind);
+      if (credential == null) return false; // キャンセル
+      final user = credential.user;
+      if (user == null) {
+        throw const AuthenticationException(message: 'ログインに失敗しました');
       }
 
-      // Cloud SQL からユーザー情報を取得
-      await _loginUseCase.execute(user.uid);
-      state = true;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// 新規登録処理
-  /// 
-  /// パスワード強度チェック後、Firebase Auth と Cloud SQL にユーザーを作成
-  Future<void> signUp(String email, String password) async {
-    // パスワード強度チェック
-    if (!_isStrongPassword(password)) {
-      throw Exception(weakPasswordMessage);
-    }
-    
-    // 新規登録フラグをON（authStateChangesでの二重処理を防ぐ）
-    _isSigningUp = true;
-    try {
-      // Firebase Authでユーザー作成
-      final userCredential = await _authService.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      
       try {
-        // Cloud SQLにユーザー情報を登録
-        await ref
-            .read(userProvider.notifier)
-            .signUp(userCredential.user!.uid, email);
-        
-        // ユーザー情報を読み込み
-        await ref.read(userProvider.notifier).login(userCredential.user!.uid);
-        state = true;
-      } catch (userError) {
-        // Cloud SQL登録失敗時はFirebase Authのユーザーも削除（ロールバック）
-        await userCredential.user!.delete();
+        // DB のユーザー情報を読込（無ければ登録＝初回ログイン）
+        await ref.read(userProvider.notifier).loginOrRegister(user.uid);
+      } catch (e) {
+        // DB 側に進めなかった場合は Firebase のセッションを残さない
+        // （次回タップで最初からやり直せる。Firebase アカウント自体は残る）
+        await _authService.signOut();
         rethrow;
       }
+
+      await _completePendingEmailRegistration(user);
+      state = true;
+      return true;
     } finally {
-      _isSigningUp = false;
+      _isSigningIn = false;
     }
   }
+
+  /// ログイン中ユーザーが使ったプロバイダ（設定画面の表示用）
+  AuthProviderKind? get currentProviderKind => _authService.currentProviderKind();
 
   Future<void> logout() async {
     try {
@@ -201,54 +170,44 @@ class AuthNotifier extends StateNotifier<bool> {
   }
 
   /// アカウント削除処理
-  /// 
-  /// パスワード再認証後、データベース（Supabase/Cloud SQL）と Firebase Auth からユーザーを削除
-  Future<void> deleteAccount({required String password}) async {
+  ///
+  /// 同じプロバイダで再認証（本人確認）したうえで、DB → Firebase Auth の順に削除する
+  ///
+  /// 返り値: 本人確認をキャンセルしたら false（何も削除しない）
+  Future<bool> deleteAccount() async {
     // 二重呼び出し防止
     if (_isDeleting) {
-      print('[DEBUG] 退会処理は既に実行中です');
-      return;
+      debugPrint('[AUTH] 退会処理は既に実行中です');
+      return false;
     }
-    
+
     final currentUser = _authService.currentUser;
     if (currentUser == null) {
       throw Exception('ログインしていません');
     }
-    
-    _isDeleting = true; // 削除処理開始フラグを立てる
-    print('[DEBUG] 退会処理開始 - userId: ${currentUser.uid}');
-    
-    try {
-      // セキュリティのため再認証を要求
-      final credential = EmailAuthProvider.credential(
-        email: currentUser.email!,
-        password: password,
-      );
-      await currentUser.reauthenticateWithCredential(credential);
-      print('[DEBUG] 再認証成功');
 
-      // 1. データベース（Supabase/Cloud SQL）からユーザー情報を削除（認証トークンがまだ有効）
+    _isDeleting = true;
+    try {
+      // セキュリティのため再認証を要求（Firebase は退会に直近ログインを求める）
+      final ok = await _authService.reauthenticate();
+      if (!ok) return false;
+
+      // 1. DB からユーザー情報を削除（認証トークンがまだ有効）
       bool dbDeleted = false;
       try {
-        print('[DEBUG] DB削除開始');
         await ref.read(userProvider.notifier).deleteAccount(currentUser.uid);
         dbDeleted = true;
-        print('[DEBUG] DB削除成功');
       } catch (dbError) {
-        print('[ERROR] DB削除エラー: $dbError');
+        debugPrint('[AUTH] DB削除エラー: $dbError');
         // DB削除に失敗してもFirebase Auth削除は試みる
       }
-      
+
       // 2. Firebase Authからユーザーを削除
       try {
-        print('[DEBUG] Firebase Auth削除開始');
         await _authService.deleteAccount();
-        print('[DEBUG] Firebase Auth削除成功');
       } catch (authError) {
-        print('[ERROR] Firebase Auth削除エラー: $authError');
-        // DB削除が成功していた場合は不整合状態
         if (dbDeleted) {
-          print('[WARNING] DBは削除済みだがFirebase Authの削除に失敗');
+          debugPrint('[AUTH] DBは削除済みだがFirebase Authの削除に失敗: $authError');
         }
         rethrow;
       }
@@ -256,129 +215,98 @@ class AuthNotifier extends StateNotifier<bool> {
       // ローカル状態をクリア
       state = false;
       ref.read(userProvider.notifier).logout();
-      print('[DEBUG] 退会処理完了');
-    } catch (e) {
-      print('[ERROR] 退会処理エラー: $e');
-      rethrow;
+      await _clearPendingEmail();
+      return true;
     } finally {
-      _isDeleting = false; // 処理完了後フラグをリセット
+      _isDeleting = false;
     }
   }
 
-  /// Firebase Authメールアドレス変更：**送信→強制ログアウト**のみ
-  /// データベース（Supabase/Cloud SQL）はここでは触らない（検証完了していないため）
-  Future<void> updateEmailInFirebaseAuth({
-    required String newEmail,
-    required String currentPassword,
-  }) async {
-    final currentUser = _authService.currentUser;
-    if (currentUser == null) {
-      throw Exception('ログインしていません');
+  /// 通知用メールアドレスの登録（本人確認つき）
+  ///
+  /// - 入力したメールが Firebase アカウントの確認済みメールと同じなら、その場で DB に登録
+  ///   （例: Google アカウントのメール。Google が本人確認済み）
+  /// - それ以外は確認メールを送る。リンク押下で Firebase アカウントのメールが確定し、
+  ///   古いセッションは失効する → 次回ログイン時に [_completePendingEmailRegistration] が
+  ///   DB へ登録して完了する
+  ///
+  /// 例外: 形式エラー・別アカウントで登録済み（ValidationException）・通信エラー
+  Future<EmailRegistrationResult> registerEmail(String newEmail) async {
+    final user = _authService.currentUser;
+    if (user == null) throw Exception('ログインしていません');
+    final email = newEmail.trim();
+
+    if (user.email == email && user.emailVerified) {
+      await ref.read(userProvider.notifier).updateEmailByUid(user.uid, email);
+      return EmailRegistrationResult.registered;
     }
+
     try {
-      final credential = EmailAuthProvider.credential(
-        email: currentUser.email!,
-        password: currentPassword,
-      );
-      await currentUser.reauthenticateWithCredential(credential);
+      await _authService.verifyBeforeUpdateEmail(newEmail: email);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        // 直近ログインが必要 → 同じプロバイダで再認証してやり直す
+        final ok = await _authService.reauthenticate();
+        if (!ok) throw Exception('本人確認がキャンセルされました');
+        await _authService.verifyBeforeUpdateEmail(newEmail: email);
+      } else if (e.code == 'invalid-email') {
+        throw Exception('メールアドレスの形式が正しくありません');
+      } else {
+        rethrow;
+      }
+    }
 
-      await _authService.verifyBeforeUpdateEmail(newEmail: newEmail);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(pendingEmailKey, email);
+    return EmailRegistrationResult.verificationSent;
+  }
 
-      // 送信直後は**必ず**ログアウト（旧トークンを無効化）
-      await _executeForceLogout();
-    } catch (e) {
-      final s = e.toString();
-      if (s.contains('wrong-password')) {
-        throw Exception('現在のパスワードが間違っています');
+  /// 通知用メールアドレスを未登録に戻す
+  Future<void> removeEmail() async {
+    final user = _authService.currentUser;
+    if (user == null) throw Exception('ログインしていません');
+    await ref.read(userProvider.notifier).updateEmailByUid(user.uid, null);
+    await _clearPendingEmail();
+  }
+
+  /// 確認メールのリンク押下後、再ログインしたタイミングで DB への登録を完了させる
+  Future<void> _completePendingEmailRegistration(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    final pending = prefs.getString(pendingEmailKey);
+    if (pending == null) return;
+
+    // Firebase 側でそのメールが確定（本人確認済み）していれば DB に登録
+    if (user.email == pending && user.emailVerified) {
+      try {
+        await ref.read(userProvider.notifier).updateEmailByUid(user.uid, pending);
+      } catch (e) {
+        // 別アカウントで登録済み等。設定画面から入力し直すと同じ判定でその場で案内される
+        debugPrint('[AUTH] 保留中メールの登録に失敗: $e');
       }
-      if (s.contains('requires-recent-login')) {
-        throw Exception('セキュリティのため、再度ログインしてから操作してください');
-      }
-      if (s.contains('email-already-in-use')) {
-        throw Exception('このメールアドレスは既に他のアカウントで使用されています');
-      }
-      if (s.contains('invalid-email')) {
-        throw Exception('無効なメールアドレスです');
-      }
-      rethrow;
+      await prefs.remove(pendingEmailKey);
     }
   }
 
-  /// パスワード変更処理
-  /// 
-  /// 現在のパスワードで再認証後、新しいパスワードに変更
-  /// セキュリティのため変更後は強制ログアウト
-  Future<void> changePassword({
-    required String currentPassword,
-    required String newPassword,
-  }) async {
-    final currentUser = _authService.currentUser;
-    
-    if (currentUser == null) {
-      throw Exception('ログインしていません');
-    }
-    
-    try {
-      // セキュリティのため現在のパスワードで再認証
-      final credential = EmailAuthProvider.credential(
-        email: currentUser.email!,
-        password: currentPassword,
-      );
-      await currentUser.reauthenticateWithCredential(credential);
-
-      // パスワード変更処理を実行
-      await _changePasswordUseCase.execute(
-        currentPassword: currentPassword,
-        newPassword: newPassword,
-      );
-      
-      // セキュリティのため変更後は強制ログアウト
-      // （ユーザーは新しいパスワードで再ログインが必要）
-      await _executeForceLogout();
-      
-    } catch (e) {
-      // エラーメッセージを分かりやすく変換
-      final s = e.toString();
-      if (s.contains('wrong-password')) {
-        throw Exception('現在のパスワードが間違っています');
-      }
-      if (s.contains('requires-recent-login')) {
-        throw Exception('セキュリティのため、再度ログインしてから操作してください');
-      }
-      if (s.contains('weak-password')) {
-        throw Exception('パスワードが弱すぎます。もっと強力なパスワードを設定してください');
-      }
-      rethrow;
-    }
+  Future<void> _clearPendingEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(pendingEmailKey);
   }
 
   static String getErrorMessage(String errorCode, {bool title = false}) {
-    final errorMap = {
-      emailAlreadyInUse: [emailAlreadyInUseTitle, emailAlreadyInUseMessage],
-      invalidEmail: [invalidEmailTitle, invalidEmailMessage],
-      userNotFound: [userNotFoundTitle, userNotFoundMessage],
-      wrongPassword: [wrongPasswordTitle, wrongPasswordMessage],
-      networkRequestFailed: [
-        networkRequestFailedTitle,
-        networkRequestFailedMessage
-      ],
-      weakPassword: [weakPasswordTitle, weakPasswordMessage],
-    };
-    final messages = errorMap[errorCode];
-    if (messages == null) {
-      return title ? otherErrorTitle : otherErrorMessage;
+    if (errorCode == networkRequestFailed) {
+      return title ? networkRequestFailedTitle : networkRequestFailedMessage;
     }
-    return title ? messages[0] : messages[1];
+    return title ? otherErrorTitle : otherErrorMessage;
   }
 
   /// 認証トークンの有効性チェック
-  /// 
+  ///
   /// アプリ復帰時などに呼び出し、トークンが失効していれば強制ログアウト
   /// UI層から明示的に呼び出される想定
   Future<void> checkAuthRevoked() async {
     final u = _authService.currentUser;
     if (u == null) return;
-    
+
     try {
       // トークンの有効性を確認
       await u.reload();
@@ -403,16 +331,14 @@ class AuthNotifier extends StateNotifier<bool> {
 
     final userState = ref.read(userProvider);
     // 注意: エラー状態の AsyncValue に .value でアクセスすると保持している例外が
-    // その場で再スローされる（Riverpod 2.x の仕様）。ここでそれを踏むと
-    // login() に到達する前に黙って死に、「再読み込みが全く効かない」状態になる。
-    // 必ず valueOrNull を使うこと
+    // その場で再スローされる（Riverpod 2.x の仕様）。必ず valueOrNull を使うこと
     if (userState.isLoading || userState.valueOrNull != null) return;
 
-    await ref.read(userProvider.notifier).login(user.uid);
+    await _loadUserQuietly(user);
   }
 
   /// 強制ログアウト処理
-  /// 
+  ///
   /// Firebase Authからサインアウトし、ローカル状態をクリア
   /// エラーが発生してもローカル状態は必ずクリアする
   Future<void> _executeForceLogout() async {
@@ -426,36 +352,6 @@ class AuthNotifier extends StateNotifier<bool> {
     }
   }
 
-  /// パスワードリセットメール送信処理
-  /// 
-  /// 役割:
-  /// - 指定されたメールアドレスにパスワードリセットメールを送信
-  /// - PasswordResetUseCaseを通じてクリーンアーキテクチャに準拠
-  /// 
-  /// パラメータ:
-  /// - [email] パスワードリセットメールを送信するメールアドレス
-  /// 
-  /// 例外:
-  /// - ValidationException: バリデーションエラー
-  /// - AuthenticationException: 認証エラー（メールアドレス不存在等）
-  Future<void> sendPasswordResetEmail(String email) async {
-    try {
-      await _passwordResetUseCase.execute(email);
-    } catch (e) {
-      // UseCaseの例外をそのまま上位層に伝播
-      rethrow;
-    }
-  }
-
-  /// パスワード強度チェック
-  /// 
-  /// 要件：8文字以上、大文字・小文字・数字を各1文字以上含む
-  bool _isStrongPassword(String password) {
-    final RegExp strongPasswordRegExp =
-        RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d@\$!%*?&]{8,}$');
-    return strongPasswordRegExp.hasMatch(password);
-  }
-
   @override
   void dispose() {
     _debounceTimer?.cancel();
@@ -465,20 +361,8 @@ class AuthNotifier extends StateNotifier<bool> {
   }
 }
 
-/// 新しい認証ProviderのFactory
+/// 認証ProviderのFactory
 final authProvider = StateNotifierProvider<AuthNotifier, bool>((ref) {
   final authService = ref.read(di.authServiceProvider);
-  final loginUseCase = ref.read(di.loginUseCaseProvider);
-  final signUpUseCase = ref.read(di.signUpUseCaseProvider);
-  final changePasswordUseCase = ref.read(di.changePasswordUseCaseProvider);
-  final passwordResetUseCase = ref.read(di.passwordResetUseCaseProvider);
-
-  return AuthNotifier(
-    ref: ref,
-    authService: authService,
-    loginUseCase: loginUseCase,
-    signUpUseCase: signUpUseCase,
-    changePasswordUseCase: changePasswordUseCase,
-    passwordResetUseCase: passwordResetUseCase,
-  );
+  return AuthNotifier(ref: ref, authService: authService);
 });

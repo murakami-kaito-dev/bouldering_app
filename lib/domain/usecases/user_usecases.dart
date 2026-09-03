@@ -138,12 +138,12 @@ class UpdateUserEmailUseCase {
   /// メールアドレス更新を実行
   /// 
   /// [userId] ユーザーID
-  /// [newEmail] 新しいメールアドレス
+  /// [newEmail] 登録するメールアドレス。null なら未登録に戻す
   /// 
   /// 例外:
-  /// [ValidationException] バリデーションエラー
+  /// [ValidationException] 形式エラー、または別アカウントで登録済み（code: EMAIL_ALREADY_REGISTERED）
   /// [DataSaveException] データ保存エラー
-  Future<bool> execute(String userId, String newEmail) async {
+  Future<bool> execute(String userId, String? newEmail) async {
     // バリデーション
     if (userId.trim().isEmpty) {
       throw const ValidationException(
@@ -152,32 +152,42 @@ class UpdateUserEmailUseCase {
         code: 'EMPTY_USER_ID',
       );
     }
-    
-    if (newEmail.trim().isEmpty) {
-      throw const ValidationException(
-        message: '新しいメールアドレスを入力してください',
-        errors: {'email': '新しいメールアドレスは必須です'},
-        code: 'EMPTY_EMAIL',
-      );
-    }
 
-    // メールアドレス形式チェック
-    final emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-    if (!emailRegExp.hasMatch(newEmail.trim())) {
-      throw const ValidationException(
-        message: '正しいメールアドレス形式で入力してください',
-        errors: {'email': 'メールアドレスの形式が正しくありません'},
-        code: 'INVALID_EMAIL_FORMAT',
-      );
+    final trimmed = newEmail?.trim();
+    if (trimmed != null) {
+      if (trimmed.isEmpty) {
+        throw const ValidationException(
+          message: 'メールアドレスを入力してください',
+          errors: {'email': 'メールアドレスが空です'},
+          code: 'EMPTY_EMAIL',
+        );
+      }
+      // メールアドレス形式チェック
+      final emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+      if (!emailRegExp.hasMatch(trimmed)) {
+        throw const ValidationException(
+          message: '正しいメールアドレス形式で入力してください',
+          errors: {'email': 'メールアドレスの形式が正しくありません'},
+          code: 'INVALID_EMAIL_FORMAT',
+        );
+      }
     }
 
     try {
-      // Cloud SQLのメールアドレスを更新
-      final result = await _userRepository.updateUserEmail(userId, newEmail.trim());
+      // DB のメールアドレスを更新（null = 未登録に戻す）
+      final result = await _userRepository.updateUserEmail(userId, trimmed);
       return result;
     } catch (e) {
       if (e is ValidationException) {
         rethrow;
+      }
+      // 1アカウント:1メールの制約に当たった（別のアカウントが同じメールを登録済み）
+      if (e.toString().contains('Status 409')) {
+        throw const ValidationException(
+          message: 'このメールアドレスは別のアカウントで登録済みです',
+          errors: {'email': '別のアカウントで登録済み'},
+          code: 'EMAIL_ALREADY_REGISTERED',
+        );
       }
       throw DataSaveException(
         message: 'メールアドレス更新に失敗しました',

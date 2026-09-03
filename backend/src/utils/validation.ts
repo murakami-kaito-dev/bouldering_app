@@ -23,7 +23,10 @@ export const validateCreateUser = () => [
     .isString()
     .notEmpty()
     .withMessage('User ID is required'),
+  // メールアドレスは持たない（SNS ログイン後に設定画面から任意で登録）。
+  // 送られてきた場合だけ形式を確認する
   body('email')
+    .optional({ nullable: true })
     .isEmail()
     .withMessage('Valid email is required'),
 ];
@@ -73,8 +76,11 @@ export const validateUpdateIconUrl = () => [
     .withMessage('Valid URL is required'),
 ];
 
+// メールアドレス登録: 本人確認済みのメールは Firebase トークンから取るので body は
+// 「null = 未登録に戻す」の指示にだけ使う（値が来た場合は形式のみ確認）
 export const validateUpdateEmail = () => [
   body('email')
+    .optional({ nullable: true })
     .isEmail()
     .withMessage('Valid email is required'),
 ];

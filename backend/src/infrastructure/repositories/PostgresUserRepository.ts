@@ -4,6 +4,11 @@ import { User } from '../../models/types';
 import { ApiError } from '../../middleware/error';
 import logger from '../../utils/logger';
 
+/** PostgreSQL の UNIQUE 制約違反（SQLSTATE 23505）か */
+function isUniqueViolation(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && (error as { code?: string }).code === '23505';
+}
+
 /**
  * PostgreSQL User リポジトリ実装
  * 
@@ -54,7 +59,7 @@ export class PostgresUserRepository implements IUserRepository {
     user_id: string;
     user_name: string;
     user_icon_url?: string;
-    email: string;
+    email?: string | null;
     home_gym_id?: number;
     user_introduce?: string;
     gender?: number;
@@ -72,7 +77,7 @@ export class PostgresUserRepository implements IUserRepository {
           userData.user_id,
           userData.user_name,
           userData.user_icon_url || null,
-          userData.email,
+          userData.email ?? null,
           userData.home_gym_id || null,
           userData.user_introduce || null,
           userData.gender || null,
@@ -127,6 +132,11 @@ export class PostgresUserRepository implements IUserRepository {
       return result[0];
     } catch (error) {
       if (error instanceof ApiError) throw error;
+      // 1アカウント:1メール（users.email の UNIQUE）に当たった → 409 で返し、アプリが案内する
+      if (isUniqueViolation(error)) {
+        logger.warn('Unique violation on user update', { userId, fields: Object.keys(updateData) });
+        throw new ApiError(409, 'Email is already registered by another account', 'EMAIL_ALREADY_REGISTERED');
+      }
       logger.error('Error updating user', { userId, updateData, error });
       throw new ApiError(500, 'Failed to update user');
     }
@@ -166,7 +176,8 @@ export class PostgresUserRepository implements IUserRepository {
     return this.update(userId, { user_icon_url: iconUrl });
   }
 
-  async updateUserEmail(userId: string, email: string): Promise<User> {
+  /** [email] が null なら未登録に戻す。重複は update() が 409 にする */
+  async updateUserEmail(userId: string, email: string | null): Promise<User> {
     return this.update(userId, { email });
   }
 

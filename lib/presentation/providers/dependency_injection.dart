@@ -251,18 +251,6 @@ final signUpUseCaseProvider = Provider<SignUpUseCase>((ref) {
   return SignUpUseCase(userRepository);
 });
 
-final changePasswordUseCaseProvider = Provider<ChangePasswordUseCase>((ref) {
-  final authService = ref.read(authServiceProvider);
-
-  return ChangePasswordUseCase(authService);
-});
-
-final passwordResetUseCaseProvider = Provider<PasswordResetUseCase>((ref) {
-  final authService = ref.read(authServiceProvider);
-
-  return PasswordResetUseCase(authService);
-});
-
 /// ユーザー関連ユースケースProvider
 final updateUserProfileUseCaseProvider =
     Provider<UpdateUserProfileUseCase>((ref) {

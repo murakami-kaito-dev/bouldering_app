@@ -4,7 +4,7 @@ import '../entities/bouldering_stats.dart';
 abstract class UserRepository {
   Future<User?> getUserById(String userId);
   Future<User?> getUserProfile(String userId);
-  Future<bool> createUser(String userId, String email);
+  Future<bool> createUser(String userId);
   Future<bool> updateUserName(String userId, String userName);
   Future<bool> updateUserIconUrl(String userId, String iconUrl);
   Future<bool> updateUserProfile({
@@ -20,7 +20,8 @@ abstract class UserRepository {
   });
   Future<bool> updateHomeGym(String userId, int gymId);
   Future<String?> uploadUserIcon(String userId, String imagePath);
-  Future<bool> updateUserEmail(String userId, String email);
+  /// [email] が null なら未登録に戻す
+  Future<bool> updateUserEmail(String userId, String? email);
   Future<bool> deleteUser(String userId);
   
   /// ユーザーの月間統計情報を取得

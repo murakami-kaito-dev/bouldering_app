@@ -1,12 +1,37 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+/// ログインに使う外部 ID プロバイダ（このアプリは Google / Apple の2つだけ）
+///
+/// 本人確認をするのは各プロバイダで、Firebase はその証明（ID トークン）を検証して
+/// アプリ用のアカウント（uid）を発行する。メール/パスワード方式は 2026-09 に撤廃。
+enum AuthProviderKind { google, apple }
+
+extension AuthProviderKindX on AuthProviderKind {
+  /// Firebase 上の providerId
+  String get providerId => switch (this) {
+        AuthProviderKind.google => 'google.com',
+        AuthProviderKind.apple => 'apple.com',
+      };
+
+  String get displayName => switch (this) {
+        AuthProviderKind.google => 'Google',
+        AuthProviderKind.apple => 'Apple',
+      };
+
+  static AuthProviderKind? fromProviderId(String providerId) {
+    for (final kind in AuthProviderKind.values) {
+      if (kind.providerId == providerId) return kind;
+    }
+    return null;
+  }
+}
+
 /// 認証サービスのインターフェース
-/// 
+///
 /// 役割:
-/// - 認証機能の抽象化
-/// - Firebase Authenticationのラッパー
-/// - 認証状態の管理
-/// 
+/// - Firebase Authentication のラッパー（プロバイダ認証）
+/// - 認証状態の監視
+///
 /// クリーンアーキテクチャにおける位置づけ:
 /// - Domain層のサービスインターフェース
 /// - Infrastructure層で具体的な実装を提供
@@ -20,33 +45,25 @@ abstract class AuthService {
   /// ユーザー情報（メールアドレス等）の変更を監視
   Stream<User?> userChanges();
 
-  /// メールアドレスとパスワードでサインイン
-  Future<UserCredential> signInWithEmailAndPassword({
-    required String email,
-    required String password,
-  });
+  /// Google / Apple でサインイン（初回なら Firebase 側にアカウントが作られる）
+  ///
+  /// 返り値: ユーザーがキャンセルしたときは null
+  Future<UserCredential?> signInWith(AuthProviderKind kind);
 
-  /// メールアドレスとパスワードで新規ユーザー作成
-  Future<UserCredential> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  });
+  /// ログイン中ユーザーがどのプロバイダで入ったか（判定できなければ null）
+  AuthProviderKind? currentProviderKind();
+
+  /// 直近ログインを要求される操作（退会・メール確定）の前に、同じプロバイダで再認証する
+  ///
+  /// 返り値: ユーザーがキャンセルしたときは false
+  Future<bool> reauthenticate();
 
   /// サインアウト
   Future<void> signOut();
 
-  /// パスワードリセットメール送信
-  Future<void> sendPasswordResetEmail({required String email});
-
-  /// メールアドレス変更
-  Future<void> updateEmail({required String newEmail});
-
-  /// メールアドレス変更（認証メール送信先）
+  /// メールアドレスの本人確認メールを送る（リンク押下で Firebase アカウントの email が確定する）
   Future<void> verifyBeforeUpdateEmail({required String newEmail});
 
-  /// パスワード変更
-  Future<void> updatePassword({required String newPassword});
-
-  /// アカウント削除
+  /// アカウント削除（Firebase 側）
   Future<void> deleteAccount();
 }

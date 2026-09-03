@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/exceptions/app_exceptions.dart';
 import '../../domain/usecases/auth_usecases.dart';
 import '../../domain/usecases/user_usecases.dart';
 import 'dependency_injection.dart';
@@ -77,40 +78,30 @@ class UserNotifier extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
-  /// サインアップ処理
+  /// SNS ログイン後のユーザー情報読込（未登録なら登録してから読込）
   ///
-  /// [userId] 新規作成するユーザーID
-  /// [email] メールアドレス
+  /// [userId] Firebase の uid
   ///
   /// 処理フロー:
-  /// 1. 状態をロード中に設定
-  /// 2. SignUpUseCaseでユーザー作成
-  /// 3. 成功時は自動ログイン実行
-  Future<void> signUp(String userId, String email) async {
-    if (userId.trim().isEmpty || email.trim().isEmpty) {
-      state = AsyncValue.error(
-        Exception('ユーザーIDとメールアドレスを入力してください'),
-        StackTrace.current,
-      );
-      return;
-    }
-
+  /// 1. LoginUseCase で DB のユーザー情報を取得
+  /// 2. 無ければ（USER_NOT_FOUND ＝ 初回ログイン）SignUpUseCase で行を作って再取得
+  /// 3. 失敗時は状態をエラーにしたうえで例外を投げる（呼び出し側が画面に知らせる）
+  Future<void> loginOrRegister(String userId) async {
     state = const AsyncValue.loading();
-
     try {
-      final success = await _signUpUseCase.execute(userId, email);
-
-      if (success) {
-        // サインアップ成功後は自動ログイン
-        await login(userId);
-      } else {
-        state = AsyncValue.error(
-          Exception('ユーザー作成に失敗しました'),
-          StackTrace.current,
-        );
+      User? user;
+      try {
+        user = await _loginUseCase.execute(userId);
+      } on AuthenticationException catch (e) {
+        if (e.code != 'USER_NOT_FOUND') rethrow;
+        // 初回ログイン: アプリ側のユーザー情報を作る
+        await _signUpUseCase.execute(userId);
+        user = await _loginUseCase.execute(userId);
       }
+      state = AsyncValue.data(user);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
+      rethrow;
     }
   }
 
@@ -283,77 +274,26 @@ class UserNotifier extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
-  /// メールアドレス更新処理
+  /// 通知用メールアドレスを DB に登録／解除する（UID 指定）
   ///
-  /// [newEmail] 新しいメールアドレス
-  ///
-  /// 処理フロー:
-  /// 1. ログイン状態確認
-  /// 2. UpdateUserEmailUseCaseでCloud SQL更新実行
-  /// 3. 成功時は現在の状態を更新
+  /// [uid] Firebase の uid
+  /// [newEmail] 登録するメールアドレス。null なら未登録に戻す
   ///
   /// 注意:
-  /// Firebase Auth側のメール更新はAuthProviderで別途実行する必要がある
-  Future<void> updateEmail(String newEmail) async {
-    final currentUser = state.value;
-    if (currentUser == null) {
-      state = AsyncValue.error(
-        Exception('ログインが必要です'),
-        StackTrace.current,
+  /// - 本人確認（確認メールのリンク押下）が済んだメールだけを渡すこと。
+  ///   バックエンドも Firebase トークンの確認済みメールしか保存しない
+  /// - 別アカウントで登録済みの場合は ValidationException(EMAIL_ALREADY_REGISTERED)
+  Future<void> updateEmailByUid(String uid, String? newEmail) async {
+    final success = await _updateEmailUseCase.execute(uid, newEmail);
+    if (!success) {
+      throw Exception('メールアドレスの更新に失敗しました');
+    }
+    // 現在のユーザーが対象なら画面の状態も即時更新
+    final current = state.valueOrNull;
+    if (current != null && current.id == uid) {
+      state = AsyncValue.data(
+        current.copyWith(email: newEmail, clearEmail: newEmail == null),
       );
-      return;
-    }
-
-    state = const AsyncValue.loading();
-
-    try {
-      // Cloud SQLのメールアドレスを更新
-      final success =
-          await _updateEmailUseCase.execute(currentUser.id, newEmail);
-
-      if (success) {
-        // メールアドレス更新成功時は現在の状態を更新
-        final updatedUser = currentUser.copyWith(email: newEmail);
-        state = AsyncValue.data(updatedUser);
-      } else {
-        state = AsyncValue.error(
-          Exception('メールアドレス更新に失敗しました'),
-          StackTrace.current,
-        );
-      }
-    } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
-    }
-  }
-
-  /// UID指定でメールアドレス更新処理
-  ///
-  /// [uid] ユーザーUID (Firebase Auth UID)
-  /// [newEmail] 新しいメールアドレス
-  ///
-  /// 処理フロー:
-  /// 1. UpdateUserEmailUseCaseでCloud SQL更新実行（UID指定）
-  /// 2. 現在のユーザーが対象の場合、ローカル状態を即時更新
-  ///
-  /// 注意:
-  /// このメソッドはFirebase Auth側のメール確認後の自動同期で使用される
-  Future<void> updateEmailByUid(String uid, String newEmail) async {
-    try {
-      // Cloud SQLのメールアドレスを更新（UID指定）
-      final success = await _updateEmailUseCase.execute(uid, newEmail);
-
-      if (success) {
-        // 現在のユーザーが対象の場合、ローカル状態を即時更新
-        final current = state.value;
-        if (current != null && current.id == uid) {
-          final updatedUser = current.copyWith(email: newEmail);
-          state = AsyncValue.data(updatedUser);
-        }
-      } else {
-        throw Exception('メールアドレス更新に失敗しました');
-      }
-    } catch (e, stackTrace) {
-      throw Exception('メールアドレス更新に失敗しました: $e');
     }
   }
 }

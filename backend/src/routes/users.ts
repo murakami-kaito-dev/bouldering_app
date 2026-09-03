@@ -77,16 +77,19 @@ router.get(
   }
 );
 
-// 3. Create new user - 新規登録時は認証不要
+// 3. Create new user - SNS ログイン（Google/Apple）直後に本人の行を作る。
+// Firebase トークン必須・作れるのは自分の uid の行だけ（他人の uid やゴミ行を作らせない）
 router.post(
   '/',
+  authenticate,
   validateCreateUser(),
   handleValidationErrors,
   async (req, res, next) => {
     try {
+      const requestUser = (req as AuthenticatedRequest).user;
       const { 
         user_id, 
-        email,
+        email = null,
         user_name = '駆け出しボルダー',
         user_introduce = '設定から自己紹介を記入しましょう！',
         favorite_gym = '設定から好きなジムを記入しましょう！',
@@ -95,6 +98,9 @@ router.post(
         boul_start_date
       } = req.body;
 
+      if (requestUser?.uid !== user_id) {
+        throw new ApiError(403, 'Access denied');
+      }
 
       const user = await userService.createUser({ 
         user_id, 
@@ -299,7 +305,12 @@ router.patch(
   }
 );
 
-// 10. Update email address
+// 10. Register / remove notification email (任意登録・本人確認済みのみ)
+// - body.email === null → 未登録に戻す
+// - それ以外 → body の値は信用せず、Firebase トークンの email（email_verified=true）を保存する。
+//   確認メールのリンクを押した本人しか自分のトークンにそのメールを載せられないため、
+//   第三者が他人のメールを登録することはできない
+// - 同じメールが別アカウントで登録済みなら 409（1アカウント:1メール）
 router.patch(
   '/:user_id/email',
   authenticate,
@@ -309,11 +320,24 @@ router.patch(
   async (req, res, next) => {
     try {
       const { user_id } = req.params;
-      const { email } = req.body;
+      const { email: requestedEmail } = req.body;
       const requestUser = (req as AuthenticatedRequest).user;
 
       if (requestUser?.uid !== user_id) {
         throw new ApiError(403, 'Access denied');
+      }
+
+      let email: string | null;
+      if (requestedEmail === null || requestedEmail === undefined) {
+        email = null;
+      } else {
+        if (!requestUser.email || !requestUser.email_verified) {
+          throw new ApiError(403, 'Email is not verified', 'EMAIL_NOT_VERIFIED');
+        }
+        if (requestUser.email.toLowerCase() !== String(requestedEmail).toLowerCase()) {
+          throw new ApiError(403, 'Email does not match the verified account email', 'EMAIL_MISMATCH');
+        }
+        email = requestUser.email;
       }
 
       const user = await userService.updateUserEmail(user_id, email);

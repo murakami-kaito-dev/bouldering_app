@@ -421,7 +421,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildInfoRow('メールアドレス', user.email),
+                _buildInfoRow('メールアドレス', user.email ?? '未登録'),
                 const Divider(),
                 _buildInfoRow('ユーザーID', _maskUserId(user.id)),
                 const Divider(),
