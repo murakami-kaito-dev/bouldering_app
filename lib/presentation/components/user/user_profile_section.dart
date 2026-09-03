@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../domain/entities/user.dart';
 import '../../../shared/utils/user_utils.dart';
 import '../../../shared/utils/navigation_helper.dart';
 import '../../providers/user_provider.dart';
@@ -7,6 +8,7 @@ import '../../providers/gym_provider.dart';
 import '../../pages/favorite_users_page.dart';
 import '../../pages/favorited_by_users_page.dart';
 import 'user_logo_and_name.dart';
+import '../common/skeleton_bone.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/app_text.dart';
 import '../this_month_boul_log.dart';
@@ -71,17 +73,15 @@ class UserProfileSection extends ConsumerWidget {
       );
     }
 
+    // 読込中（および起動直後のユーザー情報が未着の初期状態 = data(null)）は、
+    // セクションをスピナーに差し替えず、取得後と同じレイアウトの骨組みを先に置く。
+    // 各項目は取得できた時点でその場所に埋まる（画面が組み変わらない）
     return userState.when(
       data: (user) => SliverToBoxAdapter(
         child: _buildProfileContent(context, user, gymMap),
       ),
-      loading: () => const SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(32.0),
-            child: CircularProgressIndicator(),
-          ),
-        ),
+      loading: () => SliverToBoxAdapter(
+        child: _buildProfileContent(context, null, gymMap),
       ),
       error: (error, stackTrace) => SliverToBoxAdapter(
         child: Container(
@@ -119,8 +119,14 @@ class UserProfileSection extends ConsumerWidget {
     );
   }
 
+  /// プロフィール本体
+  ///
+  /// [user] が null のときは「ユーザー情報の取得中」として、同じ配置のまま
+  /// 文字の入る場所に骨組み（淡い面）を置く。見出し・ボタン・統計カードの枠は
+  /// 取得前から確定している内容なので、そのまま表示する
   Widget _buildProfileContent(
-      BuildContext context, user, Map<int, dynamic> gymMap) {
+      BuildContext context, User? user, Map<int, dynamic> gymMap) {
+    final isLoading = user == null;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -128,19 +134,19 @@ class UserProfileSection extends ConsumerWidget {
         children: [
           // ユーザ写真・名前欄
           UserLogoAndName(
-            userName: user?.userName ?? "名無し",
+            userName: user?.userName ?? '',
             userLogo: user?.userIconUrl,
             heroTag: 'login_user_icon',
             userId: user?.id,
+            isLoading: isLoading,
           ),
           const SizedBox(height: 16),
 
-          // ボル活（今月の統計）
-          if (user?.id != null)
-            ThisMonthBoulLog(
-              userId: user!.id,
-              monthsAgo: 0,
-            ),
+          // ボル活（今月の統計）: ユーザーID未確定でも枠だけ先に置く
+          ThisMonthBoulLog(
+            userId: user?.id,
+            monthsAgo: 0,
+          ),
           const SizedBox(height: 8),
 
           // お気に入り・お気にいられ欄
@@ -160,14 +166,16 @@ class UserProfileSection extends ConsumerWidget {
           // 自己紹介文
           SizedBox(
             width: double.infinity,
-            child: Text(
-              user?.userIntroduce?.isNotEmpty == true
-                  ? user!.userIntroduce!
-                  : " - ",
-              textAlign: TextAlign.left,
-              softWrap: true,
-              style: AppText.body(size: 13),
-            ),
+            child: isLoading
+                ? SkeletonTextBone(style: AppText.body(size: 13), width: 220)
+                : Text(
+                    user.userIntroduce?.isNotEmpty == true
+                        ? user.userIntroduce!
+                        : " - ",
+                    textAlign: TextAlign.left,
+                    softWrap: true,
+                    style: AppText.body(size: 13),
+                  ),
           ),
           const SizedBox(height: 14),
 
@@ -177,14 +185,16 @@ class UserProfileSection extends ConsumerWidget {
           const SizedBox(height: 4),
           SizedBox(
             width: double.infinity,
-            child: Text(
-              user?.favoriteGym?.isNotEmpty == true
-                  ? user!.favoriteGym!
-                  : " - ",
-              textAlign: TextAlign.left,
-              softWrap: true,
-              style: AppText.body(size: 13),
-            ),
+            child: isLoading
+                ? SkeletonTextBone(style: AppText.body(size: 13), width: 160)
+                : Text(
+                    user.favoriteGym?.isNotEmpty == true
+                        ? user.favoriteGym!
+                        : " - ",
+                    textAlign: TextAlign.left,
+                    softWrap: true,
+                    style: AppText.body(size: 13),
+                  ),
           ),
           const SizedBox(height: 12),
 
@@ -197,8 +207,12 @@ class UserProfileSection extends ConsumerWidget {
               const SizedBox(width: 8),
               Text("ボルダリング歴", style: AppText.caption(size: 12)),
               const SizedBox(width: 8),
-              Text(calculateExperience(user?.boulStartDate),
-                  style: AppText.body(size: 13, weight: FontWeight.w600)),
+              isLoading
+                  ? SkeletonTextBone(
+                      style: AppText.body(size: 13, weight: FontWeight.w600),
+                      width: 64)
+                  : Text(calculateExperience(user.boulStartDate),
+                      style: AppText.body(size: 13, weight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: 8),
@@ -219,17 +233,23 @@ class UserProfileSection extends ConsumerWidget {
                           NavigationHelper.toGymDetail(context, user!.homeGymId!);
                         }
                       : null,
-                  child: Text(
-                    getHomeGymName(user?.homeGymId, gymMap),
-                    style: AppText.body(
-                      size: 13,
-                      weight: FontWeight.w600,
-                      color: (user?.homeGymId != null && user?.homeGymId != 0)
-                          ? AppColors.kabeBlue
-                          : AppColors.chalk,
-                    ),
-                    softWrap: true,
-                  ),
+                  child: isLoading
+                      ? SkeletonTextBone(
+                          style:
+                              AppText.body(size: 13, weight: FontWeight.w600),
+                          width: 120)
+                      : Text(
+                          getHomeGymName(user.homeGymId, gymMap),
+                          style: AppText.body(
+                            size: 13,
+                            weight: FontWeight.w600,
+                            color: (user.homeGymId != null &&
+                                    user.homeGymId != 0)
+                                ? AppColors.kabeBlue
+                                : AppColors.chalk,
+                          ),
+                          softWrap: true,
+                        ),
                 ),
               ),
             ],

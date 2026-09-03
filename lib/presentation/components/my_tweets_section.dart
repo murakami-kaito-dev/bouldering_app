@@ -75,9 +75,9 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
     return userState.when(
       data: (user) {
         if (user == null) {
-          return const Center(
-            child: Text('ユーザー情報が見つかりません'),
-          );
+          // ログイン済みだがユーザー情報がまだ来ていない（起動直後の初期状態）。
+          // 読込中と同じ骨組みを出しておく（取得後に一覧へ差し替わる）
+          return const BoulLogSkeletonList();
         }
 
         // 自分のツイート状態を監視

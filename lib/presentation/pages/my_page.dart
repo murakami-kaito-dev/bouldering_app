@@ -57,15 +57,9 @@ class MyPage extends ConsumerWidget {
       );
     }
 
-    if (userState.valueOrNull == null) {
-      // ユーザー情報の読み込み中（起動直後・再読み込み中）
-      return const Scaffold(
-        backgroundColor: AppColors.iwa,
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    // ログイン済みマイページ
+    // ユーザー情報の読み込み中（起動直後・再読み込み中）もページ全体は先に組む。
+    // 各部品（プロフィール・統計カード・ツイート一覧）が自分の場所を確保したまま
+    // 取得後にデータを埋める（ページ全体をスピナーに差し替えない）
     return const LoggedInMyPage();
   }
 }

@@ -17,17 +17,23 @@ import 'common/tape_chip.dart';
 /// - 数字はチョーク（統計レポート画面と同じ見た目）。青は「統計レポートへのリンク」と
 ///   「進行中」テープにだけ使う（色の役割ルール: 青＝押せるもの・進行中の印）
 class ThisMonthBoulLog extends ConsumerWidget {
-  final String userId; // 統計を表示する対象ユーザーのID（必須）
+  final String? userId; // 統計を表示する対象ユーザーのID（null = ユーザー情報の取得中）
   final int monthsAgo;
 
   const ThisMonthBoulLog({
     super.key,
-    required this.userId, // 必須パラメータ
+    required this.userId,
     this.monthsAgo = 0, // デフォルトは今月
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // ユーザー情報がまだ無い間もカードの枠だけは先に置く（統計は取得しない）
+    final userId = this.userId;
+    if (userId == null) {
+      return _buildContainer(context, null, null, null);
+    }
+
     final statisticsAsync = ref.watch(statisticsProvider((
       userId: userId,
       monthsAgo: monthsAgo,
@@ -54,6 +60,7 @@ class ThisMonthBoulLog extends ConsumerWidget {
     String? gyms,
     String? pace,
   ) {
+    final userId = this.userId;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
@@ -77,15 +84,18 @@ class ThisMonthBoulLog extends ConsumerWidget {
                 ],
               ),
               GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          StatisticsReportPage(userId: userId),
-                    ),
-                  );
-                },
+                // ユーザー情報の取得中はまだ遷移先を決められないので押せないだけにする（見た目は同じ）
+                onTap: userId == null
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                StatisticsReportPage(userId: userId),
+                          ),
+                        );
+                      },
                 child: Row(
                   children: [
                     Text('統計レポート',

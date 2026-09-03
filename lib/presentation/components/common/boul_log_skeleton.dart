@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_tokens.dart';
+import 'skeleton_bone.dart';
 
 /// ボル活カードの骨組み（読込中の場所取り）
 ///
@@ -13,7 +14,7 @@ import '../../theme/app_tokens.dart';
 class BoulLogSkeleton extends StatelessWidget {
   const BoulLogSkeleton({super.key});
 
-  static const _bone = Color(0xFF262A32); // 節理面より一段明るい「骨」の色（wareme と setsuri の中間）
+  static const _bone = kSkeletonBone;
 
   Widget _bar(double width, double height) => Container(
         width: width,
