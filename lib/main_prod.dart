@@ -9,6 +9,7 @@ import 'shared/config/app_env.dart';
 import 'shared/config/firebase_options_prod.dart';
 import 'presentation/pages/app.dart';
 import 'presentation/pages/splash_page.dart';
+import 'presentation/theme/app_fonts.dart';
 
 /// 本番版アプリケーションエントリーポイント
 ///
@@ -51,6 +52,10 @@ void main() async {
   // 最初のフレームに画像が載らないと、iOS の起動画面が外れる瞬間に暗転して見える（Issue #60）
   final splashReady = SplashPage.precache();
 
+  // アプリ書体も先に読み込んでおく（同上・並行）。
+  // 読込前に文字を描くと 1〜2 フレームだけ端末標準の書体になり、書体が切り替わって見える
+  final fontsReady = AppFonts.preload();
+
   // Firebaseの初期化
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -59,8 +64,8 @@ void main() async {
   // 本番環境に設定
   EnvironmentConfig.setEnvironment(Environment.production);
 
-  // スプラッシュ画像のデコード完了を待ってから最初のフレームを出す
-  await splashReady;
+  // スプラッシュ画像のデコードと書体の読込が済んでから最初のフレームを出す
+  await Future.wait([splashReady, fontsReady]);
 
   // アプリケーション起動
   runApp(
