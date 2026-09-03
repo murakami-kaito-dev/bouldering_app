@@ -8,6 +8,7 @@ import 'shared/config/environment_config.dart';
 import 'shared/config/app_env.dart';
 import 'shared/config/firebase_options_dev.dart';
 import 'presentation/pages/app.dart';
+import 'presentation/pages/splash_page.dart';
 
 /// 開発版アプリケーションエントリーポイント
 ///
@@ -44,6 +45,10 @@ void main() async {
   // 環境設定の整合性チェック（ENVIRONMENTとFLUTTER_APP_FLAVORの一致確認）
   AppEnv.validateConsistency();
 
+  // スプラッシュ画像を先にデコードしておく（Firebase 初期化と並行）。
+  // 最初のフレームに画像が載らないと、iOS の起動画面が外れる瞬間に暗転して見える（Issue #60）
+  final splashReady = SplashPage.precache();
+
   // Firebaseの初期化
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -64,6 +69,9 @@ void main() async {
     }
     debugPrint('※ 新しい外部システム構築後に適切な値に変更してください');
   }
+
+  // スプラッシュ画像のデコード完了を待ってから最初のフレームを出す
+  await splashReady;
 
   // アプリケーション起動
   runApp(
