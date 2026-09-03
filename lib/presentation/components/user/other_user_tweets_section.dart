@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../common/boul_log_skeleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../common/boul_log.dart';
 import '../../providers/other_user_tweets_provider.dart';
@@ -86,13 +87,9 @@ class _OtherUserTweetsSectionState extends ConsumerState<OtherUserTweetsSection>
       );
     }
 
+    // 初回取得中は骨組みを表示（スピナーは出さない）
     if (tweetsState.tweets.isEmpty && tweetsState.isLoading) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32.0),
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const BoulLogSkeletonList();
     }
 
     if (tweetsState.tweets.isEmpty) {
@@ -131,7 +128,7 @@ class _OtherUserTweetsSectionState extends ConsumerState<OtherUserTweetsSection>
         itemCount: tweetsState.tweets.length + (tweetsState.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == tweetsState.tweets.length) {
-            // ローディングインジケーター
+            // 追加読込（ページング）中のスピナー: 一覧の末尾に出す
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(16.0),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../common/boul_log_skeleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/gym_tweets_provider.dart';
 import '../common/boul_log.dart';
@@ -66,13 +67,9 @@ class GymTweetsSectionState extends ConsumerState<GymTweetsSection> {
   Widget build(BuildContext context) {
     final gymTweetsState = ref.watch(gymTweetsProvider(widget.gymId));
 
-    // 初回ローディング表示
+    // 初回取得中は骨組みを表示（スピナーは出さない）
     if (gymTweetsState.isLoading && gymTweetsState.tweets.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: AppColors.kabeBlue,
-        ),
-      );
+      return const BoulLogSkeletonList();
     }
 
     // エラー表示
@@ -159,7 +156,7 @@ class GymTweetsSectionState extends ConsumerState<GymTweetsSection> {
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: tweets.length + (gymTweetsState.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          // 追加ローディング表示
+          // 追加読込（ページング）中のスピナー: 一覧の末尾に出す
           if (index == tweets.length) {
             return const Padding(
               padding: EdgeInsets.all(16.0),

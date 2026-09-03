@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/user_provider.dart';
 import '../providers/dependency_injection.dart';
 import 'gym/favorite_gym_card.dart';
+import 'gym/favorite_gym_skeleton.dart';
 import '../../domain/entities/gym.dart';
+import '../../domain/entities/user.dart';
 import '../theme/app_tokens.dart';
 
 // Mock実装（テスト時のみ使用）
@@ -30,11 +32,14 @@ class FavoriteGymsSectionState extends ConsumerState<FavoriteGymsSection> {
   final ScrollController _scrollController = ScrollController();
   List<Gym> _favoriteGyms = [];
   bool _isLoading = false;
+  String? _loadedUserId; // 取得済みのユーザーID（同じユーザーで二重取得しないため）
 
   @override
   void initState() {
     super.initState();
     // 起動時に一度だけお気に入りジムを取得する
+    // （マイページはユーザー情報の取得完了を待たずに組まれるので、この時点で
+    //   ユーザー情報が無ければ build 内の ref.listen で到着後に取得する）
     Future.microtask(() async {
       await _loadFavoriteGyms();
     });
@@ -51,6 +56,7 @@ class FavoriteGymsSectionState extends ConsumerState<FavoriteGymsSection> {
   Future<void> _loadFavoriteGyms() async {
     final currentUser = ref.read(currentUserProvider);
     if (currentUser == null) return;
+    _loadedUserId = currentUser.id;
 
     setState(() {
       _isLoading = true;
@@ -86,8 +92,17 @@ class FavoriteGymsSectionState extends ConsumerState<FavoriteGymsSection> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+    // ユーザー情報が後から到着したら（起動直後・再読み込み後）そのユーザーで一度だけ取得する
+    ref.listen<User?>(currentUserProvider, (previous, next) {
+      if (next != null && next.id != _loadedUserId) {
+        _loadFavoriteGyms();
+      }
+    });
+
+    // 取得中、およびユーザー情報がまだ来ておらず一度も取得していない間は、
+    // スピナーや「まだイキタイジムがありません」ではなくカードと同じ寸法の骨組みを置く
+    if (_isLoading || _loadedUserId == null) {
+      return const FavoriteGymSkeletonList();
     }
 
     return RefreshIndicator(

@@ -4,6 +4,7 @@ import '../providers/user_provider.dart';
 import '../providers/my_tweets_provider.dart';
 import 'common/boul_log.dart';
 import '../theme/app_tokens.dart';
+import 'common/boul_log_skeleton.dart';
 
 /// マイツイートセクション
 ///
@@ -74,18 +75,18 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
     return userState.when(
       data: (user) {
         if (user == null) {
-          return const Center(
-            child: Text('ユーザー情報が見つかりません'),
-          );
+          // ログイン済みだがユーザー情報がまだ来ていない（起動直後の初期状態）。
+          // 読込中と同じ骨組みを出しておく（取得後に一覧へ差し替わる）
+          return const BoulLogSkeletonList();
         }
 
         // 自分のツイート状態を監視
         final myTweetsState = ref.watch(myTweetsProvider(user.id));
         final tweets = myTweetsState.tweets;
 
-        // ローディング状態の処理
+        // 初回取得中は骨組みを表示（スピナーは出さない）
         if (myTweetsState.isFirstFetch && tweets.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return const BoulLogSkeletonList();
         }
 
         // エラー状態の処理
@@ -136,7 +137,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                   controller: _scrollController,
                   itemCount: tweets.length + (myTweetsState.hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
-                    // ローディングインジケーター表示
+                    // 追加読込（ページング）中のスピナー: 一覧の末尾に出す
                     if (index == tweets.length) {
                       return const Padding(
                         padding: EdgeInsets.all(16),
@@ -166,9 +167,8 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                 ),
         );
       },
-      loading: () => const Center(
-        child: CircularProgressIndicator(),
-      ),
+      // ユーザー情報の取得中も骨組みを置いておく（取得後に一覧へ差し替わる）
+      loading: () => const BoulLogSkeletonList(),
       error: (error, stackTrace) => const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

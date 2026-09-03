@@ -1,5 +1,6 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
+import '../common/boul_log_skeleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../common/boul_log.dart';
 import '../../providers/general_tweets_provider.dart';
@@ -49,9 +50,10 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
     final generalTweets = generalTweetsState.generalTweets;
     final hasMoreGeneralTweets = generalTweetsState.hasMore;
 
-    // 初回呼び出し時のみ，ローディング表示でツイート取得していることをユーザーへ知らせる
+    // 初回取得中のみ，カードと同じ寸法の骨組みを置いて取得中であることを知らせる
+    // （スピナーは出さない。取得後に同じ場所へ一覧が入る）
     if (generalTweetsState.isFirstFetch) {
-      return const Center(child: CircularProgressIndicator());
+      return const BoulLogSkeletonList();
     }
 
     // 取得失敗で1件も表示できない場合（オフライン起動など）は再読み込み動線を出す

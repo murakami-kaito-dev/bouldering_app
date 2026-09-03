@@ -11,7 +11,8 @@ import '../theme/app_tokens.dart';
 /// 役割:
 /// - 認証状態に応じたマイページの表示制御
 /// - 未ログイン時: UnloggedMyPageを表示
-/// - ログイン時: LoggedMyPageを表示（今後実装）
+/// - ログイン時: LoggedInMyPageを表示
+///   （ユーザー情報の取得完了は待たない。各部品が骨組みで場所を確保する）
 ///
 /// クリーンアーキテクチャにおける位置づけ:
 /// - Presentation層のView
@@ -57,15 +58,9 @@ class MyPage extends ConsumerWidget {
       );
     }
 
-    if (userState.valueOrNull == null) {
-      // ユーザー情報の読み込み中（起動直後・再読み込み中）
-      return const Scaffold(
-        backgroundColor: AppColors.iwa,
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    // ログイン済みマイページ
+    // ユーザー情報の読み込み中（起動直後・再読み込み中）もページ全体は先に組む。
+    // 各部品（プロフィール・統計カード・ツイート一覧）が自分の場所を確保したまま
+    // 取得後にデータを埋める（ページ全体をスピナーに差し替えない）
     return const LoggedInMyPage();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../common/image_viewer.dart';
+import '../common/skeleton_bone.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/app_text.dart';
 
@@ -12,6 +13,7 @@ class UserLogoAndName extends StatelessWidget {
   final String? userLogo;
   final String? heroTag; // ユーザーアイコン写真を拡大表示するために必要な識別子タグ
   final String? userId;
+  final bool isLoading; // true = ユーザー情報の取得中（アイコン・名前の場所だけ確保する）
 
   // コンストラクタ
   const UserLogoAndName({
@@ -20,6 +22,7 @@ class UserLogoAndName extends StatelessWidget {
     this.userLogo,
     this.heroTag,
     this.userId,
+    this.isLoading = false,
   });
 
   @override
@@ -48,7 +51,15 @@ class UserLogoAndName extends StatelessWidget {
             child: Hero(
               tag: 'profile_icon_${userId ?? userName.hashCode}_0',
               child: ClipOval(
-                child: (_isValidUrl(userLogo))
+                // 画像の初回フレームが来るまでも同寸の円を敷いておく（場所取り）
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  color: AppColors.wareme,
+                  // ユーザー情報の取得中は無地の円だけ（画像の読込中と同じ見た目に揃える）
+                  child: isLoading
+                      ? null
+                      : (_isValidUrl(userLogo))
                     // 縮小デコード+ディスクキャッシュ
                     ? Image(
                         image: ResizeImage(
@@ -68,16 +79,19 @@ class UserLogoAndName extends StatelessWidget {
                         },
                       )
                     : _buildPlaceholderIcon(),
+                ),
               ),
             ),
           ),
           const SizedBox(width: 8),
 
-          // 名前
-          Text(
-            displayUserName,
-            style: AppText.heading(size: 20),
-          ),
+          // 名前（取得中は同じ行の高さで淡い面を置いておく）
+          isLoading
+              ? SkeletonTextBone(style: AppText.heading(size: 20), width: 140)
+              : Text(
+                  displayUserName,
+                  style: AppText.heading(size: 20),
+                ),
         ],
       ),
     );
