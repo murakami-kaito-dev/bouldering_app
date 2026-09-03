@@ -11,7 +11,8 @@ import '../theme/app_tokens.dart';
 /// 役割:
 /// - 認証状態に応じたマイページの表示制御
 /// - 未ログイン時: UnloggedMyPageを表示
-/// - ログイン時: LoggedMyPageを表示（今後実装）
+/// - ログイン時: LoggedInMyPageを表示
+///   （ユーザー情報の取得完了は待たない。各部品が骨組みで場所を確保する）
 ///
 /// クリーンアーキテクチャにおける位置づけ:
 /// - Presentation層のView

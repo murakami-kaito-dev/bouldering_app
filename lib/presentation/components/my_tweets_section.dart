@@ -84,7 +84,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
         final myTweetsState = ref.watch(myTweetsProvider(user.id));
         final tweets = myTweetsState.tweets;
 
-        // ローディング状態の処理
+        // 初回取得中は骨組みを表示（スピナーは出さない）
         if (myTweetsState.isFirstFetch && tweets.isEmpty) {
           return const BoulLogSkeletonList();
         }
@@ -137,7 +137,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                   controller: _scrollController,
                   itemCount: tweets.length + (myTweetsState.hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
-                    // ローディングインジケーター表示
+                    // 追加読込（ページング）中のスピナー: 一覧の末尾に出す
                     if (index == tweets.length) {
                       return const Padding(
                         padding: EdgeInsets.all(16),
@@ -167,6 +167,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                 ),
         );
       },
+      // ユーザー情報の取得中も骨組みを置いておく（取得後に一覧へ差し替わる）
       loading: () => const BoulLogSkeletonList(),
       error: (error, stackTrace) => const Center(
         child: Column(

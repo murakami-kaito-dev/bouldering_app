@@ -116,7 +116,8 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
         final favoriteUserTweets = favoriteUserTweetsState.favoriteUserTweets;
         final hasMoreFavoriteUserTweets = favoriteUserTweetsState.hasMore;
 
-        // 初回呼び出し時のみ，ローディング表示でツイート取得していることをユーザーに知らせる
+        // 初回取得中のみ，カードと同じ寸法の骨組みを置いて取得中であることを知らせる
+        // （スピナーは出さない。取得後に同じ場所へ一覧が入る）
         if (favoriteUserTweetsState.isFirstFetch) {
           return const BoulLogSkeletonList();
         }
@@ -209,6 +210,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                 ),
         );
       },
+      // ユーザー情報の取得中も骨組みを置いておく（取得後に一覧へ差し替わる）
       loading: () => const BoulLogSkeletonList(),
       // ユーザー情報の取得失敗（オフライン起動など）。
       // 以前はスピナーを出し続けて回復不能に見えたため、再読み込み動線を出す
