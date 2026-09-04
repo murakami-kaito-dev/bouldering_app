@@ -388,6 +388,12 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<String> requestEmailVerification(String userId, String email) async {
+    // 409/429/503 の判定を UseCase に任せるため、そのまま投げる
+    return await _dataSource.requestEmailVerification(userId, email.trim());
+  }
+
+  @override
   Future<bool> deleteUser(String userId) async {
     if (userId.trim().isEmpty) {
       return false;
