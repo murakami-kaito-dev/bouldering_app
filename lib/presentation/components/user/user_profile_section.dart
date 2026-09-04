@@ -227,12 +227,12 @@ class UserProfileSection extends ConsumerWidget {
             children: [
               // SVGアイコンの代わりにIconを使用
               _firstLineBox(_homeGymValueStyle, _leadingIcon(Icons.home),
-                  opticalOffset: 1),
+                  opticalOffset: 0.5),
               const SizedBox(width: 8),
               _firstLineBox(
                 _homeGymValueStyle,
                 Text("ホームジム", style: AppText.caption(size: 12)),
-                opticalOffset: 1,
+                opticalOffset: 0.5,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -286,7 +286,8 @@ class UserProfileSection extends ConsumerWidget {
   ///
   /// [opticalOffset] は箱の中で [child] を下へずらす量（pt）。ジム名は英小文字
   /// （folk bouldering gym…）を含むことが多く、その見た目の中心は行ボックスの中心より
-  /// 約 1pt 下にあるため、アイコン・見出しも同じだけ下げて中心線を揃える
+  /// 約 1pt 下にある一方、日本語のみの名前では揃っている。両者の中間（0.5pt）に置き、
+  /// どちらの名前でもずれが ±0.5pt に収まるようにする
   static Widget _firstLineBox(TextStyle valueStyle, Widget child,
           {double opticalOffset = 0}) =>
       SizedBox(
