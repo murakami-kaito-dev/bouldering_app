@@ -25,6 +25,7 @@
 - **バックエンド**: `POST /users` を要認証（本人 uid のみ）・email 任意に、`PATCH /users/:id/email` を「トークンの確認済みメールのみ保存／null で解除／重複は 409」に変更。ローカル起動（`ts-node`、Docker 不使用）でトークン無しの POST/PATCH が 401 になることを確認。**Cloud Run（dev）へデプロイ済み**: イメージ `dev-20260903-a431705`（Cloud Build。1回目は Google 側の INTERNAL_ERROR で失敗、再実行で SUCCESS）→ `bouldering-api-dev` rev 00064 → **00066**。検証: `/health` healthy／トークン無し `POST /users`・`PATCH .../email` → 401／公開の `GET /users/:id/profile`・`GET /tweets` → 200。**prod は未デプロイ**（本番切替時）
 - **Firebase（dev）**: Google / Apple プロバイダ有効化・アカウントリンク設定変更（ユーザー実施）。`GoogleService-Info.plist`（dev）を CLIENT_ID 付きに差し替え（Firebase CLI）
 - **Apple Developer**: dev App ID に Sign In with Apple capability を追加（App Store Connect API）
+- **2026-09-04 旧アカウントの削除（dev）**: 旧メール/パスワード方式の 2 アカウント（運営者 `tEIHtN…`＝km.solo.developer / Boulder `exyTjv…`＝mri.benkyochannel）を Firebase（Identity Toolkit Admin API・`x-goog-user-project` 必須）と DB（`DELETE FROM users`、CASCADE で投稿 34 件も削除）から削除し、GCS の画像 8 objects も削除。理由: Firebase は「別アカウントが既に持つメール」宛ての確認メールを**200 を返しつつ送らない**（使い捨てメールボックスで実測）ため、旧アカウントがそのメールを占有していると新アカウントでメール登録ができない。**本番切替時も同じ処置が必要**（prod Firebase / prod DB の旧アカウント）
 
 ## 2026-09-02 — 月次統計「ペース(回/週)」の計算修正（dev→prod 両方デプロイ済み・アプリ変更なし）
 
