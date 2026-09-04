@@ -38,7 +38,7 @@ export class UserService {
     user_id: string;
     user_name: string;
     user_icon_url?: string;
-    email: string;
+    email?: string | null;
     home_gym_id?: number;
     user_introduce?: string;
     favorite_gym?: string;
@@ -147,7 +147,7 @@ export class UserService {
   /**
    * ユーザーメールアドレス更新
    */
-  async updateUserEmail(userId: string, email: string): Promise<User> {
+  async updateUserEmail(userId: string, email: string | null): Promise<User> {
     const user = await this.userRepository.updateUserEmail(userId, email);
     
     logger.info('User email updated successfully', {

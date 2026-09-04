@@ -1,3 +1,4 @@
+import '../../shared/utils/app_clock.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/entities/bouldering_stats.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -77,33 +78,20 @@ class UserRepositoryImpl implements UserRepository {
   /// 新規ユーザー作成
   /// 
   /// [userId] 新規作成するユーザーID
-  /// [email] ユーザーのメールアドレス
   /// 
   /// 返り値:
   /// [bool] 作成成功時はtrue、失敗時はfalse
   /// 
   /// ビジネスルール:
-  /// - ユーザーIDとメールアドレスは必須
-  /// - 空文字やnullの場合は作成失敗とする
-  /// - メールアドレスの形式チェック（簡易）
+  /// - ユーザーID（Firebase uid）は必須
+  /// - メールアドレスは持たない（設定画面から任意で登録）
   @override
-  Future<bool> createUser(String userId, String email) async {
-    // 入力値検証
-    if (userId.trim().isEmpty || email.trim().isEmpty) {
+  Future<bool> createUser(String userId) async {
+    if (userId.trim().isEmpty) {
       return false;
     }
-
-    // 簡易メールアドレス形式チェック
-    if (!_isValidEmail(email)) {
-      return false;
-    }
-
-    try {
-      return await _dataSource.createUser(userId, email);
-    } catch (e) {
-      // エラーログ出力などの処理を追加可能
-      return false;
-    }
+    // 失敗の理由（認証・通信）は上位で扱うのでそのまま投げる
+    return await _dataSource.createUser(userId);
   }
 
   /// ユーザー名更新
@@ -269,15 +257,16 @@ class UserRepositoryImpl implements UserRepository {
       return true;
     }
 
-    final now = DateTime.now();
-
-    // 日付の妥当性チェック
-    if (birthday != null && birthday.isAfter(now)) {
-      return false; // 生年月日は現在より過去である必要がある
+    // 日付の妥当性チェックは「日付」単位で行う（時刻は見ない）。
+    // 当日は許可する。時刻込みで比較すると、サーバーから UTC 深夜で返る当日の日付が
+    // 日本では 09:00 になり、午前中の保存が「未来の日付」として弾かれていた
+    // 「今日」は日本時間（共通部品 AppClock）
+    if (birthday != null && AppClock.isAfterToday(birthday)) {
+      return false; // 生年月日は今日以前である必要がある
     }
 
-    if (boulStartDate != null && boulStartDate.isAfter(now)) {
-      return false; // ボルダリング開始日は現在以前である必要がある
+    if (boulStartDate != null && AppClock.isAfterToday(boulStartDate)) {
+      return false; // ボルダリング開始日は今日以前である必要がある
     }
 
     try {
@@ -390,16 +379,12 @@ class UserRepositoryImpl implements UserRepository {
   /// 1. ユーザーIDの妥当性チェック
   /// 2. データソースでユーザー削除実行
   @override
-  Future<bool> updateUserEmail(String userId, String email) async {
-    if (userId.trim().isEmpty || email.trim().isEmpty) {
+  Future<bool> updateUserEmail(String userId, String? email) async {
+    if (userId.trim().isEmpty) {
       return false;
     }
-
-    try {
-      return await _dataSource.updateUserEmail(userId, email);
-    } catch (e) {
-      return false;
-    }
+    // 重複（409）などの理由を UseCase 側で判定できるよう、握りつぶさずに投げる
+    return await _dataSource.updateUserEmail(userId, email);
   }
 
   @override

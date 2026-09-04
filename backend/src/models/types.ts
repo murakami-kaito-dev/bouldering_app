@@ -4,7 +4,7 @@ export interface User {
   user_id: string;
   user_name: string;
   user_icon_url?: string;
-  email: string;
+  email: string | null; // 任意登録（通知用）。未登録なら null
   home_gym_id?: number;
   user_introduce?: string;
   favorite_gym?: string;

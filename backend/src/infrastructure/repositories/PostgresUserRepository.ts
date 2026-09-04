@@ -3,6 +3,12 @@ import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { User } from '../../models/types';
 import { ApiError } from '../../middleware/error';
 import logger from '../../utils/logger';
+import { jstMonthRange } from '../../utils/jstTime';
+
+/** PostgreSQL の UNIQUE 制約違反（SQLSTATE 23505）か */
+function isUniqueViolation(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && (error as { code?: string }).code === '23505';
+}
 
 /**
  * PostgreSQL User リポジトリ実装
@@ -54,7 +60,7 @@ export class PostgresUserRepository implements IUserRepository {
     user_id: string;
     user_name: string;
     user_icon_url?: string;
-    email: string;
+    email?: string | null;
     home_gym_id?: number;
     user_introduce?: string;
     gender?: number;
@@ -72,7 +78,7 @@ export class PostgresUserRepository implements IUserRepository {
           userData.user_id,
           userData.user_name,
           userData.user_icon_url || null,
-          userData.email,
+          userData.email ?? null,
           userData.home_gym_id || null,
           userData.user_introduce || null,
           userData.gender || null,
@@ -127,6 +133,11 @@ export class PostgresUserRepository implements IUserRepository {
       return result[0];
     } catch (error) {
       if (error instanceof ApiError) throw error;
+      // 1アカウント:1メール（users.email の UNIQUE）に当たった → 409 で返し、アプリが案内する
+      if (isUniqueViolation(error)) {
+        logger.warn('Unique violation on user update', { userId, fields: Object.keys(updateData) });
+        throw new ApiError(409, 'Email is already registered by another account', 'EMAIL_ALREADY_REGISTERED');
+      }
       logger.error('Error updating user', { userId, updateData, error });
       throw new ApiError(500, 'Failed to update user');
     }
@@ -166,32 +177,25 @@ export class PostgresUserRepository implements IUserRepository {
     return this.update(userId, { user_icon_url: iconUrl });
   }
 
-  async updateUserEmail(userId: string, email: string): Promise<User> {
+  /** [email] が null なら未登録に戻す。重複は update() が 409 にする */
+  async updateUserEmail(userId: string, email: string | null): Promise<User> {
     return this.update(userId, { email });
   }
 
   async getMonthlyStats(userId: string, monthsAgo: number): Promise<any> {
     try {
-      // JavaScript側で日付計算（過去の実装を参考）
-      const startDate = new Date();
-      startDate.setMonth(startDate.getMonth() - monthsAgo);
-      startDate.setDate(1); // その月の1日
-      startDate.setHours(0, 0, 0, 0); // 時刻をリセット
+      // 「今月」「N か月前」の範囲は日本時間で決める（サーバーは UTC なので new Date() の
+      // 月をそのまま使うと、毎月 1 日の 0〜9 時（JST）に先月扱いになっていた）。
+      // 範囲は 'YYYY-MM-DD' の半開区間 [start, end) で DATE 列と比較する
+      const range = jstMonthRange(monthsAgo);
+      const startDate = range.start;
+      const endDate = range.end;
 
-      const endDate = new Date(startDate);
-      endDate.setMonth(endDate.getMonth() + 1); // 翌月の1日
-
-      // 週平均の分母に使う「週数」の元になる日数を決める
-      // - 今月(monthsAgo=0): 経過日数（月初ほど値が大きくなるのは仕様として許容）
-      // - 過去の月(monthsAgo>=1): その月の日数（例: 8月なら31日）
-      //   ※ 従来は過去の月でも CURRENT_DATE の経過日数で割っていたため、
-      //      月初に先月分が異常な値になっていた（例: 9/2時点で先月4回→13.9回/週）
-      const isCurrentMonth = monthsAgo === 0;
-      const daysInTargetMonth = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth() + 1,
-        0
-      ).getDate();
+      // 週平均の分母に使う「週数」の元になる日数
+      // - 今月: 日本時間での経過日数（月初ほど値が大きくなるのは仕様として許容）
+      // - 過去の月: その月の日数（例: 8月なら31日）
+      //   ※ 従来は CURRENT_DATE（UTC）を使っており、JST 0〜9 時は 1 日ずれていた
+      const denominatorDays = range.elapsedDays;
 
       // 1. ボル活回数の計算
       const totalVisitsResult = await db.query(
@@ -200,11 +204,11 @@ export class PostgresUserRepository implements IUserRepository {
            SELECT DATE(t.visited_date) AS visit_day, COUNT(DISTINCT t.gym_id) AS daily_gym_count
            FROM tweets t
            WHERE t.user_id = $1
-             AND t.visited_date >= $2
-             AND t.visited_date < $3
+             AND t.visited_date >= $2::date
+             AND t.visited_date < $3::date
            GROUP BY visit_day
          ) AS daily_counts`,
-        [userId, startDate.toISOString(), endDate.toISOString()]
+        [userId, startDate, endDate]
       );
 
       // 2. 訪問施設数の計算
@@ -212,29 +216,24 @@ export class PostgresUserRepository implements IUserRepository {
         `SELECT COUNT(DISTINCT t.gym_id) AS unique_gyms
          FROM tweets t
          WHERE t.user_id = $1
-           AND t.visited_date >= $2
-           AND t.visited_date < $3`,
-        [userId, startDate.toISOString(), endDate.toISOString()]
+           AND t.visited_date >= $2::date
+           AND t.visited_date < $3::date`,
+        [userId, startDate, endDate]
       );
 
       // 3. 週平均回数の計算
       // 「ボル活回数 ÷ 対象月の週数」。分子は 1.（total_visits）と同じ集計に揃える
-      const denominatorDaysSql = isCurrentMonth
-        ? 'EXTRACT(DAY FROM CURRENT_DATE)::numeric'
-        : '$4::numeric';
       const weeklyVisitRateResult = await db.query(
-        `SELECT TRUNC(COALESCE(SUM(daily_gym_count), 0)::numeric / (${denominatorDaysSql} / 7), 1) AS weekly_average
+        `SELECT TRUNC(COALESCE(SUM(daily_gym_count), 0)::numeric / ($4::numeric / 7), 1) AS weekly_average
          FROM (
            SELECT DATE(t.visited_date) AS visit_day, COUNT(DISTINCT t.gym_id) AS daily_gym_count
            FROM tweets t
            WHERE t.user_id = $1
-             AND t.visited_date >= $2
-             AND t.visited_date < $3
+             AND t.visited_date >= $2::date
+             AND t.visited_date < $3::date
            GROUP BY visit_day
          ) AS daily_counts`,
-        isCurrentMonth
-          ? [userId, startDate.toISOString(), endDate.toISOString()]
-          : [userId, startDate.toISOString(), endDate.toISOString(), daysInTargetMonth]
+        [userId, startDate, endDate, denominatorDays]
       );
 
       // 4. TOP5 訪問ジムの計算
@@ -243,12 +242,12 @@ export class PostgresUserRepository implements IUserRepository {
          FROM tweets t
          INNER JOIN gyms g ON t.gym_id = g.gym_id
          WHERE t.user_id = $1
-           AND t.visited_date >= $2
-           AND t.visited_date < $3
+           AND t.visited_date >= $2::date
+           AND t.visited_date < $3::date
          GROUP BY t.gym_id, g.gym_name
          ORDER BY visit_count DESC, latest_visit DESC
          LIMIT 5`,
-        [userId, startDate.toISOString(), endDate.toISOString()]
+        [userId, startDate, endDate]
       );
 
       const topGyms = topGymsResult.map(row => ({

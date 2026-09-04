@@ -1,7 +1,11 @@
+import '../../shared/utils/app_clock.dart';
+
 class User {
   final String id;
   final String userName;
-  final String email;
+
+  /// 通知用に任意で登録するメールアドレス（未登録なら null。認証には使わない）
+  final String? email;
   final String? userIconUrl;
   final String? userIntroduce;
   final String? favoriteGym;
@@ -13,7 +17,7 @@ class User {
   const User({
     required this.id,
     required this.userName,
-    required this.email,
+    this.email,
     this.userIconUrl,
     this.userIntroduce,
     this.favoriteGym,
@@ -34,11 +38,12 @@ class User {
     DateTime? birthday,
     DateTime? boulStartDate,
     int? homeGymId,
+    bool clearEmail = false, // true でメールアドレスを未登録に戻す
   }) {
     return User(
       id: id ?? this.id,
       userName: userName ?? this.userName,
-      email: email ?? this.email,
+      email: clearEmail ? null : (email ?? this.email),
       userIconUrl: userIconUrl ?? this.userIconUrl,
       userIntroduce: userIntroduce ?? this.userIntroduce,
       favoriteGym: favoriteGym ?? this.favoriteGym,
@@ -64,7 +69,7 @@ class User {
 
   int? get boulderingYearsExperience {
     if (boulStartDate == null) return null;
-    final now = DateTime.now();
+    final now = AppClock.todayJst();
     return now.difference(boulStartDate!).inDays ~/ 365;
   }
 

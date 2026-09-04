@@ -1,3 +1,4 @@
+import '../../shared/utils/app_clock.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../services/api_client.dart';
@@ -426,7 +427,8 @@ class TweetDataSource {
       userId: tweetData['user_id']?.toString() ?? '',
       userName: tweetData['user_name'] ?? '',
       userIconUrl: tweetData['user_icon_url'] ?? '',
-      visitedDate: DateTime.tryParse(tweetData['visited_date'] ?? '') ??
+      // 訪問日は DATE 列＝日付だけ（時刻付きで来ても先頭の年月日を使う。JST 固定）
+      visitedDate: AppClock.parseDateOnly(tweetData['visited_date']) ??
           DateTime(1990, 1, 1),
       tweetedDate: DateTime.tryParse(tweetData['tweeted_date'] ?? '') ??
           DateTime(1990, 1, 1),
@@ -467,7 +469,5 @@ class TweetDataSource {
   ///
   /// 返り値:
   /// [String] YYYY-MM-DD形式の日付文字列
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
+  String _formatDate(DateTime date) => AppClock.formatDateOnly(date);
 }

@@ -43,11 +43,11 @@ class MockUserDataSource extends UserDataSource {
   }
 
   @override
-  Future<bool> createUser(String userId, String email) async {
+  Future<bool> createUser(String userId) async {
     await Future.delayed(const Duration(milliseconds: 100));
 
-    // MockDataにユーザーを作成
-    return MockData.createUser(userId, email);
+    // MockDataにユーザーを作成（メールアドレスは持たない）
+    return MockData.createUser(userId, '');
   }
 
   @override

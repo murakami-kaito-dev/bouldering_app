@@ -1,3 +1,4 @@
+import '../../shared/utils/app_clock.dart';
 import 'dart:io';
 import '../services/api_client.dart';
 import '../services/storage_service.dart';
@@ -50,6 +51,10 @@ class UserDataSource {
       
       // エンティティに変換して返却
       return _mapToUserEntity(userData);
+    } on ApiException catch (e) {
+      // 404 = DB にまだ行が無い（SNS ログイン直後の未登録状態）。呼び出し側が登録へ進む
+      if (e.statusCode == 404) return null;
+      throw Exception('ユーザー情報の取得に失敗しました: $e');
     } catch (e) {
       throw Exception('ユーザー情報の取得に失敗しました: $e');
     }
@@ -88,34 +93,34 @@ class UserDataSource {
 
   /// 新規ユーザー作成
   /// 
-  /// [userId] 新規作成するユーザーID
-  /// [email] ユーザーのメールアドレス
+  /// [userId] 新規作成するユーザーID（Firebase uid）
   /// 
   /// 返り値:
   /// [bool] 作成成功時はtrue、失敗時はfalse
   /// 
   /// 処理フロー:
-  /// 1. REST API: POST /api/users でユーザー作成
+  /// 1. REST API: POST /api/users でユーザー作成（要認証。本人の uid のみ作れる）
   /// 2. APIエラー時は例外を上位に伝播
-  Future<bool> createUser(String userId, String email) async {
+  /// メールアドレスは送らない（設定画面から任意で登録する）
+  Future<bool> createUser(String userId) async {
     try {
       // デフォルト値を含むユーザーデータを準備
       final requestBody = {
         'user_id': userId,
-        'email': email,
         'user_name': '駆け出しボルダー',
         'user_introduce': '設定から自己紹介を記入しましょう！',
         'favorite_gym': '設定から好きなジムを記入しましょう！',
         'gender': 0,  // 0: 未設定
         'home_gym_id': null,
-        'boul_start_date': DateTime.now().toIso8601String(),
+        // DATE 列なので日付だけを送る（時刻付きの ISO 文字列だとサーバー側 UTC 解釈で日付がずれる）
+        'boul_start_date': _formatDate(AppClock.todayJst()),
       };
       
-      // API通信でユーザーを作成
+      // API通信でユーザーを作成（Firebase ログイン済みなのでトークンを付ける）
       final response = await _apiClient.post(
         endpoint: '/users',
         body: requestBody,
-        requireAuth: false,  // 新規登録時は認証不要
+        requireAuth: true,
       );
 
       // 作成成功を確認
@@ -385,17 +390,13 @@ class UserDataSource {
     return User(
       id: userData['user_id']?.toString() ?? '',
       userName: userData['user_name'] ?? '',
-      email: userData['email'] ?? '',
+      email: userData['email'] as String?,
       userIconUrl: userData['user_icon_url'],
       userIntroduce: userData['user_introduce'],
       favoriteGym: userData['favorite_gym'],
       gender: userData['gender'],
-      birthday: userData['birthday'] != null 
-          ? DateTime.tryParse(userData['birthday']) 
-          : null,
-      boulStartDate: userData['boul_start_date'] != null 
-          ? DateTime.tryParse(userData['boul_start_date']) 
-          : null,
+      birthday: _parseDateOnly(userData['birthday']),
+      boulStartDate: _parseDateOnly(userData['boul_start_date']),
       homeGymId: userData['home_gym_id'],
     );
   }
@@ -470,28 +471,23 @@ class UserDataSource {
   /// ユーザーのメールアドレス更新
   /// 
   /// [userId] 更新対象のユーザーID
-  /// [email] 新しいメールアドレス
+  /// [email] 登録するメールアドレス。null なら未登録に戻す
   /// 
   /// 返り値:
   /// [bool] 更新成功時はtrue、失敗時はfalse
   /// 
   /// 処理フロー:
-  /// 1. REST API: PATCH /api/users/{userId}/email でメールアドレス更新
-  /// 2. APIエラー時は例外を上位に伝播
-  Future<bool> updateUserEmail(String userId, String email) async {
-    try {
-      // API通信でメールアドレスを更新
-      final response = await _apiClient.patch(
-        endpoint: '/users/$userId/email',
-        body: {'email': email},
-        requireAuth: true,  // 認証必要
-      );
-
-      // 更新成功を確認
-      return response['success'] == true;
-    } catch (e) {
-      throw Exception('メールアドレス更新に失敗しました: $e');
-    }
+  /// 1. REST API: PATCH /api/users/{userId}/email
+  ///    バックエンドは body の値を信用せず、Firebase トークンに載っている
+  ///    「本人確認済みのメールアドレス」を保存する（body は null=削除 の指示にだけ使う）
+  /// 2. 重複（409）等の ApiException はそのまま上位へ伝播（UseCase が判定する）
+  Future<bool> updateUserEmail(String userId, String? email) async {
+    final response = await _apiClient.patch(
+      endpoint: '/users/$userId/email',
+      body: {'email': email},
+      requireAuth: true, // 認証必要
+    );
+    return response['success'] == true;
   }
 
   /// 日付をAPIで使用する形式にフォーマット
@@ -500,7 +496,8 @@ class UserDataSource {
   /// 
   /// 返り値:
   /// [String] YYYY-MM-DD形式の日付文字列
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
+  String _formatDate(DateTime date) => AppClock.formatDateOnly(date);
+
+  /// DATE 列（生年月日・ボルダリング開始日）は日付だけを読む（時刻基準の共通部品）
+  DateTime? _parseDateOnly(dynamic value) => AppClock.parseDateOnly(value);
 }

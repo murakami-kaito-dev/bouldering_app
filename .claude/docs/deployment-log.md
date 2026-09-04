@@ -18,6 +18,25 @@
 
 ---
 
+## 2026-09-05 — 時刻の基準を JST 固定に統一（PR #72・dev デプロイ）
+
+- **目的**: DATE 列の UTC 深夜返却×端末 JST 解釈による日付ずれ（登録当日の午前中にプロフィール保存が失敗）と、統計「今月」の月範囲・経過日数を UTC で決めていたため毎月 1 日 0〜9 時（JST）に先月扱いになる問題を解消。方針は infrastructure.md「時刻の基準」
+- **バックエンド**: `utils/jstTime.ts` 新設（`jstToday` / `isAfterJstToday` / `jstMonthRange`）。`getMonthlyStats` の月範囲・経過日数を JST に（`CURRENT_DATE` 廃止）、訪問日の未来チェックを共通部品に。pg の DATE 型を `'YYYY-MM-DD'` 文字列で返すよう設定（`database-supabase.ts`）
+- **アプリ**: `shared/utils/app_clock.dart` 新設。DATE の読み書き・未来判定・訪問日の初期値／ピッカー上限・営業中判定・統計の月見出し・ボルダリング歴を JST 基準に統一
+- **検証**: 境界テスト（JST 10/1 00:30＝UTC 9/30 15:30 → 今月=10月・経過 1 日、年またぎ、未来判定 3 形式）／アプリ側の一時ユニットテスト 3 件通過／ローカル起動で DATE が文字列・統計 200（週平均 1.4＝1回÷(5日/7)＝JST の経過日数）
+- **デプロイ**: dev イメージ `dev-20260905-aca136e` → `bouldering-api-dev` rev **00067-p8v**（2026-09-05 03:06 JST）。疎通: `/health` healthy／公開プロフィール `boul_start_date: '2026-09-02'`（文字列）／統計 `total_visits 1, weekly_average 1.4`／`/api/tweets` の `visited_date = '2026-09-01'`／`POST /users` 無トークン → 401。prod 未反映
+
+---
+
+## 2026-09-03 — SNS ログイン移行（dev のみ・進行中）: dev DB の `users.email` を NULL 許容に
+
+- **目的**: Google / Apple ログインへの移行に伴い、メールアドレスを「任意登録」にする（PR `feature/sns-login-google-apple`）
+- **DB（dev Supabase）**: `ALTER TABLE public.users ALTER COLUMN email DROP NOT NULL;` を実行（2026-09-03、バックエンドの接続設定経由）。UNIQUE 制約 `users_new_email_key` とインデックスは維持。既存 9 行は変更なし。**prod DB は未実施**（本番切替時に同じ SQL を実行する）
+- **バックエンド**: `POST /users` を要認証（本人 uid のみ）・email 任意に、`PATCH /users/:id/email` を「トークンの確認済みメールのみ保存／null で解除／重複は 409」に変更。ローカル起動（`ts-node`、Docker 不使用）でトークン無しの POST/PATCH が 401 になることを確認。**Cloud Run（dev）へデプロイ済み**: イメージ `dev-20260903-a431705`（Cloud Build。1回目は Google 側の INTERNAL_ERROR で失敗、再実行で SUCCESS）→ `bouldering-api-dev` rev 00064 → **00066**。検証: `/health` healthy／トークン無し `POST /users`・`PATCH .../email` → 401／公開の `GET /users/:id/profile`・`GET /tweets` → 200。**prod は未デプロイ**（本番切替時）
+- **Firebase（dev）**: Google / Apple プロバイダ有効化・アカウントリンク設定変更（ユーザー実施）。`GoogleService-Info.plist`（dev）を CLIENT_ID 付きに差し替え（Firebase CLI）
+- **Apple Developer**: dev App ID に Sign In with Apple capability を追加（App Store Connect API）
+- **2026-09-04 旧アカウントの削除（dev）**: 旧メール/パスワード方式の 2 アカウント（運営者 `tEIHtN…`＝km.solo.developer / Boulder `exyTjv…`＝mri.benkyochannel）を Firebase（Identity Toolkit Admin API・`x-goog-user-project` 必須）と DB（`DELETE FROM users`、CASCADE で投稿 34 件も削除）から削除し、GCS の画像 8 objects も削除。理由: Firebase は「別アカウントが既に持つメール」宛ての確認メールを**200 を返しつつ送らない**（使い捨てメールボックスで実測）ため、旧アカウントがそのメールを占有していると新アカウントでメール登録ができない。**本番切替時も同じ処置が必要**（prod Firebase / prod DB の旧アカウント）
+
 ## 2026-09-02 — 月次統計「ペース(回/週)」の計算修正（dev→prod 両方デプロイ済み・アプリ変更なし）
 
 - **目的**: 過去の月の「ペース（回/週）」が異常値になるバグの修正（refactor-candidates **B-21** / action-items **G-13**）

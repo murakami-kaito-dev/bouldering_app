@@ -27,7 +27,7 @@ export interface IUserRepository {
     user_id: string;
     user_name: string;
     user_icon_url?: string;
-    email: string;
+    email?: string | null;
     home_gym_id?: number;
     user_introduce?: string;
     favorite_gym?: string;
@@ -74,7 +74,7 @@ export interface IUserRepository {
   /**
    * ユーザーのメールアドレスを更新
    */
-  updateUserEmail(userId: string, email: string): Promise<User>;
+  updateUserEmail(userId: string, email: string | null): Promise<User>;
 
   /**
    * 月別統計データを取得

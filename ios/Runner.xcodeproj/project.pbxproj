@@ -230,6 +230,7 @@
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				9A6E26CF2789D5F0D42DF4A0 /* [CP] Embed Pods Frameworks */,
 				42702AD93FB8F649EE10A431 /* [CP] Copy Pods Resources */,
+				7A1B2C3D4E5F60718293A4B5 /* Inject Google Sign-In URL Scheme */,
 			);
 			buildRules = (
 			);
@@ -255,6 +256,11 @@
 						TestTargetID = 97C146ED1CF9000F007C117D;
 					};
 					97C146ED1CF9000F007C117D = {
+						SystemCapabilities = {
+							com.apple.SignInWithApple = {
+								enabled = 1;
+							};
+						};
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 1100;
 					};
@@ -430,6 +436,21 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		7A1B2C3D4E5F60718293A4B5 /* Inject Google Sign-In URL Scheme */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Inject Google Sign-In URL Scheme";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n# Google ログインの戻り先 URL スキーム（REVERSED_CLIENT_ID）をビルド成果物の Info.plist に注入する。\n# 値は flavor ごとの GoogleService-Info.plist（Setup Firebase Config でコピー済み）から読む。\nGSI_PLIST=\"${SRCROOT}/Runner/GoogleService-Info.plist\"\nBUILT_PLIST=\"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nif [ ! -f \"$GSI_PLIST\" ] || [ ! -f \"$BUILT_PLIST\" ]; then\n  echo \"warning: GoogleService-Info.plist または Info.plist が見つからないため URL スキームを注入しません\"\n  exit 0\nfi\nRCID=$(/usr/libexec/PlistBuddy -c 'Print :REVERSED_CLIENT_ID' \"$GSI_PLIST\" 2>/dev/null || true)\nif [ -z \"$RCID\" ]; then\n  echo \"warning: REVERSED_CLIENT_ID が無いため Google ログインは動作しません（Firebase で Google を有効化し plist を再取得）\"\n  exit 0\nfi\n/usr/libexec/PlistBuddy -c 'Delete :CFBundleURLTypes' \"$BUILT_PLIST\" 2>/dev/null || true\n/usr/libexec/PlistBuddy \\\n  -c 'Add :CFBundleURLTypes array' \\\n  -c 'Add :CFBundleURLTypes:0 dict' \\\n  -c 'Add :CFBundleURLTypes:0:CFBundleTypeRole string Editor' \\\n  -c 'Add :CFBundleURLTypes:0:CFBundleURLSchemes array' \\\n  -c \"Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string ${RCID}\" \\\n  \"$BUILT_PLIST\"\necho \"Google ログインの URL スキームを注入しました\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -548,6 +569,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = XX24WCN326;
 				ENABLE_BITCODE = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -650,6 +672,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = XX24WCN326;
 				ENABLE_BITCODE = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -749,6 +772,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = XX24WCN326;
 				ENABLE_BITCODE = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -847,6 +871,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = XX24WCN326;
 				ENABLE_BITCODE = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -942,6 +967,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = XX24WCN326;
 				ENABLE_BITCODE = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1036,6 +1062,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = XX24WCN326;
 				ENABLE_BITCODE = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

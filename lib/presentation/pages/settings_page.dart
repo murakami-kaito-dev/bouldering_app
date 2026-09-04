@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../domain/entities/user.dart';
 import '../providers/user_provider.dart';
 import '../providers/auth_provider.dart';
+import '../../domain/services/auth_service.dart';
 import '../components/common/loading_widget.dart';
 import '../components/common/error_widget.dart';
 import '../../shared/utils/navigation_helper.dart';
@@ -105,7 +106,8 @@ class SettingsPage extends ConsumerWidget {
                           style:
                               AppText.body(size: 14, weight: FontWeight.w700)),
                       const SizedBox(height: 4),
-                      Text(user.email, style: AppText.caption(size: 12)),
+                      Text(user.email ?? 'メールアドレス未登録',
+                          style: AppText.caption(size: 12)),
                       if (user.boulderingYearsExperience != null) ...[
                         const SizedBox(height: 4),
                         Text('ボルダリング歴: ${user.boulderingYearsExperience}年',
@@ -148,24 +150,35 @@ class SettingsPage extends ConsumerWidget {
   }
 
   Widget _buildSecuritySection(BuildContext context, WidgetRef ref, User user) {
+    final provider = ref.read(authProvider.notifier).currentProviderKind;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionLabel('セキュリティ設定'),
+        _buildSectionLabel('アカウント'),
         Card(
           child: Column(
             children: [
-              _buildSettingsItem(
-                icon: Icons.email,
-                title: 'メールアドレス変更',
-                subtitle: '現在: ${user.email}',
-                onTap: () => _showEmailChangeDialog(context, ref),
+              // ログイン方法（Google / Apple）。退会時の本人確認も同じ方法で行う
+              ListTile(
+                leading: Icon(
+                  provider == AuthProviderKind.apple ? Icons.apple : Icons.account_circle,
+                  color: AppColors.sunabokori,
+                ),
+                title: Text('ログイン方法',
+                    style: AppText.body(
+                        size: 14, weight: FontWeight.w500, color: AppColors.chalk)),
+                subtitle: Text(
+                  provider == null ? '不明' : '${provider.displayName} アカウントでログイン中',
+                  style: AppText.caption(size: 12),
+                ),
               ),
               _buildSettingsItem(
-                icon: Icons.lock,
-                title: 'パスワード変更',
-                subtitle: 'アカウントのパスワードを変更',
-                onTap: () => _showPasswordChangeDialog(context, ref),
+                icon: Icons.email,
+                title: 'メールアドレス（任意）',
+                subtitle: user.email == null
+                    ? '未登録。お知らせを受け取りたい場合に登録できます'
+                    : '登録済み: ${user.email}',
+                onTap: () => _showEmailDialog(context, ref, user),
               ),
             ],
           ),
@@ -349,46 +362,26 @@ class SettingsPage extends ConsumerWidget {
   }
 
   void _confirmAccountDeletion(BuildContext context, WidgetRef ref) {
+    final provider = ref.read(authProvider.notifier).currentProviderKind;
     NavigationHelper.showConfirmDialog(
       context: context,
       title: '最終確認',
-      message: 'アカウントの削除を実行しますか？\nこの操作は絶対に元に戻せません。',
+      message: 'アカウントの削除を実行しますか？\nこの操作は絶対に元に戻せません。\n\n'
+          '本人確認のため、続けて ${provider?.displayName ?? 'ログイン時'} のログイン画面が表示されます。',
       confirmText: '削除を実行',
       cancelText: 'キャンセル',
     ).then((confirmed) async {
       if (confirmed && context.mounted) {
-        _showPasswordDialog(context, ref);
+        await _executeAccountDeletion(context, ref);
       }
     });
-  }
-
-  void _showPasswordDialog(BuildContext context, WidgetRef ref) async {
-    final password = await showDialog<String>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const _PasswordDialog(),
-    );
-    if (password != null && password.isNotEmpty && context.mounted) {
-      await _executeAccountDeletion(context, ref, password);
-    }
   }
 
   Future<void> _executeAccountDeletion(
     BuildContext context,
     WidgetRef ref,
-    String password,
   ) async {
-    if (password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('パスワードを入力してください'),
-          backgroundColor: AppColors.holdRed,
-        ),
-      );
-      return;
-    }
-
-    // プログレスダイアログを表示
+    // プログレスダイアログを表示（再認証シートの裏で待つ）
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -407,36 +400,35 @@ class SettingsPage extends ConsumerWidget {
     );
 
     try {
-      // 削除処理を実行
-      await ref.read(authProvider.notifier).deleteAccount(password: password);
+      // 本人確認（プロバイダで再認証）→ DB → Firebase の順に削除
+      final deleted = await ref.read(authProvider.notifier).deleteAccount();
 
-      // 成功した場合
-      if (context.mounted) {
-        // プログレスダイアログを閉じる
-        Navigator.of(context).pop();
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // プログレスを閉じる
 
-        // 成功メッセージを表示
+      if (!deleted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('アカウントを削除しました'),
-            backgroundColor: AppColors.holdGreen,
-            duration: Duration(seconds: 2),
-          ),
+          const SnackBar(content: Text('本人確認がキャンセルされたため、削除しませんでした')),
         );
+        return;
+      }
 
-        // 少し待ってから最初の画面に戻る
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (context.mounted) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('アカウントを削除しました'),
+          backgroundColor: AppColors.holdGreen,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // 少し待ってから最初の画面に戻る
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (context.mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } catch (e) {
-      // エラーが発生した場合
       if (context.mounted) {
-        // プログレスダイアログを閉じる
-        Navigator.of(context).pop();
-
-        // エラーダイアログを表示
+        Navigator.of(context).pop(); // プログレスを閉じる
         NavigationHelper.showErrorDialog(
           context: context,
           message: _toFriendlyMessage(e),
@@ -445,177 +437,98 @@ class SettingsPage extends ConsumerWidget {
     }
   }
 
-  void _showEmailChangeDialog(BuildContext context, WidgetRef ref) async {
-    final result = await showDialog<Map<String, String>>(
+  /// 通知用メールアドレスの登録・変更・削除
+  Future<void> _showEmailDialog(
+      BuildContext context, WidgetRef ref, User user) async {
+    final result = await showDialog<_EmailDialogResult>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const _EmailChangeDialog(),
+      builder: (_) => _EmailRegisterDialog(currentEmail: user.email),
     );
-
     if (result == null || !context.mounted) return;
 
-    final email = result['email'] ?? '';
-    final password = result['password'] ?? '';
-    await _executeEmailChange(context, ref, email, password);
-  }
-
-  /// ★ 重要：ここでは Cloud SQL を更新しない（未検証のため）
-  Future<void> _executeEmailChange(
-    BuildContext context,
-    WidgetRef ref,
-    String newEmail,
-    String currentPassword,
-  ) async {
-    if (newEmail.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('メールアドレスを入力してください')),
-      );
-      return;
-    }
-    if (currentPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('現在のパスワードを入力してください')),
-      );
-      return;
-    }
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-    if (!emailRegex.hasMatch(newEmail)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('正しいメールアドレス形式で入力してください')),
-      );
-      return;
-    }
-
     try {
-      // 1) Firebase Auth に認証メール送信（再認証付き）→ 強制ログアウト
-      await ref.read(authProvider.notifier).updateEmailInFirebaseAuth(
-            newEmail: newEmail,
-            currentPassword: currentPassword,
-          );
-
-      // 2) Cloud SQL はここでは更新しない。次回ログイン成功時に UID で同期される。
-      if (context.mounted) {
+      if (result.remove) {
+        await ref.read(authProvider.notifier).removeEmail();
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              '確認メールを送信しました。リンクをクリックして変更してください。\n'
-              'リンクをクリック後は、新しいメールアドレス＋パスワードでログインしてください。',
-            ),
-            duration: Duration(seconds: 8),
-          ),
+          const SnackBar(content: Text('メールアドレスを削除しました')),
         );
+        return;
+      }
+
+      final outcome =
+          await ref.read(authProvider.notifier).registerEmail(result.email);
+      if (!context.mounted) return;
+      switch (outcome) {
+        case EmailRegistrationResult.registered:
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('メールアドレスを登録しました'),
+              backgroundColor: AppColors.holdGreen,
+            ),
+          );
+        case EmailRegistrationResult.verificationSent:
+          // 正常な案内なので「エラー」ダイアログではなく通常のダイアログで出す
+          await _showInfoDialog(
+            context,
+            title: '確認メールを送信しました',
+            message: '「${result.email}」宛てに確認メールを送りました。\n'
+                'メール内のリンクを押すと本人確認が完了します。\n'
+                'その後、一度ログアウトされるので、再度ログインすると登録が完了します。\n\n'
+                '届かない場合は迷惑メールフォルダも確認してください。',
+          );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('メールアドレス更新に失敗しました: ${e.toString()}')),
+        NavigationHelper.showErrorDialog(
+          context: context,
+          message: _emailErrorMessage(e),
         );
       }
     }
   }
 
-  void _showPasswordChangeDialog(BuildContext context, WidgetRef ref) async {
-    final result = await showDialog<Map<String, String>>(
+  Future<void> _showInfoDialog(BuildContext context,
+      {required String title, required String message}) {
+    return showDialog<void>(
       context: context,
-      barrierDismissible: false,
-      builder: (_) => const _PasswordChangeDialog(),
+      builder: (context) => AlertDialog(
+        title: Text(title, style: AppText.heading(size: 16)),
+        content: Text(message, style: AppText.body(size: 14)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
-
-    if (result == null || !context.mounted) return;
-
-    final current = result['current'] ?? '';
-    final newPassword = result['new'] ?? '';
-    final confirm = result['confirm'] ?? '';
-    await _executePasswordChange(context, ref, current, newPassword, confirm);
   }
 
-  Future<void> _executePasswordChange(
-    BuildContext context,
-    WidgetRef ref,
-    String currentPassword,
-    String newPassword,
-    String confirmPassword,
-  ) async {
-    if (currentPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('現在のパスワードを入力してください')),
-      );
-      return;
+  String _emailErrorMessage(Object e) {
+    final s = e.toString();
+    if (s.contains('EMAIL_ALREADY_REGISTERED') || s.contains('別のアカウントで登録済み')) {
+      return 'このメールアドレスは別のアカウントで登録済みです。';
     }
-    if (newPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('新しいパスワードを入力してください')),
-      );
-      return;
+    if (s.contains('INVALID_EMAIL_FORMAT') || s.contains('形式')) {
+      return '正しいメールアドレス形式で入力してください。';
     }
-    if (newPassword.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('パスワードは6文字以上で入力してください')),
-      );
-      return;
+    if (s.contains('キャンセル')) {
+      return '本人確認がキャンセルされました。';
     }
-    if (newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('新しいパスワードが一致しません')),
-      );
-      return;
+    if (s.contains('network')) {
+      return AuthNotifier.networkRequestFailedMessage;
     }
-    if (currentPassword == newPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('新しいパスワードは現在のパスワードと異なるものを設定してください')),
-      );
-      return;
-    }
-
-    try {
-      await ref.read(authProvider.notifier).changePassword(
-            currentPassword: currentPassword,
-            newPassword: newPassword,
-          );
-
-      // パスワード変更成功 → 強制ログアウト
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'パスワードを変更しました。\n'
-              '新しいパスワードでログインしてください。',
-            ),
-            duration: Duration(seconds: 5),
-            backgroundColor: AppColors.holdGreen,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        // エラーメッセージを改善
-        String errorMessage = 'パスワード変更に失敗しました';
-        final errorString = e.toString();
-
-        if (errorString.contains('現在のパスワードが間違っています')) {
-          errorMessage = '現在のパスワードが間違っています';
-        } else if (errorString.contains('requires-recent-login')) {
-          errorMessage = 'セキュリティのため、再度ログインしてから操作してください';
-        } else if (errorString.contains('weak-password')) {
-          errorMessage = 'パスワードが弱すぎます。もっと強力なパスワードを設定してください';
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.holdRed,
-          ),
-        );
-      }
-    }
+    return 'メールアドレスの登録に失敗しました: $e';
   }
 
   String _toFriendlyMessage(Object error) {
     final message = error.toString();
-    if (message.contains('パスワードが正しくありません')) {
-      return 'パスワードが正しくありません';
-    } else if (message.contains('試行回数が多すぎます')) {
-      return '試行回数が多すぎます。しばらく待ってから再度お試しください';
+    if (message.contains('requires-recent-login')) {
+      return 'セキュリティのため、もう一度ログインしてから操作してください';
+    } else if (message.contains('network')) {
+      return AuthNotifier.networkRequestFailedMessage;
     } else if (message.contains('データベースからのユーザー削除に失敗しました')) {
       return 'データベースからのユーザー削除に失敗しました。再度お試しください';
     } else {
@@ -624,18 +537,35 @@ class SettingsPage extends ConsumerWidget {
   }
 }
 
-/// --- ダイアログ群（省略せず掲載） ---
+/// --- ダイアログ ---
 
-class _PasswordDialog extends StatefulWidget {
-  const _PasswordDialog();
+/// メール登録ダイアログの結果
+class _EmailDialogResult {
+  const _EmailDialogResult.register(this.email) : remove = false;
+  const _EmailDialogResult.remove()
+      : email = '',
+        remove = true;
 
-  @override
-  State<_PasswordDialog> createState() => _PasswordDialogState();
+  final String email;
+  final bool remove;
 }
 
-class _PasswordDialogState extends State<_PasswordDialog> {
-  final _controller = TextEditingController();
-  bool _isPasswordVisible = false;
+/// 通知用メールアドレスの登録・変更・削除ダイアログ
+///
+/// 認証には使わないので、パスワード等の再入力は求めない。
+/// 登録は確認メールのリンク押下で本人確認してから確定する（AuthNotifier.registerEmail）
+class _EmailRegisterDialog extends StatefulWidget {
+  const _EmailRegisterDialog({required this.currentEmail});
+
+  final String? currentEmail;
+
+  @override
+  State<_EmailRegisterDialog> createState() => _EmailRegisterDialogState();
+}
+
+class _EmailRegisterDialogState extends State<_EmailRegisterDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.currentEmail ?? '');
 
   @override
   void dispose() {
@@ -643,333 +573,59 @@ class _PasswordDialogState extends State<_PasswordDialog> {
     super.dispose();
   }
 
+  void _submit() {
+    final email = _controller.text.trim();
+    if (email.isEmpty) return;
+    Navigator.of(context).pop(_EmailDialogResult.register(email));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final registered = widget.currentEmail != null;
     return AlertDialog(
-      title: Text('本人確認', style: AppText.heading(size: 16)),
+      title: Text(registered ? 'メールアドレスの変更' : 'メールアドレスの登録',
+          style: AppText.heading(size: 16)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'セキュリティのため、パスワードを再入力してください。',
-              style: AppText.body(size: 14),
+              'お知らせの受け取りに使います（任意）。\n'
+              '入力したアドレスに確認メールを送り、リンクを押すと登録が完了します。\n'
+              '本人確認のため、続けて Google / Apple のログイン画面が表示されることがあります。',
+              style: AppText.body(size: 13),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _controller,
-              obscureText: !_isPasswordVisible,
               autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'パスワード',
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _isPasswordVisible
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isPasswordVisible = !_isPasswordVisible;
-                    });
-                  },
-                ),
-              ),
-              onSubmitted: (_) =>
-                  Navigator.of(context).pop(_controller.text.trim()),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('キャンセル'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.holdRed,
-            foregroundColor: AppColors.onHoldRed,
-            textStyle: AppText.label(size: 14),
-          ),
-          child: const Text('削除を実行'),
-        ),
-      ],
-    );
-  }
-}
-
-class _EmailChangeDialog extends StatefulWidget {
-  const _EmailChangeDialog();
-
-  @override
-  State<_EmailChangeDialog> createState() => _EmailChangeDialogState();
-}
-
-class _EmailChangeDialogState extends State<_EmailChangeDialog> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _isPasswordVisible = false;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('メールアドレス変更', style: AppText.heading(size: 16)),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'セキュリティのため、新しいメールアドレスと現在のパスワードを入力してください。',
-              style: AppText.body(size: 14),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.wareme,
-                border: Border.all(color: AppColors.holdRed),
-                borderRadius: BorderRadius.circular(AppRadius.card),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.warning,
-                          color: AppColors.holdRed, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        '重要なお知らせ',
-                        style: AppText.body(
-                          size: 13,
-                          weight: FontWeight.w700,
-                          color: AppColors.holdRed,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '認証メールの送信を押下すると、強制的にログアウトされます。',
-                    style: AppText.body(size: 13),
-                  ),
-                  Text(
-                    '認証メールの認証を押下したあと、新しいメールアドレスでログインし直してください。',
-                    style: AppText.body(size: 13),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              autofocus: true,
+              autocorrect: false,
               decoration: const InputDecoration(
-                labelText: '新しいメールアドレス',
-                prefixIcon: Icon(Icons.email),
+                labelText: 'メールアドレス',
+                hintText: 'boulder@example.com',
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _passwordController,
-              obscureText: !_isPasswordVisible,
-              decoration: InputDecoration(
-                labelText: '現在のパスワード（再認証用）',
-                prefixIcon: const Icon(Icons.lock),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _isPasswordVisible
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isPasswordVisible = !_isPasswordVisible;
-                    });
-                  },
-                ),
-              ),
+              onSubmitted: (_) => _submit(),
             ),
           ],
         ),
       ),
       actions: [
+        if (registered)
+          TextButton(
+            onPressed: () =>
+                Navigator.of(context).pop(const _EmailDialogResult.remove()),
+            child: Text('登録を削除',
+                style: AppText.label(size: 13, color: AppColors.holdRed)),
+          ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('キャンセル'),
         ),
         ElevatedButton(
-          onPressed: () {
-            final email = _emailController.text.trim();
-            final password = _passwordController.text.trim();
-            Navigator.of(context).pop({'email': email, 'password': password});
-          },
-          child: const Text('変更'),
-        ),
-      ],
-    );
-  }
-}
-
-class _PasswordChangeDialog extends StatefulWidget {
-  const _PasswordChangeDialog();
-
-  @override
-  State<_PasswordChangeDialog> createState() => _PasswordChangeDialogState();
-}
-
-class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
-  final _currentPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  bool _isCurrentPasswordVisible = false;
-  bool _isNewPasswordVisible = false;
-  bool _isConfirmPasswordVisible = false;
-
-  @override
-  void dispose() {
-    _currentPasswordController.dispose();
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('パスワード変更', style: AppText.heading(size: 16)),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'パスワードを変更します。以下を入力してください。',
-              style: AppText.body(size: 14),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.wareme,
-                borderRadius: BorderRadius.circular(AppRadius.card),
-                border: Border.all(color: AppColors.holdRed),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber,
-                      color: AppColors.holdRed, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '変更後は自動的にログアウトされます。\n新しいパスワードで再ログインしてください。',
-                      style:
-                          AppText.caption(size: 12, color: AppColors.holdRed),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _currentPasswordController,
-              obscureText: !_isCurrentPasswordVisible,
-              decoration: InputDecoration(
-                labelText: '現在のパスワード',
-                prefixIcon: const Icon(Icons.lock_outline),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _isCurrentPasswordVisible
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isCurrentPasswordVisible = !_isCurrentPasswordVisible;
-                    });
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _newPasswordController,
-              obscureText: !_isNewPasswordVisible,
-              decoration: InputDecoration(
-                labelText: '新しいパスワード',
-                prefixIcon: const Icon(Icons.lock),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _isNewPasswordVisible
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isNewPasswordVisible = !_isNewPasswordVisible;
-                    });
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _confirmPasswordController,
-              obscureText: !_isConfirmPasswordVisible,
-              decoration: InputDecoration(
-                labelText: '新しいパスワード（確認）',
-                prefixIcon: const Icon(Icons.lock),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _isConfirmPasswordVisible
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                    });
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '※パスワードは6文字以上で入力してください',
-              style: AppText.caption(size: 12),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('キャンセル'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            final current = _currentPasswordController.text.trim();
-            final newPass = _newPasswordController.text.trim();
-            final confirm = _confirmPasswordController.text.trim();
-            Navigator.of(context).pop({
-              'current': current,
-              'new': newPass,
-              'confirm': confirm,
-            });
-          },
-          child: const Text('変更'),
+          onPressed: _submit,
+          child: Text(registered ? '変更する' : '登録する'),
         ),
       ],
     );

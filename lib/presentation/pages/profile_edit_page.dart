@@ -7,6 +7,7 @@ import 'icon_crop_page.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/entities/gym.dart';
 import '../providers/user_provider.dart';
+import '../providers/auth_provider.dart';
 import '../providers/gym_provider.dart';
 import '../providers/dependency_injection.dart';
 import '../components/common/loading_widget.dart';
@@ -109,7 +110,11 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         error: (error, stackTrace) => Center(
           child: AppErrorWidget(
             message: 'プロフィール情報の取得に失敗しました',
-            onRetry: () => _loadCurrentUserData(),
+            // エラー状態にはユーザー情報が残っていないので、Firebase の uid から取り直す
+            onRetry: () async {
+              await ref.read(authProvider.notifier).retryUserLoadIfNeeded();
+              _loadCurrentUserData();
+            },
           ),
         ),
       ),
@@ -421,7 +426,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildInfoRow('メールアドレス', user.email),
+                _buildInfoRow('メールアドレス', user.email ?? '未登録'),
                 const Divider(),
                 _buildInfoRow('ユーザーID', _maskUserId(user.id)),
                 const Divider(),

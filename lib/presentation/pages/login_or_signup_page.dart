@@ -1,462 +1,244 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/services/auth_service.dart';
 import '../components/common/app_logo.dart';
-import '../components/common/switcher_tab.dart';
 import '../providers/auth_provider.dart';
-import '../theme/app_text.dart';
 import '../theme/app_tokens.dart';
-import 'password_reset_page.dart';
+import '../theme/app_text.dart';
 
+/// ログイン画面（Google / Apple）
+///
+/// 役割:
+/// - Google または Apple でサインインする
+/// - 初回サインインがそのまま新規登録になる（ログイン／新規登録の区別は無い）
+///
+/// 本人確認は各プロバイダが行い、Firebase がその証明を検証してアカウント（uid）を発行する。
+/// メールアドレスは認証に使わない（登録後、設定画面から任意で登録できる）
 class LoginOrSignUpPage extends ConsumerStatefulWidget {
   const LoginOrSignUpPage({super.key});
 
   @override
-  _LoginOrSignUpPageState createState() => _LoginOrSignUpPageState();
+  ConsumerState<LoginOrSignUpPage> createState() => _LoginOrSignUpPageState();
 }
 
 class _LoginOrSignUpPageState extends ConsumerState<LoginOrSignUpPage> {
-  // パスワードを管理する変数
-  String _password = '';
-  // メールアドレスを管理する変数
-  String _mailAddress = '';
-  // メールアドレス確認用の変数（新規登録のみ）
-  String _mailAddressConfirm = '';
-  // ローディング表示：ログイン・新規登録時の状態表示する変数
-  bool _isLoading = false;
-  // パスワード可視化状態（ログイン用）
-  bool _isLoginPasswordVisible = false;
-  // パスワード可視化状態（新規登録用）
-  bool _isSignupPasswordVisible = false;
+  /// 処理中のプロバイダ（ボタンの二重押し防止・表示用）
+  AuthProviderKind? _inProgress;
 
-  /// メールアドレス形式チェック
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-        .hasMatch(email);
+  Future<void> _signIn(AuthProviderKind kind) async {
+    if (_inProgress != null) return;
+    setState(() => _inProgress = kind);
+    try {
+      final ok = await ref.read(authProvider.notifier).signInWith(kind);
+      if (!mounted) return;
+      if (ok) {
+        Navigator.of(context).pop();
+      }
+      // キャンセル時は何もしない（画面に留まる）
+    } catch (e) {
+      if (!mounted) return;
+      showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('ログインに失敗しました', style: AppText.heading(size: 16)),
+          content: Text(_friendlyMessage(e), style: AppText.body(size: 14)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _inProgress = null);
+    }
+  }
+
+  String _friendlyMessage(Object e) {
+    final s = e.toString();
+    if (s.contains('network')) {
+      return AuthNotifier.networkRequestFailedMessage;
+    }
+    if (s.contains('認証が必要') || s.contains('401')) {
+      return 'ログインの確認に失敗しました。時間をおいて再度お試しください。';
+    }
+    return AuthNotifier.otherErrorMessage;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ref, child) {
-      return DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          body: Stack(
-            children: [
-              Column(
-                children: [
-                  // AppBar相当
-                  SafeArea(
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed:
-                              _isLoading ? null : () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // タブバー部分
-                  const SwitcherTab(leftTabName: "ログイン", rightTabName: "新規登録"),
-
-                  // タブの内容部分
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        // ログインタブの中身
-                        SingleChildScrollView(
-                          padding: EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            bottom: MediaQuery.of(context).viewInsets.bottom +
-                                18, // 下部にキーボード高さ分の余白
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // 余白
-                              const SizedBox(height: 32),
-
-                              // ロゴ
-                              const Center(child: AppLogo()),
-                              const SizedBox(height: 24),
-
-                              // メールアドレスの入力欄
-                              Text(
-                                'メールアドレス',
-                                style: AppText.heading(size: 15),
-                              ),
-                              const SizedBox(height: 8),
-
-                              // メールアドレス テキストフォーム
-                              TextField(
-                                decoration: const InputDecoration(
-                                  hintText: "boulder@example.com",
-                                ),
-                                onChanged: (value) => _mailAddress = value,
-                              ),
-                              const SizedBox(height: 24),
-
-                              // パスワードの入力欄
-                              Text(
-                                'パスワード',
-                                style: AppText.heading(size: 15),
-                              ),
-                              const SizedBox(height: 8),
-
-                              // パスワードテキストフォーム
-                              TextField(
-                                obscureText: !_isLoginPasswordVisible,
-                                decoration: InputDecoration(
-                                  hintText: "8文字以上の半角英数",
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _isLoginPasswordVisible
-                                          ? Icons.visibility_off
-                                          : Icons.visibility,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _isLoginPasswordVisible = !_isLoginPasswordVisible;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                onChanged: (value) => _password = value,
-                              ),
-
-                              // パスワードを忘れた方へのリンク
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed: _isLoading
-                                      ? null
-                                      : () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const PasswordResetPage(),
-                                            ),
-                                          );
-                                        },
-                                  child: Text(
-                                    'パスワードを忘れた方はこちら',
-                                    style: AppText.body(
-                                      size: 13,
-                                      color: AppColors.kabeBlue,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-
-                              // ログインボタン
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  // UI層でエラーハンドリング・画面遷移を実行
-                                  onPressed: _isLoading
-                                      ? null
-                                      : () async {
-                                          // ログイン処理開始
-                                          setState(() => _isLoading = true);
-
-                                          try {
-                                            await ref
-                                                .read(authProvider.notifier)
-                                                .login(_mailAddress, _password);
-
-                                            // ログイン成功のメッセージ
-                                            if (mounted) {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                const SnackBar(
-                                                  content: Text('ログインに成功しました'),
-                                                  backgroundColor: AppColors.holdGreen,
-                                                  duration:
-                                                      Duration(seconds: 2),
-                                                ),
-                                              );
-
-                                              // 前の画面に戻る
-                                              Navigator.of(context).pop();
-                                            }
-                                          } catch (e) {
-                                            // エラーハンドリング（UI層で実行）
-                                            if (mounted) {
-                                              String errorMessage =
-                                                  'ログインに失敗しました';
-
-                                              // エラータイプに応じてメッセージを調整
-                                              if (e
-                                                  .toString()
-                                                  .contains('user-not-found')) {
-                                                errorMessage = 'ユーザーが見つかりません';
-                                              } else if (e
-                                                  .toString()
-                                                  .contains('wrong-password')) {
-                                                errorMessage = 'パスワードが違います';
-                                              } else if (e
-                                                  .toString()
-                                                  .contains('invalid-email')) {
-                                                errorMessage =
-                                                    'メールアドレスの形式が正しくありません';
-                                              } else if (e.toString().contains(
-                                                  'network-request-failed')) {
-                                                errorMessage =
-                                                    'ネットワークエラーです。接続を確認してください';
-                                              }
-
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                  content: Text(errorMessage),
-                                                  backgroundColor: AppColors.holdRed,
-                                                  duration: const Duration(
-                                                      seconds: 3),
-                                                ),
-                                              );
-                                            }
-                                          } finally {
-                                            if (mounted) {
-                                              setState(
-                                                  () => _isLoading = false);
-                                            }
-                                          }
-                                        },
-                                  child: Text(
-                                    "ログイン",
-                                    style: AppText.label(
-                                      size: 14,
-                                      color: AppColors.onKabeBlue,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // 新規登録タブの中身
-                        SingleChildScrollView(
-                          padding: EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            bottom: MediaQuery.of(context).viewInsets.bottom +
-                                18, // 下部にキーボード高さ分の余白
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // 余白
-                              const SizedBox(height: 32),
-
-                              // アイコン
-                              const Center(child: AppLogo()),
-                              const SizedBox(height: 24),
-
-                              // メールアドレスの入力欄
-                              Text(
-                                'メールアドレス',
-                                style: AppText.heading(size: 15),
-                              ),
-                              const SizedBox(height: 8),
-
-                              TextField(
-                                decoration: const InputDecoration(
-                                  hintText: "boulder@example.com",
-                                ),
-                                onChanged: (value) => _mailAddress = value,
-                              ),
-                              const SizedBox(height: 16),
-
-                              // メールアドレス確認の入力欄
-                              Text(
-                                'メールアドレス（確認）',
-                                style: AppText.heading(size: 15),
-                              ),
-                              const SizedBox(height: 8),
-
-                              TextField(
-                                decoration: const InputDecoration(
-                                  hintText: "上記と同じメールアドレスを入力",
-                                ),
-                                onChanged: (value) =>
-                                    _mailAddressConfirm = value,
-                              ),
-                              const SizedBox(height: 24),
-
-                              // パスワードの入力欄
-                              Text(
-                                'パスワード',
-                                style: AppText.heading(size: 15),
-                              ),
-                              const SizedBox(height: 8),
-
-                              TextField(
-                                obscureText: !_isSignupPasswordVisible,
-                                decoration: InputDecoration(
-                                  hintText: "8文字以上の半角英数",
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _isSignupPasswordVisible
-                                          ? Icons.visibility_off
-                                          : Icons.visibility,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _isSignupPasswordVisible = !_isSignupPasswordVisible;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                onChanged: (value) => _password = value,
-                              ),
-                              const SizedBox(height: 8),
-
-                              Text(
-                                'パスワードの条件：\n・8文字以上\n・英大文字・英小文字・数字をそれぞれ1文字以上含めてください',
-                                style: AppText.caption(size: 12),
-                              ),
-                              const SizedBox(height: 12),
-
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  // UI層でエラーハンドリング・画面遷移を実行
-                                  onPressed: _isLoading
-                                      ? null
-                                      : () async {
-                                          // メールアドレス一致チェック
-                                          if (_mailAddress !=
-                                              _mailAddressConfirm) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                    'メールアドレスが一致しません。再度確認してください。'),
-                                                backgroundColor: AppColors.holdRed,
-                                                duration: Duration(seconds: 3),
-                                              ),
-                                            );
-                                            return;
-                                          }
-
-                                          // メールアドレス形式チェック
-                                          if (!_isValidEmail(_mailAddress)) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                    'メールアドレスの形式が正しくありません。'),
-                                                backgroundColor: AppColors.holdRed,
-                                                duration: Duration(seconds: 3),
-                                              ),
-                                            );
-                                            return;
-                                          }
-
-                                          // 新規登録処理開始
-                                          setState(() => _isLoading = true);
-
-                                          try {
-                                            // サインアップ処理開始(要リファクタリング)
-                                            await ref
-                                                .read(authProvider.notifier)
-                                                .signUp(
-                                                    _mailAddress, _password);
-
-                                            // 新規登録成功のメッセージ
-                                            if (mounted) {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                const SnackBar(
-                                                  content: Text('新規登録が完了しました！'),
-                                                  backgroundColor: AppColors.holdGreen,
-                                                  duration:
-                                                      Duration(seconds: 2),
-                                                ),
-                                              );
-
-                                              // マイページへ遷移（ログイン画面を閉じる）
-                                              Navigator.of(context).pop();
-                                            }
-                                          } catch (e) {
-                                            // エラーハンドリング（UI層で実行）
-                                            if (mounted) {
-                                              String errorMessage =
-                                                  '新規登録に失敗しました';
-
-                                              // エラータイプに応じてメッセージを調整
-                                              if (e.toString().contains(
-                                                  'email-already-in-use')) {
-                                                errorMessage =
-                                                    'そのメールアドレスは既に使用されています';
-                                              } else if (e.toString().contains(
-                                                      'weak-password') ||
-                                                  e.toString().contains(
-                                                      'パスワードが指定された条件を満たしていません')) {
-                                                errorMessage =
-                                                    'パスワードが条件を満たしていません（8文字以上、英大文字・小文字・数字を含む）';
-                                              } else if (e
-                                                  .toString()
-                                                  .contains('invalid-email')) {
-                                                errorMessage =
-                                                    'メールアドレスの形式が正しくありません';
-                                              } else if (e.toString().contains(
-                                                  'network-request-failed')) {
-                                                errorMessage =
-                                                    'ネットワークエラーです。接続を確認してください';
-                                              }
-
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                  content: Text(errorMessage),
-                                                  backgroundColor: AppColors.holdRed,
-                                                  duration: const Duration(
-                                                      seconds: 3),
-                                                ),
-                                              );
-                                            }
-                                          } finally {
-                                            if (mounted) {
-                                              setState(
-                                                  () => _isLoading = false);
-                                            }
-                                          }
-                                        },
-                                  child: Text(
-                                    "新規登録",
-                                    style: AppText.label(
-                                      size: 14,
-                                      color: AppColors.onKabeBlue,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+    final busy = _inProgress != null;
+    return Scaffold(
+      backgroundColor: AppColors.iwa,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // 閉じる
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: AppColors.chalk),
+                  onPressed: busy ? null : () => Navigator.of(context).pop(),
+                ),
               ),
+            ),
+            Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const AppLogo(),
+                    const SizedBox(height: 12),
+                    Text(
+                      'ログイン / 新規登録',
+                      style: AppText.caption(size: 13),
+                    ),
+                    const SizedBox(height: 32),
 
-              // ローディング中に表示されるオーバーレイ
-              if (_isLoading) ...[
-                ModalBarrier(
-                    dismissible: false, color: Colors.black.withOpacity(0.3)),
-                const Center(child: CircularProgressIndicator()),
-              ],
-            ],
-          ),
+                    // Apple（Apple の規約: 他社ログインを出すなら同じ場所に同等以上の扱いで置く）
+                    _ProviderButton(
+                      label: 'Apple でサインイン',
+                      icon: const Icon(Icons.apple, size: 22, color: Colors.white),
+                      background: Colors.black,
+                      foreground: Colors.white,
+                      border: AppColors.wareme,
+                      busy: _inProgress == AuthProviderKind.apple,
+                      enabled: !busy,
+                      onPressed: () => _signIn(AuthProviderKind.apple),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Google
+                    _ProviderButton(
+                      label: 'Google でログイン',
+                      icon: const _GoogleMark(),
+                      background: Colors.white,
+                      foreground: const Color(0xFF1F1F1F),
+                      border: Colors.white,
+                      busy: _inProgress == AuthProviderKind.google,
+                      enabled: !busy,
+                      onPressed: () => _signIn(AuthProviderKind.google),
+                    ),
+                    const SizedBox(height: 24),
+
+                    Text(
+                      '初めての方も、ボタンを押すだけで登録が完了します。\n'
+                      'メールアドレスやパスワードの入力は不要です。',
+                      textAlign: TextAlign.center,
+                      style: AppText.caption(size: 11),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-      );
-    });
+      ),
+    );
   }
+}
+
+/// プロバイダのログインボタン（幅いっぱいのピル）
+class _ProviderButton extends StatelessWidget {
+  const _ProviderButton({
+    required this.label,
+    required this.icon,
+    required this.background,
+    required this.foreground,
+    required this.border,
+    required this.busy,
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  final String label;
+  final Widget icon;
+  final Color background;
+  final Color foreground;
+  final Color border;
+  final bool busy;
+  final bool enabled;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: enabled ? onPressed : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: background,
+          foregroundColor: foreground,
+          disabledBackgroundColor: background.withOpacity(0.6),
+          disabledForegroundColor: foreground.withOpacity(0.6),
+          elevation: 0,
+          shape: StadiumBorder(side: BorderSide(color: border)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: busy
+                  ? CircularProgressIndicator(strokeWidth: 2, color: foreground)
+                  : icon,
+            ),
+            const SizedBox(width: 12),
+            Text(label, style: AppText.label(size: 15, color: foreground)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Google の「G」マーク（ブランド4色。公式アセットを同梱するまでの簡易描画）
+class _GoogleMark extends StatelessWidget {
+  const _GoogleMark();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(painter: _GoogleMarkPainter());
+  }
+}
+
+class _GoogleMarkPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final stroke = size.width * 0.2;
+    final arcRect = rect.deflate(stroke / 2);
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke;
+
+    // 4色の弧（右上→右下→左下→左上）
+    const colors = [
+      Color(0xFFEA4335), // 赤
+      Color(0xFFFBBC05), // 黄
+      Color(0xFF34A853), // 緑
+      Color(0xFF4285F4), // 青
+    ];
+    const starts = [-0.75, 0.25, 0.75, -1.25]; // 単位: π ラジアン（時計回り）
+    const sweeps = [0.5, 0.5, 0.5, 0.35];
+    const pi = 3.141592653589793;
+    for (var i = 0; i < 4; i++) {
+      canvas.drawArc(arcRect, starts[i] * pi, sweeps[i] * pi, false, paint..color = colors[i]);
+    }
+    // 青の横棒（G の右側）
+    final bar = Paint()..color = colors[3];
+    canvas.drawRect(
+      Rect.fromLTWH(size.width * 0.5, size.height * 0.42, size.width * 0.5 - stroke / 2, stroke),
+      bar,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
