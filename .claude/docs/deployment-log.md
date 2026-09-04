@@ -24,14 +24,7 @@
 - **バックエンド**: `utils/jstTime.ts` 新設（`jstToday` / `isAfterJstToday` / `jstMonthRange`）。`getMonthlyStats` の月範囲・経過日数を JST に（`CURRENT_DATE` 廃止）、訪問日の未来チェックを共通部品に。pg の DATE 型を `'YYYY-MM-DD'` 文字列で返すよう設定（`database-supabase.ts`）
 - **アプリ**: `shared/utils/app_clock.dart` 新設。DATE の読み書き・未来判定・訪問日の初期値／ピッカー上限・営業中判定・統計の月見出し・ボルダリング歴を JST 基準に統一
 - **検証**: 境界テスト（JST 10/1 00:30＝UTC 9/30 15:30 → 今月=10月・経過 1 日、年またぎ、未来判定 3 形式）／アプリ側の一時ユニットテスト 3 件通過／ローカル起動で DATE が文字列・統計 200（週平均 1.4＝1回÷(5日/7)＝JST の経過日数）
-- **デプロイ**: dev イメージ `dev-20260905-aca136e` → `bouldering-api-dev`（結果は本項に追記）
-## 2026-09-05 — 通知用メールの本人確認を Brevo の自前送信に変更（dev・デプロイ待ち）
-
-- **目的**: Firebase の確認メール機能を使うと（a）直近ログインが古いと Google/Apple の再認証が挟まる（b）リンク押下でセッションが失効しログアウトされる（c）別アカウント所有のメール宛てには 200 を返しつつ送られない、の 3 点が避けられないため、確認メールをバックエンドから Brevo で送る方式に変更（ブランチ `feature/email-verification-brevo`）
-- **DB（dev Supabase）**: `email_verifications` テーブルを新設（2026-09-05、バックエンドの接続設定経由）。`user_id` PK/FK CASCADE, `email`, `token_hash` CHAR(64), `expires_at`, `created_at`
-- **GCP（dev）**: Secret Manager に `brevo-api-key-dev` の器を作成（バージョン未投入＝値はユーザーが入れる）。`cloud-run-backend-dev@…` に `roles/secretmanager.secretAccessor` を付与
-- **バックエンド**: `POST /users/:id/email/request`（申請・Brevo 送信）、`GET /email/confirm`（着地・HTML）、`PATCH /users/:id/email` は解除（null）のみに。ローカル検証: トークン無し 401／不正リンク 400／期限切れ 410／有効 200 で `users.email` 確定／使用済み 400。**Cloud Run(dev) へのデプロイは未実施**（`BREVO_API_KEY`・`SENDER_EMAIL`・`PUBLIC_BASE_URL` の投入後に実施）
-- **ANTENNA（AiNewsCurator）と同じ Brevo API（`POST /v3/smtp/email`, `api-key` ヘッダ）を使用**
+- **デプロイ**: dev イメージ `dev-20260905-aca136e` → `bouldering-api-dev` rev **00067-p8v**（2026-09-05 03:06 JST）。疎通: `/health` healthy／公開プロフィール `boul_start_date: '2026-09-02'`（文字列）／統計 `total_visits 1, weekly_average 1.4`／`/api/tweets` の `visited_date = '2026-09-01'`／`POST /users` 無トークン → 401。prod 未反映
 
 ---
 
