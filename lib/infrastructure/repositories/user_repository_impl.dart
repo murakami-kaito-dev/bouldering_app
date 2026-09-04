@@ -256,15 +256,19 @@ class UserRepositoryImpl implements UserRepository {
       return true;
     }
 
+    // 日付の妥当性チェックは「日付」単位で行う（時刻は見ない）。
+    // 当日は許可する。時刻込みで比較すると、サーバーから UTC 深夜で返る当日の日付が
+    // 日本では 09:00 になり、午前中の保存が「未来の日付」として弾かれていた
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    DateTime dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
-    // 日付の妥当性チェック
-    if (birthday != null && birthday.isAfter(now)) {
-      return false; // 生年月日は現在より過去である必要がある
+    if (birthday != null && dateOnly(birthday).isAfter(today)) {
+      return false; // 生年月日は今日以前である必要がある
     }
 
-    if (boulStartDate != null && boulStartDate.isAfter(now)) {
-      return false; // ボルダリング開始日は現在以前である必要がある
+    if (boulStartDate != null && dateOnly(boulStartDate).isAfter(today)) {
+      return false; // ボルダリング開始日は今日以前である必要がある
     }
 
     try {

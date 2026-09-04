@@ -111,7 +111,8 @@ class UserDataSource {
         'favorite_gym': '設定から好きなジムを記入しましょう！',
         'gender': 0,  // 0: 未設定
         'home_gym_id': null,
-        'boul_start_date': DateTime.now().toIso8601String(),
+        // DATE 列なので日付だけを送る（時刻付きの ISO 文字列だとサーバー側 UTC 解釈で日付がずれる）
+        'boul_start_date': _formatDate(DateTime.now()),
       };
       
       // API通信でユーザーを作成（Firebase ログイン済みなのでトークンを付ける）
@@ -393,12 +394,8 @@ class UserDataSource {
       userIntroduce: userData['user_introduce'],
       favoriteGym: userData['favorite_gym'],
       gender: userData['gender'],
-      birthday: userData['birthday'] != null 
-          ? DateTime.tryParse(userData['birthday']) 
-          : null,
-      boulStartDate: userData['boul_start_date'] != null 
-          ? DateTime.tryParse(userData['boul_start_date']) 
-          : null,
+      birthday: _parseDateOnly(userData['birthday']),
+      boulStartDate: _parseDateOnly(userData['boul_start_date']),
       homeGymId: userData['home_gym_id'],
     );
   }
@@ -520,5 +517,21 @@ class UserDataSource {
   /// [String] YYYY-MM-DD形式の日付文字列
   String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  /// DATE 列（生年月日・ボルダリング開始日）を「その日の 0 時（端末のローカル）」として読む
+  ///
+  /// バックエンドは DATE を "2026-09-05T00:00:00.000Z" のように UTC 深夜の時刻付きで返す。
+  /// これを DateTime.parse でそのまま使うと日本では 09:00 になり、当日の午前中に
+  /// 「未来の日付」と誤判定される（保存時の日付チェックで失敗する原因になっていた）
+  DateTime? _parseDateOnly(dynamic value) {
+    if (value == null) return null;
+    final s = value.toString();
+    final m = RegExp(r'^(\d{4})-(\d{2})-(\d{2})').firstMatch(s);
+    if (m != null) {
+      return DateTime(
+          int.parse(m.group(1)!), int.parse(m.group(2)!), int.parse(m.group(3)!));
+    }
+    return DateTime.tryParse(s);
   }
 }
