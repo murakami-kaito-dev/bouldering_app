@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/utils/app_clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/bouldering_stats.dart';
 import '../providers/statistics_provider.dart';
@@ -29,7 +30,8 @@ class StatisticsReportPage extends ConsumerWidget {
     final currentMonthStats = ref.watch(statisticsProvider((userId: userId, monthsAgo: 0)));
     final previousMonthStats = ref.watch(statisticsProvider((userId: userId, monthsAgo: 1)));
 
-    final now = DateTime.now();
+    // 見出しの「今月／昨月」はサーバーの集計（JST 基準）と同じく日本時間で決める
+    final now = AppClock.todayJst();
     final previousMonth = DateTime(now.year, now.month - 1, 1);
 
     return Scaffold(

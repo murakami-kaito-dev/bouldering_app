@@ -1,5 +1,6 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
+import '../../../shared/utils/app_clock.dart';
 import '../common/boul_log_skeleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../common/boul_log.dart';
@@ -100,10 +101,7 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
             userId: generalTweet.userId,
             userName: generalTweet.userName,
             userIconUrl: generalTweet.userIconUrl,
-            visitedDate: generalTweet.visitedDate
-                .toLocal()
-                .toIso8601String()
-                .split('T')[0],
+            visitedDate: AppClock.formatDateOnly(generalTweet.visitedDate),
             gymId: generalTweet.gymId,
             gymName: generalTweet.gymName,
             prefecture: generalTweet.prefecture,

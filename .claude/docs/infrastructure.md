@@ -42,6 +42,13 @@
 - メールアドレス: 認証には使わない。設定画面から任意登録（初期値空）。登録は Firebase の確認メール（`verifyBeforeUpdateEmail`）で本人確認 → バックエンドは body を信用せず Firebase トークンの `email`（`email_verified`）だけを保存。`users.email` は NULL 許容・UNIQUE（1アカウント:1メール、重複は 409）
 - 既存のメール/パスワードアカウント（開発者のみ）は切替後ログイン不可（了承済み）
 
+## 時刻の基準（JST 固定・2026-09-05 決定）
+
+- サービスは日本向けなので、**「今日」「今月」「営業中か」の判断は日本時間（UTC+9・夏時間なし）で行う**。端末やサーバーのタイムゾーンに依存させない
+- 保存は UTC のまま（TIMESTAMPTZ）。**DATE 列**（`tweets.visited_date` / `users.birthday` / `users.boul_start_date`）は「日付だけ」の値として `'YYYY-MM-DD'` で受け渡す。pg の DATE 型パーサを文字列返しに設定済み（`database-supabase.ts`）。JS の Date に変換すると UTC 深夜の時刻付きになり、日本では 09:00 と解釈されて日付がずれる（2026-09-05 に「登録当日の午前中に保存が失敗する」バグとして顕在化）
+- 共通部品: バックエンド `backend/src/utils/jstTime.ts`（`jstToday` / `isAfterJstToday` / `jstMonthRange`）、アプリ `lib/shared/utils/app_clock.dart`（`AppClock.nowJst` / `todayJst` / `parseDateOnly` / `formatDateOnly` / `isAfterToday`）。**新しく「今日」や日付を扱うコードは必ずこれらを使う**（`DateTime.now()` / `new Date()` / `CURRENT_DATE` を判断に直接使わない）
+- 投稿時刻（`tweeted_date`）のような「瞬間」は UTC 保存＋端末ローカル表示のままでよい
+
 ## iOS ビルド構成
 
 - Xcode Build Configuration 6種（`Debug/Release/Profile` × `Runner Dev`/`Runner Prod`。標準のDebug/Release/Profileは削除済み）

@@ -10,6 +10,8 @@
 /// - ドメインロジックを含まない純粋な変換・計算処理
 library user_utils;
 
+import 'app_clock.dart';
+
 /// 経験年数の計算
 /// 
 /// ボルダリング開始日から現在までの経験年数を計算する
@@ -18,7 +20,7 @@ library user_utils;
 String calculateExperience(DateTime? startDate) {
   if (startDate == null) return '未設定';
   
-  final now = DateTime.now();
+  final now = AppClock.todayJst();
   final difference = now.difference(startDate);
   final years = (difference.inDays / 365).floor();
   final months = ((difference.inDays % 365) / 30).floor();

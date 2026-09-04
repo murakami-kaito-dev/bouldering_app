@@ -1,3 +1,4 @@
+import '../../shared/utils/app_clock.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/entities/bouldering_stats.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -259,15 +260,12 @@ class UserRepositoryImpl implements UserRepository {
     // 日付の妥当性チェックは「日付」単位で行う（時刻は見ない）。
     // 当日は許可する。時刻込みで比較すると、サーバーから UTC 深夜で返る当日の日付が
     // 日本では 09:00 になり、午前中の保存が「未来の日付」として弾かれていた
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    DateTime dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
-
-    if (birthday != null && dateOnly(birthday).isAfter(today)) {
+    // 「今日」は日本時間（共通部品 AppClock）
+    if (birthday != null && AppClock.isAfterToday(birthday)) {
       return false; // 生年月日は今日以前である必要がある
     }
 
-    if (boulStartDate != null && dateOnly(boulStartDate).isAfter(today)) {
+    if (boulStartDate != null && AppClock.isAfterToday(boulStartDate)) {
       return false; // ボルダリング開始日は今日以前である必要がある
     }
 

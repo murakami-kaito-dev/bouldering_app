@@ -1,3 +1,4 @@
+import '../../shared/utils/app_clock.dart';
 class Tweet {
   final int id;
   final String userId;
@@ -102,7 +103,7 @@ class Tweet {
       userId: json['user_id'] ?? '',
       userName: json['user_name'] ?? '',
       userIconUrl: json['user_icon_url'] ?? '',
-      visitedDate: DateTime.tryParse(json['visited_date'] ?? '') ?? DateTime(1990, 1, 1),
+      visitedDate: AppClock.parseDateOnly(json['visited_date']) ?? DateTime(1990, 1, 1),
       tweetedDate: DateTime.tryParse(json['tweeted_date'] ?? '') ?? DateTime(1990, 1, 1),
       gymId: json['gym_id'] ?? 0,
       content: json['tweet_contents'] ?? json['content'] ?? '',
@@ -123,7 +124,7 @@ class Tweet {
       'user_id': userId,
       'user_name': userName,
       'user_icon_url': userIconUrl,
-      'visited_date': visitedDate.toIso8601String(),
+      'visited_date': AppClock.formatDateOnly(visitedDate),
       'tweeted_date': tweetedDate.toIso8601String(),
       'gym_id': gymId,
       'content': content,
