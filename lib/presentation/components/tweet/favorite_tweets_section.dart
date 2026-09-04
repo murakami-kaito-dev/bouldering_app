@@ -1,5 +1,6 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
+import '../../../shared/utils/app_clock.dart';
 import '../common/boul_log_skeleton.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../common/boul_log.dart';
@@ -187,10 +188,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                       userId: favoriteUserTweet.userId,
                       userName: favoriteUserTweet.userName,
                       userIconUrl: favoriteUserTweet.userIconUrl,
-                      visitedDate: favoriteUserTweet.visitedDate
-                          .toLocal()
-                          .toIso8601String()
-                          .split('T')[0],
+                      visitedDate: AppClock.formatDateOnly(favoriteUserTweet.visitedDate),
                       gymId: favoriteUserTweet.gymId,
                       gymName: favoriteUserTweet.gymName,
                       prefecture: favoriteUserTweet.prefecture,

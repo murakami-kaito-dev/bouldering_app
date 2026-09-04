@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/utils/app_clock.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -80,7 +81,7 @@ class ActivityPostPage extends ConsumerStatefulWidget {
 /// - ボル活(ツイート)を投稿するページの状態を定義したもの
 class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   final TextEditingController _textController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate = AppClock.todayJst(); // 訪問日の初期値は日本時間の今日
   String? selectedGym;
   int? gymId;
   List<File> _mediaFiles = [];
@@ -111,7 +112,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
       selectedGym = data['gymName'];
       gymId = int.tryParse(data['gymId'] ?? '');
       _selectedDate =
-          DateTime.tryParse(data['visitedDate'] ?? '') ?? DateTime.now();
+          AppClock.parseDateOnly(data['visitedDate']) ?? AppClock.todayJst();
       // プレースホルダー画像を除外して有効な画像URLのみを保持
       final rawUrls = List<String>.from(data['mediaUrls'] ?? []);
       _uploadedUrls = ImageUrlValidator.filterValidImageUrls(rawUrls);
@@ -181,7 +182,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
   /// ■ メソッド
   /// - ジムを訪問した日を選択するメソッド
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime today = DateTime.now();
+    final DateTime today = AppClock.todayJst(); // 日本時間の今日まで選べる
 
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -377,7 +378,7 @@ class _ActivityPostPageState extends ConsumerState<ActivityPostPage> {
                                 } else {
                                   // 通常の投稿タブから来た場合は初期化
                                   setState(() {
-                                    _selectedDate = DateTime.now();
+                                    _selectedDate = AppClock.todayJst();
                                     selectedGym = null;
                                     gymId = null;
                                     _textController.clear();

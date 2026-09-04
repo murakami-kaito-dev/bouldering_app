@@ -1,3 +1,5 @@
+import '../../shared/utils/app_clock.dart';
+
 class User {
   final String id;
   final String userName;
@@ -67,7 +69,7 @@ class User {
 
   int? get boulderingYearsExperience {
     if (boulStartDate == null) return null;
-    final now = DateTime.now();
+    final now = AppClock.todayJst();
     return now.difference(boulStartDate!).inDays ~/ 365;
   }
 
