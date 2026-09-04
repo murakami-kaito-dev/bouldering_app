@@ -56,8 +56,7 @@ class UserProfileSection extends ConsumerWidget {
                   const Expanded(
                     child: Text(
                       'プロフィールの一部が更新できませんでした',
-                      style: TextStyle(
-                          color: AppColors.holdRed, fontSize: 12),
+                      style: TextStyle(color: AppColors.holdRed, fontSize: 12),
                     ),
                   ),
                   TextButton(
@@ -204,8 +203,7 @@ class UserProfileSection extends ConsumerWidget {
           Row(
             children: [
               // SVGアイコンの代わりにIconを使用（SVGファイルが存在しないため）
-              const Icon(Icons.date_range,
-                  size: 15, color: AppColors.sunabokori),
+              _leadingIcon(Icons.date_range),
               const SizedBox(width: 8),
               Text("ボルダリング歴", style: AppText.caption(size: 12)),
               const SizedBox(width: 8),
@@ -220,35 +218,38 @@ class UserProfileSection extends ConsumerWidget {
           const SizedBox(height: 8),
 
           // ホームジム
+          // 値（ジム名）は複数行になりうるので Row は上揃え（start）にしている。
+          // そのままだとアイコンと見出しが値の「行ボックス」（13pt×1.6=20.8pt）の上端に
+          // 寄り、文字より 2〜3pt 上にずれて見える。値の1行ぶんの高さの箱に入れて
+          // 中央に置き、値の1行目と縦を揃える
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // SVGアイコンの代わりにIconを使用
-              const Icon(Icons.home, size: 15, color: AppColors.sunabokori),
+              _firstLineBox(_homeGymValueStyle, _leadingIcon(Icons.home)),
               const SizedBox(width: 8),
-              Text("ホームジム", style: AppText.caption(size: 12)),
+              _firstLineBox(
+                _homeGymValueStyle,
+                Text("ホームジム", style: AppText.caption(size: 12)),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: GestureDetector(
                   onTap: user?.homeGymId != null && user?.homeGymId != 0
                       ? () {
-                          NavigationHelper.toGymDetail(context, user!.homeGymId!);
+                          NavigationHelper.toGymDetail(
+                              context, user!.homeGymId!);
                         }
                       : null,
                   child: isLoading
-                      ? SkeletonTextBone(
-                          style:
-                              AppText.body(size: 13, weight: FontWeight.w600),
-                          width: 120)
+                      ? SkeletonTextBone(style: _homeGymValueStyle, width: 120)
                       : Text(
                           getHomeGymName(user.homeGymId, gymMap),
-                          style: AppText.body(
-                            size: 13,
-                            weight: FontWeight.w600,
-                            color: (user.homeGymId != null &&
-                                    user.homeGymId != 0)
-                                ? AppColors.kabeBlue
-                                : AppColors.chalk,
+                          style: _homeGymValueStyle.copyWith(
+                            color:
+                                (user.homeGymId != null && user.homeGymId != 0)
+                                    ? AppColors.kabeBlue
+                                    : AppColors.chalk,
                           ),
                           softWrap: true,
                         ),
@@ -261,6 +262,29 @@ class UserProfileSection extends ConsumerWidget {
       ),
     );
   }
+
+  /// ホームジム名の書体（行高の基準にもなるので1箇所で定義）
+  static final TextStyle _homeGymValueStyle =
+      AppText.body(size: 13, weight: FontWeight.w600);
+
+  /// 行頭のアイコン（見出し文字と光学的に揃える）
+  ///
+  /// Zen Kaku Gothic New の文字は行ボックスの中心より 1pt ほど下に描かれる一方、
+  /// Material アイコンは箱の中心に描かれる。Row で中央揃えにしても文字よりアイコンが
+  /// 上に見えるので（実測 0.5〜1.5pt）、上に 2pt の余白を足して中心を 1pt 下げる
+  static Widget _leadingIcon(IconData icon) => Padding(
+        padding: const EdgeInsets.only(top: 2),
+        child: Icon(icon, size: 15, color: AppColors.sunabokori),
+      );
+
+  /// [valueStyle] の1行ぶんの高さの箱に [child] を中央配置する
+  ///
+  /// 複数行になりうる本文と行頭のアイコン／見出しを、本文の1行目に縦揃えするための箱。
+  /// 高さは fontSize × height（line box）で、数値の直書きはしない
+  static Widget _firstLineBox(TextStyle valueStyle, Widget child) => SizedBox(
+        height: valueStyle.fontSize! * (valueStyle.height ?? 1.0),
+        child: Center(child: child),
+      );
 
   /// お気に入り/お気に入られへの遷移ボタン（静かなピル）
   Widget _relationButton(BuildContext context, String label, Widget page) {

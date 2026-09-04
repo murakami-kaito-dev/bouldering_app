@@ -185,8 +185,7 @@ class _OtherUserProfileSectionState
           // ボル活歴
           Row(
             children: [
-              const Icon(Icons.date_range,
-                  size: 16, color: AppColors.sunabokori),
+              _leadingIcon(Icons.date_range),
               const SizedBox(width: 8),
               Text("ボルダリング歴：", style: AppText.caption(size: 12)),
               isLoading
@@ -199,13 +198,17 @@ class _OtherUserProfileSectionState
           ),
           const SizedBox(height: 8),
 
-          // ホームジム
+          // ホームジム（値は複数行になりうるので上揃え。アイコン・見出しは
+          // 値の1行ぶんの高さの箱で中央に置き、1行目と縦を揃える）
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.home, size: 16, color: AppColors.sunabokori),
+              _firstLineBox(_homeGymValueStyle, _leadingIcon(Icons.home)),
               const SizedBox(width: 8),
-              Text("ホームジム：", style: AppText.caption(size: 12)),
+              _firstLineBox(
+                _homeGymValueStyle,
+                Text("ホームジム：", style: AppText.caption(size: 12)),
+              ),
               Expanded(
                 child: GestureDetector(
                   onTap: otherUser?.homeGymId != null
@@ -215,12 +218,10 @@ class _OtherUserProfileSectionState
                         }
                       : null,
                   child: isLoading
-                      ? SkeletonTextBone(
-                          style: AppText.body(size: 12), width: 120)
+                      ? SkeletonTextBone(style: _homeGymValueStyle, width: 120)
                       : Text(
                           getHomeGymName(otherUser?.homeGymId, gymMap),
-                          style: AppText.body(
-                            size: 12,
+                          style: _homeGymValueStyle.copyWith(
                             color: otherUser?.homeGymId != null
                                 ? AppColors.kabeBlue
                                 : AppColors.chalk,
@@ -237,6 +238,21 @@ class _OtherUserProfileSectionState
       ),
     );
   }
+
+  /// ホームジム名の書体（行高の基準にもなるので1箇所で定義）
+  static final TextStyle _homeGymValueStyle = AppText.body(size: 12);
+
+  /// 行頭のアイコン（見出し文字と光学的に揃える。理由は user_profile_section と同じ）
+  static Widget _leadingIcon(IconData icon) => Padding(
+        padding: const EdgeInsets.only(top: 2),
+        child: Icon(icon, size: 16, color: AppColors.sunabokori),
+      );
+
+  /// [valueStyle] の1行ぶんの高さの箱に [child] を中央配置する（本文の1行目と縦揃え）
+  static Widget _firstLineBox(TextStyle valueStyle, Widget child) => SizedBox(
+        height: valueStyle.fontSize! * (valueStyle.height ?? 1.0),
+        child: Center(child: child),
+      );
 
   /// 取得失敗（退会済み・通信エラー）
   Widget _buildError(BuildContext context, Object error) {
