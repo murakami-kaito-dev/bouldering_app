@@ -24,7 +24,7 @@
 - **バックエンド**: `utils/jstTime.ts` 新設（`jstToday` / `isAfterJstToday` / `jstMonthRange`）。`getMonthlyStats` の月範囲・経過日数を JST に（`CURRENT_DATE` 廃止）、訪問日の未来チェックを共通部品に。pg の DATE 型を `'YYYY-MM-DD'` 文字列で返すよう設定（`database-supabase.ts`）
 - **アプリ**: `shared/utils/app_clock.dart` 新設。DATE の読み書き・未来判定・訪問日の初期値／ピッカー上限・営業中判定・統計の月見出し・ボルダリング歴を JST 基準に統一
 - **検証**: 境界テスト（JST 10/1 00:30＝UTC 9/30 15:30 → 今月=10月・経過 1 日、年またぎ、未来判定 3 形式）／アプリ側の一時ユニットテスト 3 件通過／ローカル起動で DATE が文字列・統計 200（週平均 1.4＝1回÷(5日/7)＝JST の経過日数）
-- **デプロイ**: dev イメージ `dev-20260905-aca136e` → `bouldering-api-dev`（結果は本項に追記）
+- **デプロイ**: dev イメージ `dev-20260905-aca136e` → `bouldering-api-dev` rev **00067-p8v**（2026-09-05 03:06 JST）。疎通: `/health` healthy／公開プロフィール `boul_start_date: '2026-09-02'`（文字列）／統計 `total_visits 1, weekly_average 1.4`／`/api/tweets` の `visited_date = '2026-09-01'`／`POST /users` 無トークン → 401。prod 未反映
 
 ---
 
