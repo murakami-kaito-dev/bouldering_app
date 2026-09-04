@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate, optionalAuthenticate, AuthenticatedRequest } from '../middleware/auth';
 import { handleValidationErrors } from '../middleware/validation';
+import { requestVerification } from '../services/emailVerificationService';
 import { getUserService, getFavoriteService } from '../infrastructure/setup/dependencies';
 import {
   validateUserId,
@@ -12,6 +13,7 @@ import {
   validateUpdateHomeGym,
   validateUpdateIconUrl,
   validateUpdateEmail,
+  validateRequestEmail,
   validatePagination,
   validateFavoriteGym,
 } from '../utils/validation';
@@ -305,12 +307,7 @@ router.patch(
   }
 );
 
-// 10. Register / remove notification email (任意登録・本人確認済みのみ)
-// - body.email === null → 未登録に戻す
-// - それ以外 → body の値は信用せず、Firebase トークンの email（email_verified=true）を保存する。
-//   確認メールのリンクを押した本人しか自分のトークンにそのメールを載せられないため、
-//   第三者が他人のメールを登録することはできない
-// - 同じメールが別アカウントで登録済みなら 409（1アカウント:1メール）
+// 10. Remove notification email（任意登録の解除。登録は 10b の申請 → 確認リンクで行う）
 router.patch(
   '/:user_id/email',
   authenticate,
@@ -326,26 +323,41 @@ router.patch(
       if (requestUser?.uid !== user_id) {
         throw new ApiError(403, 'Access denied');
       }
-
-      let email: string | null;
-      if (requestedEmail === null || requestedEmail === undefined) {
-        email = null;
-      } else {
-        if (!requestUser.email || !requestUser.email_verified) {
-          throw new ApiError(403, 'Email is not verified', 'EMAIL_NOT_VERIFIED');
-        }
-        if (requestUser.email.toLowerCase() !== String(requestedEmail).toLowerCase()) {
-          throw new ApiError(403, 'Email does not match the verified account email', 'EMAIL_MISMATCH');
-        }
-        email = requestUser.email;
+      // 本人確認なしにメールを書くことはできない。登録は /email/request 経由のみ
+      if (requestedEmail !== null && requestedEmail !== undefined) {
+        throw new ApiError(400, 'Use POST /users/:user_id/email/request to register an email', 'USE_EMAIL_REQUEST');
       }
 
-      const user = await userService.updateUserEmail(user_id, email);
+      const user = await userService.updateUserEmail(user_id, null);
 
       res.json({
         success: true,
         data: user,
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// 10b. Request email verification（通知用メールの登録申請 → Brevo で確認メール送信）
+// - 本人のみ。DB にはまだ書かず、リンク押下（GET /email/confirm）で確定する
+// - 別アカウントで登録済み: 409 / 60 秒以内の再送: 429 / 未設定環境: 503
+router.post(
+  '/:user_id/email/request',
+  authenticate,
+  validateUserId(),
+  validateRequestEmail(),
+  handleValidationErrors,
+  async (req, res, next) => {
+    try {
+      const { user_id } = req.params;
+      const requestUser = (req as AuthenticatedRequest).user;
+      if (requestUser?.uid !== user_id) {
+        throw new ApiError(403, 'Access denied');
+      }
+      const state = await requestVerification(user_id, String(req.body.email));
+      res.status(state === 'sent' ? 202 : 200).json({ success: true, data: { state } });
     } catch (error) {
       next(error);
     }

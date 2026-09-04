@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../shared/config/environment_config.dart';
 import '../../shared/constants/app_routes.dart';
 import '../providers/auth_provider.dart';
+import '../providers/user_provider.dart';
 import '../providers/general_tweets_provider.dart';
 import '../providers/gym_provider.dart';
 import '../../domain/entities/gym.dart';
@@ -423,6 +424,8 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
           // オフライン起動などでユーザー情報が未取得のままなら取得し直す
           // （通信回復後にアプリへ戻ってきたタイミングで自己回復させる）
           await ref.read(authProvider.notifier).retryUserLoadIfNeeded();
+          // 確認リンクの押下など、アプリ外で変わった内容（登録メール等）を反映
+          await ref.read(userProvider.notifier).refreshQuietly();
 
           // みんなのボル活も、取得失敗で空のままなら取得し直す
           await ref

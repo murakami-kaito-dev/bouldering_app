@@ -492,6 +492,26 @@ class UserDataSource {
     return response['success'] == true;
   }
 
+  /// 通知用メールアドレスの登録申請（本人確認メールの送信）
+  ///
+  /// [userId] 本人の uid / [email] 登録したいメールアドレス
+  ///
+  /// 返り値: 'sent'（確認メールを送った）/ 'already_registered'（既にそのメールで登録済み）
+  ///
+  /// 処理フロー:
+  /// 1. REST API: POST /api/users/{userId}/email/request（要認証）
+  /// 2. バックエンドが Brevo で確認メールを送り、リンク押下で DB に確定する
+  /// 3. 409（別アカウントで登録済み）/ 429（連打）/ 503（未設定）等は ApiException のまま上位へ
+  Future<String> requestEmailVerification(String userId, String email) async {
+    final response = await _apiClient.post(
+      endpoint: '/users/$userId/email/request',
+      body: {'email': email},
+      requireAuth: true,
+    );
+    final data = response['data'];
+    return (data is Map && data['state'] is String) ? data['state'] as String : 'sent';
+  }
+
   /// 日付をAPIで使用する形式にフォーマット
   /// 
   /// [date] フォーマット対象の日付

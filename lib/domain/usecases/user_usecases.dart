@@ -196,3 +196,72 @@ class UpdateUserEmailUseCase {
     }
   }
 }
+/// 通知用メールアドレスの登録申請ユースケース
+///
+/// バックエンドが確認メール（Brevo）を送り、ユーザーがリンクを押した時点で DB に確定する。
+/// Firebase の認証は関与しないので、再認証もログアウトも起きない。
+class RequestEmailVerificationUseCase {
+  final UserRepository _userRepository;
+
+  RequestEmailVerificationUseCase(this._userRepository);
+
+  /// 返り値: 'sent' / 'already_registered'
+  ///
+  /// 例外:
+  /// [ValidationException] 形式エラー / 別アカウントで登録済み（EMAIL_ALREADY_REGISTERED）/
+  ///   連打（TOO_MANY_REQUESTS）
+  /// [DataSaveException] 送信基盤が未設定（EMAIL_VERIFICATION_UNAVAILABLE）/ 送信失敗（MAIL_SEND_FAILED）
+  Future<String> execute(String userId, String email) async {
+    final trimmed = email.trim();
+    if (userId.trim().isEmpty) {
+      throw const ValidationException(
+        message: 'ユーザーIDが必要です',
+        errors: {'userId': 'ユーザーIDは必須です'},
+        code: 'EMPTY_USER_ID',
+      );
+    }
+    final emailRegExp = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    if (trimmed.isEmpty || !emailRegExp.hasMatch(trimmed)) {
+      throw const ValidationException(
+        message: '正しいメールアドレス形式で入力してください',
+        errors: {'email': 'メールアドレスの形式が正しくありません'},
+        code: 'INVALID_EMAIL_FORMAT',
+      );
+    }
+
+    try {
+      return await _userRepository.requestEmailVerification(userId, trimmed);
+    } catch (e) {
+      final s = e.toString();
+      if (s.contains('Status 409')) {
+        throw const ValidationException(
+          message: 'このメールアドレスは別のアカウントで登録済みです',
+          errors: {'email': '別のアカウントで登録済み'},
+          code: 'EMAIL_ALREADY_REGISTERED',
+        );
+      }
+      if (s.contains('Status 429')) {
+        throw const ValidationException(
+          message: '確認メールを送ったばかりです。1分ほど待ってからもう一度お試しください',
+          errors: {'email': '再送は1分後'},
+          code: 'TOO_MANY_REQUESTS',
+        );
+      }
+      if (s.contains('Status 503')) {
+        throw DataSaveException(
+          message: 'メールアドレス登録は現在準備中です',
+          code: 'EMAIL_VERIFICATION_UNAVAILABLE',
+          originalError: e,
+        );
+      }
+      if (s.contains('Status 502')) {
+        throw DataSaveException(
+          message: '確認メールを送信できませんでした。時間をおいてお試しください',
+          code: 'MAIL_SEND_FAILED',
+          originalError: e,
+        );
+      }
+      throw DataSaveException(message: 'メールアドレスの登録申請に失敗しました', originalError: e);
+    }
+  }
+}

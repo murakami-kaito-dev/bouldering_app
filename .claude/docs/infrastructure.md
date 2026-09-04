@@ -29,6 +29,7 @@
 
 コードが参照する変数（`backend/src/config/environment.ts` ほか）:
 `PORT` `NODE_ENV` `DB_PROVIDER` `DATABASE_URL` `DB_HOST/PORT/NAME/USER/PASSWORD` `INSTANCE_CONNECTION_NAME` `DB_SSL` `DB_POOL_MAX` `FIREBASE_PROJECT_ID`(必須) `ALLOWED_ORIGINS` `LOG_LEVEL` `GCS_BUCKET_NAME` `GCP_PROJECT` `TASKS_LOCATION` `TASKS_QUEUE_ID` `TASKS_HANDLER_URL` `TASKS_SA_EMAIL`
+`BREVO_API_KEY`(Secret Manager `brevo-api-key-dev` を `--set-secrets`) `SENDER_EMAIL`(Brevo で検証済みの差出人) `SENDER_NAME`(任意・既定「イワノボリタイ」) `PUBLIC_BASE_URL`(確認リンクの土台＝Cloud Run の URL) `EMAIL_VERIFY_TTL_MINUTES`(任意・既定1440)
 
 - `dotenv` は `.env` のみ読む。`.env.dev` / `.env.prod` はローカル参照用で、実際の注入はデプロイコマンドの `--set-env-vars`。
 - Firebase Admin は ADC（Cloud RunのSA）で認証。鍵ファイル読み込みは実装されていない。
@@ -39,7 +40,7 @@
 - Firebase コンソールの設定値（dev）: Google「プロジェクトの公開名」= `イワノボリタイ(dev)`（prod は `イワノボリタイ`）、サポートメール = km.solo.developer@gmail.com。Apple は追加入力なし（サービス ID / OAuth コードフローは Web/Android と退会時トークン失効用で今は未設定）。設定 → ユーザーアカウントのリンク = **「ID プロバイダごとに複数のアカウントを作成」**（同じメールの Google/Apple は別アカウント）
 - Apple Developer: dev App ID `com.km.boulderingapp.dev` に Sign In with Apple capability を App Store Connect API で追加済み（2026-09-03）。Xcode 側は `ios/Runner/Runner.entitlements`（`com.apple.developer.applesignin`）を全 Configuration の `CODE_SIGN_ENTITLEMENTS` に設定
 - Google ログインの戻り先 URL スキーム（`REVERSED_CLIENT_ID`）は Run Script「Inject Google Sign-In URL Scheme」が、flavor ごとの `GoogleService-Info.plist` から読んでビルド成果物の Info.plist に注入する（Info.plist に直書きしない。plist は Google 有効化後に `firebase apps:sdkconfig IOS <appId> --project <project>` で再取得したもの＝`CLIENT_ID`/`REVERSED_CLIENT_ID` を含む）
-- メールアドレス: 認証には使わない。設定画面から任意登録（初期値空）。登録は Firebase の確認メール（`verifyBeforeUpdateEmail`）で本人確認 → バックエンドは body を信用せず Firebase トークンの `email`（`email_verified`）だけを保存。`users.email` は NULL 許容・UNIQUE（1アカウント:1メール、重複は 409）
+- メールアドレス: 認証には使わない。設定画面から任意登録（初期値空）。**本人確認はバックエンドが自前で行う（Brevo で確認メール送信 → `GET /email/confirm` のリンク押下で `users.email` に確定）。Firebase は関与しない**（再認証・セッション失効が起きない。Firebase の `verifyBeforeUpdateEmail` は「別アカウント所有のメール宛てには 200 を返しつつ送らない」ため 2026-09-05 に廃止）。申請は `POST /users/:id/email/request`（要認証・本人のみ・60 秒に 1 回・別アカウント登録済みは 409・未設定環境は 503）、解除は `PATCH /users/:id/email` に `{email: null}`。`email_verifications` テーブル（user_id PK, email, token_hash=sha256, expires_at）にトークンのハッシュだけ保存。`users.email` は NULL 許容・UNIQUE
 - 既存のメール/パスワードアカウント（開発者のみ）は切替後ログイン不可（了承済み）
 
 ## iOS ビルド構成
