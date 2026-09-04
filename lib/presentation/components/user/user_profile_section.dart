@@ -226,11 +226,13 @@ class UserProfileSection extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // SVGアイコンの代わりにIconを使用
-              _firstLineBox(_homeGymValueStyle, _leadingIcon(Icons.home)),
+              _firstLineBox(_homeGymValueStyle, _leadingIcon(Icons.home),
+                  opticalOffset: 1),
               const SizedBox(width: 8),
               _firstLineBox(
                 _homeGymValueStyle,
                 Text("ホームジム", style: AppText.caption(size: 12)),
+                opticalOffset: 1,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -281,9 +283,20 @@ class UserProfileSection extends ConsumerWidget {
   ///
   /// 複数行になりうる本文と行頭のアイコン／見出しを、本文の1行目に縦揃えするための箱。
   /// 高さは fontSize × height（line box）で、数値の直書きはしない
-  static Widget _firstLineBox(TextStyle valueStyle, Widget child) => SizedBox(
+  ///
+  /// [opticalOffset] は箱の中で [child] を下へずらす量（pt）。ジム名は英小文字
+  /// （folk bouldering gym…）を含むことが多く、その見た目の中心は行ボックスの中心より
+  /// 約 1pt 下にあるため、アイコン・見出しも同じだけ下げて中心線を揃える
+  static Widget _firstLineBox(TextStyle valueStyle, Widget child,
+          {double opticalOffset = 0}) =>
+      SizedBox(
         height: valueStyle.fontSize! * (valueStyle.height ?? 1.0),
-        child: Center(child: child),
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.only(top: opticalOffset * 2),
+            child: child,
+          ),
+        ),
       );
 
   /// お気に入り/お気に入られへの遷移ボタン（静かなピル）
