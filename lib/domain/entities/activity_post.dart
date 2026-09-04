@@ -1,3 +1,4 @@
+import '../../shared/utils/app_clock.dart';
 /// アクティビティ投稿エンティティ
 /// 
 /// 役割:
@@ -155,7 +156,7 @@ class ActivityPost {
     if (tweetContents.length > 400) return false;
     
     // 訪問日の検証（未来日は不可）
-    if (visitedDate.isAfter(DateTime.now())) return false;
+    if (AppClock.isAfterToday(visitedDate)) return false;
     
     return true;
   }

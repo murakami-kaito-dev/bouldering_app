@@ -1,3 +1,4 @@
+import '../../shared/utils/app_clock.dart';
 import 'dart:io';
 import '../services/api_client.dart';
 import '../services/storage_service.dart';
@@ -111,7 +112,8 @@ class UserDataSource {
         'favorite_gym': '設定から好きなジムを記入しましょう！',
         'gender': 0,  // 0: 未設定
         'home_gym_id': null,
-        'boul_start_date': DateTime.now().toIso8601String(),
+        // DATE 列なので日付だけを送る（時刻付きの ISO 文字列だとサーバー側 UTC 解釈で日付がずれる）
+        'boul_start_date': _formatDate(AppClock.todayJst()),
       };
       
       // API通信でユーザーを作成（Firebase ログイン済みなのでトークンを付ける）
@@ -393,12 +395,8 @@ class UserDataSource {
       userIntroduce: userData['user_introduce'],
       favoriteGym: userData['favorite_gym'],
       gender: userData['gender'],
-      birthday: userData['birthday'] != null 
-          ? DateTime.tryParse(userData['birthday']) 
-          : null,
-      boulStartDate: userData['boul_start_date'] != null 
-          ? DateTime.tryParse(userData['boul_start_date']) 
-          : null,
+      birthday: _parseDateOnly(userData['birthday']),
+      boulStartDate: _parseDateOnly(userData['boul_start_date']),
       homeGymId: userData['home_gym_id'],
     );
   }
@@ -498,7 +496,8 @@ class UserDataSource {
   /// 
   /// 返り値:
   /// [String] YYYY-MM-DD形式の日付文字列
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
+  String _formatDate(DateTime date) => AppClock.formatDateOnly(date);
+
+  /// DATE 列（生年月日・ボルダリング開始日）は日付だけを読む（時刻基準の共通部品）
+  DateTime? _parseDateOnly(dynamic value) => AppClock.parseDateOnly(value);
 }

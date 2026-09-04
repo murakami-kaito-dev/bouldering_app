@@ -1,4 +1,10 @@
-import { Pool, PoolConfig } from 'pg';
+import { Pool, PoolConfig, types } from 'pg';
+
+// DATE 列（visited_date / birthday / boul_start_date）は「日付だけ」の値なので、
+// JS の Date（UTC 深夜の時刻付き）に変換せず 'YYYY-MM-DD' 文字列のまま返す。
+// Date に変換すると JSON では "2026-09-05T00:00:00.000Z" になり、日本時間では 09:00 と解釈されて
+// 日付がずれる原因になっていた（時刻の基準は JST 固定: utils/jstTime.ts）
+types.setTypeParser(types.builtins.DATE, (value: string) => value);
 import { config } from './environment';
 import logger from '../utils/logger';
 

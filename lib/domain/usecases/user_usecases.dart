@@ -21,11 +21,13 @@ class UpdateUserProfileUseCase {
   }) async {
     try {
       bool success = true;
+      final failed = <String>[]; // 失敗した項目（メッセージ用）
       
       // ユーザー名の更新
       if (userName != null) {
         final result = await _userRepository.updateUserName(userId, userName);
         success &= result;
+        if (!result) failed.add('ユーザー名');
       }
       
       // 自己紹介・お気に入りジム情報の更新
@@ -37,12 +39,14 @@ class UpdateUserProfileUseCase {
           favoriteGym: favoriteGym,
         );
         success &= result;
+        if (!result) failed.add('自己紹介・好きなジム');
       }
       
       // 性別の更新
       if (gender != null) {
         final result = await _userRepository.updateUserGender(userId, gender);
         success &= result;
+        if (!result) failed.add('性別');
       }
       
       // 誕生日・ボルダリング開始日の更新
@@ -53,16 +57,25 @@ class UpdateUserProfileUseCase {
           boulStartDate: boulStartDate,
         );
         success &= result;
+        if (!result) failed.add('生年月日・ボルダリング開始日');
       }
       
       // ホームジムの更新（0が渡された場合は「選択なし」として処理）
       if (homeGymId != null) {
         final result = await _userRepository.updateHomeGym(userId, homeGymId);
         success &= result;
+        if (!result) failed.add('ホームジム');
       }
       
-      return success;
+      if (!success) {
+        throw DataSaveException(
+          message: 'プロフィール更新に失敗しました（${failed.join('・')}）',
+          code: 'PROFILE_UPDATE_PARTIAL_FAILURE',
+        );
+      }
+      return true;
     } catch (e) {
+      if (e is DataSaveException) rethrow;
       throw DataSaveException(
         message: 'プロフィール更新に失敗しました',
         originalError: e,

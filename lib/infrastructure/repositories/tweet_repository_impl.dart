@@ -1,3 +1,4 @@
+import '../../shared/utils/app_clock.dart';
 import '../../domain/entities/tweet.dart';
 import '../../domain/repositories/tweet_repository.dart';
 import '../datasources/tweet_datasource.dart';
@@ -249,7 +250,8 @@ class TweetRepositoryImpl implements TweetRepository {
       throw ArgumentError('ツイート内容は400文字以下で入力してください');
     }
 
-    if (visitedDate.isAfter(DateTime.now())) {
+    // 「今日」は日本時間・日付単位で判定（当日は可）
+    if (AppClock.isAfterToday(visitedDate)) {
       throw ArgumentError('訪問日は現在日以前で指定してください');
     }
 
@@ -329,7 +331,8 @@ class TweetRepositoryImpl implements TweetRepository {
       throw ArgumentError('ツイート内容は400文字以下で入力してください');
     }
 
-    if (visitedDate.isAfter(DateTime.now())) {
+    // 「今日」は日本時間・日付単位で判定（当日は可）
+    if (AppClock.isAfterToday(visitedDate)) {
       throw ArgumentError('訪問日は現在日以前で指定してください');
     }
 

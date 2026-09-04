@@ -1,3 +1,4 @@
+import 'app_clock.dart';
 import '../../domain/entities/gym.dart';
 
 /// ジム営業時間ユーティリティ
@@ -16,7 +17,8 @@ class GymHoursUtils {
   /// 唯一の営業時間判定関数 - 全ての営業時間チェックはこの関数を使用
   /// 動作確認済みのロジックを統一実装
   static bool isCurrentlyOpen(GymHours hours) {
-    final now = DateTime.now();
+    // ジムは日本にあるので、曜日・時刻は日本時間で判定（端末のタイムゾーンに依らない）
+    final now = AppClock.nowJst();
     final weekday = now.weekday;
     final time = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
     

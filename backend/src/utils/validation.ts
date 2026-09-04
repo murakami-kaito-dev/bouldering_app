@@ -1,3 +1,4 @@
+import { isAfterJstToday } from './jstTime';
 import { body, query, param } from 'express-validator';
 
 // Common validation rules
@@ -97,16 +98,8 @@ export const validateCreateTweet = () => [
   body('visited_date')
     .isISO8601()
     .custom((value) => {
-      const visitedDate = new Date(value);
-      // 日本時間（JST）での「今日」を計算（UTC+9）
-      const now = new Date();
-      const jstOffset = 9 * 60; // 日本時間はUTC+9時間
-      const jstNow = new Date(now.getTime() + jstOffset * 60 * 1000);
-      const todayJst = new Date(jstNow.getFullYear(), jstNow.getMonth(), jstNow.getDate(), 23, 59, 59, 999);
-      // 比較用にUTCに戻す
-      const todayUtc = new Date(todayJst.getTime() - jstOffset * 60 * 1000);
-      
-      if (visitedDate > todayUtc) {
+      // 「今日」は日本時間で判定（共通部品 utils/jstTime.ts）
+      if (isAfterJstToday(String(value))) {
         throw new Error('Visited date cannot be in the future');
       }
       return true;
@@ -137,19 +130,8 @@ export const validateUpdateTweet = () => [
     .optional()
     .isISO8601()
     .custom((value) => {
-      if (value) {
-        const visitedDate = new Date(value);
-        // 日本時間（JST）での「今日」を計算（UTC+9）
-        const now = new Date();
-        const jstOffset = 9 * 60; // 日本時間はUTC+9時間
-        const jstNow = new Date(now.getTime() + jstOffset * 60 * 1000);
-        const todayJst = new Date(jstNow.getFullYear(), jstNow.getMonth(), jstNow.getDate(), 23, 59, 59, 999);
-        // 比較用にUTCに戻す
-        const todayUtc = new Date(todayJst.getTime() - jstOffset * 60 * 1000);
-        
-        if (visitedDate > todayUtc) {
-          throw new Error('Visited date cannot be in the future');
-        }
+      if (value && isAfterJstToday(String(value))) {
+        throw new Error('Visited date cannot be in the future');
       }
       return true;
     }),
