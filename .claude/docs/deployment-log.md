@@ -28,6 +28,16 @@
 
 ---
 
+## 2026-09-05 — 通知用メールの本人確認を Brevo の自前送信に変更（dev・デプロイ待ち）
+
+- **目的**: Firebase の確認メール機能を使うと（a）直近ログインが古いと Google/Apple の再認証が挟まる（b）リンク押下でセッションが失効しログアウトされる（c）別アカウント所有のメール宛てには 200 を返しつつ送られない、の 3 点が避けられないため、確認メールをバックエンドから Brevo で送る方式に変更（ブランチ `feature/email-verification-brevo`）
+- **DB（dev Supabase）**: `email_verifications` テーブルを新設（2026-09-05、バックエンドの接続設定経由）。`user_id` PK/FK CASCADE, `email`, `token_hash` CHAR(64), `expires_at`, `created_at`
+- **GCP（dev）**: Secret Manager に `brevo-api-key-dev` の器を作成（バージョン未投入＝値はユーザーが入れる）。`cloud-run-backend-dev@…` に `roles/secretmanager.secretAccessor` を付与
+- **バックエンド**: `POST /users/:id/email/request`（申請・Brevo 送信）、`GET /email/confirm`（着地・HTML）、`PATCH /users/:id/email` は解除（null）のみに。ローカル検証: トークン無し 401／不正リンク 400／期限切れ 410／有効 200 で `users.email` 確定／使用済み 400。**Cloud Run(dev) へのデプロイは未実施**（`BREVO_API_KEY`・`SENDER_EMAIL`・`PUBLIC_BASE_URL` の投入後に実施）
+- **ANTENNA（AiNewsCurator）と同じ Brevo API（`POST /v3/smtp/email`, `api-key` ヘッダ）を使用**
+
+---
+
 ## 2026-09-03 — SNS ログイン移行（dev のみ・進行中）: dev DB の `users.email` を NULL 許容に
 
 - **目的**: Google / Apple ログインへの移行に伴い、メールアドレスを「任意登録」にする（PR `feature/sns-login-google-apple`）
