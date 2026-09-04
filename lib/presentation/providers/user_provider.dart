@@ -192,13 +192,15 @@ class UserNotifier extends StateNotifier<AsyncValue<User?>> {
 
         state = AsyncValue.data(updatedUser);
       } else {
-        state = AsyncValue.error(
-          Exception('プロフィール更新に失敗しました'),
-          StackTrace.current,
-        );
+        // 失敗しても画面の土台（ユーザー情報）は壊さない。呼び出し元がダイアログで知らせる
+        state = AsyncValue.data(currentUser);
+        throw Exception('プロフィール更新に失敗しました');
       }
-    } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+    } catch (e) {
+      // 一部の項目だけ保存されている可能性があるので、次回の再取得で揃う。
+      // 状態をエラーにすると編集画面が「取得に失敗」に落ちて戻れなくなるため、前のデータに戻す
+      state = AsyncValue.data(currentUser);
+      rethrow;
     }
   }
 
@@ -238,13 +240,13 @@ class UserNotifier extends StateNotifier<AsyncValue<User?>> {
         // アイコン更新成功時は再ログインしてURLを取得
         await login(currentUser.id);
       } else {
-        state = AsyncValue.error(
-          Exception('アイコン更新に失敗しました'),
-          StackTrace.current,
-        );
+        state = AsyncValue.data(currentUser);
+        throw Exception('アイコン更新に失敗しました');
       }
-    } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+    } catch (e) {
+      // 失敗しても前のユーザー情報に戻す（編集画面を「取得に失敗」に落とさない）
+      state = AsyncValue.data(currentUser);
+      rethrow;
     }
   }
 
@@ -252,7 +254,8 @@ class UserNotifier extends StateNotifier<AsyncValue<User?>> {
   ///
   /// ユーザー情報が更新された可能性がある場合に使用
   Future<void> refreshUser() async {
-    final currentUser = state.value;
+    // 注意: エラー状態の AsyncValue に .value でアクセスすると例外が再スローされる。必ず valueOrNull
+    final currentUser = state.valueOrNull;
 
     if (currentUser != null) {
       await login(currentUser.id);
@@ -263,7 +266,7 @@ class UserNotifier extends StateNotifier<AsyncValue<User?>> {
   ///
   /// 設定画面などで現在のユーザー情報を表示する際に使用
   Future<void> loadCurrentUser() async {
-    final currentUser = state.value;
+    final currentUser = state.valueOrNull;
     if (currentUser != null) {
       await refreshUser();
     } else {
