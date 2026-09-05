@@ -42,6 +42,7 @@ html {
 }
 
 body {
+  overflow-x: clip;
   background: var(--color-rock);
   color: var(--color-chalk);
   font-family: var(--font-body);

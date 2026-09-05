@@ -52,7 +52,7 @@ export function Stat({
 }) {
   const color =
     tone === "yellow" ? "text-tape-yellow" : tone === "wall" ? "text-wall" : tone === "dust" ? "text-dust" : "text-chalk";
-  const fs = size === "lg" ? "text-[64px] md:text-[72px]" : size === "md" ? "text-[40px] md:text-[48px]" : "text-[22px]";
+  const fs = size === "lg" ? "text-[56px] md:text-[72px]" : size === "md" ? "text-[36px] md:text-[48px]" : "text-[22px]";
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       <Eyebrow>{label}</Eyebrow>

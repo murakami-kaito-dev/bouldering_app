@@ -49,7 +49,7 @@ export function HeaderAuth() {
     return (
       <Link
         href="/login"
-        className="pressable ml-1 inline-flex h-9 items-center rounded-pill border border-crack px-4 text-[13px] font-bold text-chalk hover:bg-ledge md:ml-2"
+        className="pressable ml-1 inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-pill border border-crack px-3 text-[13px] font-bold text-chalk hover:bg-ledge md:ml-2 md:px-4"
       >
         ログイン
       </Link>

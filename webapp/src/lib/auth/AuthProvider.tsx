@@ -200,7 +200,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       status,
-      available: auth !== null,
+      // SSR とクライアントで同じ値にする（auth の有無で決めるとハイドレーション不一致になる）。
+      // 設定があるのに初期化できないときは signIn* 側でエラーを出す
+      available: hasFirebaseConfig,
       signInWithGoogle: () => signInWith("google"),
       signInWithApple: () => signInWith("apple"),
       signOut: async () => {

@@ -27,10 +27,14 @@ export function HomeHero({
 }) {
   return (
     <section className="grain border-b border-crack bg-joint">
-      <Container className="relative grid gap-10 py-14 md:py-20 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center lg:gap-16">
-        <div className="flex flex-col gap-6">
+      <Container className="relative grid grid-cols-[minmax(0,1fr)] gap-10 py-14 md:py-20 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center lg:gap-16">
+        <div className="flex min-w-0 flex-col gap-6">
           <Eyebrow>JAPAN · BOULDERING GYMS</Eyebrow>
-          <h1 className="text-display max-w-[15ch]">今日登るジムを、地図と条件で。</h1>
+          <h1 className="text-display [word-break:keep-all]">
+            今日登るジムを、
+            <br />
+            地図と条件で。
+          </h1>
           <p className="max-w-[44ch] text-[16px] leading-[1.7] text-dust">
             全国のボルダリング・クライミングジムを、営業時間・料金・種別で絞り込めます。登った記録は「ボル活」としてみんなと共有。
           </p>
@@ -48,11 +52,11 @@ export function HomeHero({
               enterKeyHint="search"
               className="h-13 w-full min-w-0 flex-1 appearance-none rounded-card border border-crack bg-ledge px-5 font-body text-[16px] text-chalk placeholder:text-dust focus-visible:rounded-card focus-visible:border-wall-bright"
             />
-            <div className="flex gap-3">
-              <Button type="submit" size="lg" className="flex-1 md:flex-none">
+            <div className="flex min-w-0 gap-3">
+              <Button type="submit" size="lg" className="min-w-0 flex-1 md:flex-none">
                 探す
               </Button>
-              <LinkButton href="/gyms?sort=near" variant="secondary" size="lg" className="flex-1 md:flex-none">
+              <LinkButton href="/gyms?sort=near" variant="secondary" size="lg" className="min-w-0 flex-1 md:flex-none">
                 現在地から探す
               </LinkButton>
             </div>
@@ -69,14 +73,14 @@ export function HomeHero({
         </div>
 
         {/* 課題ボード。「営業中」は JST の現在時刻に依存するため、ページ全体を revalidate=300 で再生成する */}
-        <aside aria-label="全国のジム統計" className="relative flex flex-col gap-5 rounded-card border border-crack bg-rock p-5 md:p-6">
+        <aside aria-label="全国のジム統計" className="relative flex min-w-0 flex-col gap-5 rounded-card border border-crack bg-rock p-5 md:p-6">
           <div className="flex items-center justify-between gap-3">
             <Eyebrow>GRADE BOARD</Eyebrow>
             <Tape tone="green" filled title="営業中の判定は日本時間">
               JST {renderedAtJst}
             </Tape>
           </div>
-          <div className="grid grid-cols-3 gap-4 lg:grid-cols-1 lg:gap-6">
+          <div className="grid grid-cols-3 gap-3 lg:grid-cols-1 lg:gap-6 [&>*]:min-w-0">
             <Stat label="ジム数" value={fmt(gymCount)} unit="軒" />
             <div data-live="open-now">
               <Stat label="営業中" value={fmt(openCount)} unit="軒" />
