@@ -24,7 +24,7 @@
 - **dev 側の準備（実施済み）**: Maps JavaScript API 有効化＋ブラウザキー「Web Maps API Key - Dev」（リファラ制限: localhost:3000 / bouldering-app-dev.web.app / .firebaseapp.com）、Firebase Web アプリ `boulderingapp-dev-web` 作成、`bouldering-app-media-dev` バケットに CORS（PUT・同 3 オリジン）
 - **バックエンド**: `POST /api/uploads/sign`（V4 署名 PUT URL・10 分）を追加し、dev イメージ `dev-20260905-6c47d0a` → `bouldering-api-dev` **rev 00068-qfg**。同時に `ALLOWED_ORIGINS=http://localhost:3000,https://bouldering-app-dev.web.app` を設定。疎通: `/health` healthy、`/api/uploads/sign` 無トークン → 401
 - **未了（ユーザー実行待ち）**: 実行 SA `cloud-run-backend-dev@…` 自身への `roles/iam.serviceAccountTokenCreator` 付与（V4 署名に必須。Claude の権限では実行できず）。付与前は署名 API が 500 `UPLOAD_SIGN_FAILED` を返し、Web の投稿フォームは「写真なし投稿」に倒れる
-- **Web の dev デプロイ（実施済み）**: イメージ `web:dev-20260905-15fcf77` → Cloud Run `bouldering-web-dev` **rev 00001-th2**（asia-northeast1・512Mi・max 3）→ Firebase Hosting `bouldering-app-dev` を rewrite で接続。**公開 URL: https://bouldering-app-dev.web.app**（noindex）。疎通: `/` `/gyms` `/gyms/143` `/boul-log` `/login` `/sitemap.xml` `/robots.txt` すべて 200、詳細ページの title 生成 OK。PR #73
+- **Web の dev デプロイ（実施済み）**: イメージ `web:dev-20260905-15fcf77` → Cloud Run `bouldering-web-dev` **rev 00001-th2**（asia-northeast1・512Mi・max 3）→ Firebase Hosting `bouldering-app-dev` を rewrite で接続。**公開 URL: https://bouldering-app-dev.web.app**（noindex）。その後 `web:dev-20260905-63f3c0b` → **rev 00002**（Lighthouse の a11y 指摘を解消。desktop: perf 95／a11y 96／BP 100、SEO 69 は noindex のため）。疎通: `/` `/gyms` `/gyms/143` `/boul-log` `/login` `/sitemap.xml` `/robots.txt` すべて 200、詳細ページの title 生成 OK。PR #73
 - **prod**: 未反映（独自ドメイン取得後。手順は `web-domain-setup.md`）
 
 ---
