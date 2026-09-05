@@ -1,5 +1,10 @@
 import { isAfterJstToday } from './jstTime';
 import { body, query, param } from 'express-validator';
+import {
+  ALLOWED_UPLOAD_CONTENT_TYPES,
+  UPLOAD_FILE_NAME_MAX_LENGTH,
+  UPLOAD_KINDS,
+} from '../domain/services/UploadPolicy';
 
 // Common validation rules
 export const validateUserId = () =>
@@ -201,4 +206,25 @@ export const validateCreateReport = () => [
     .isString()
     .isLength({ max: 1000 })
     .withMessage('報告内容は1000文字以内で入力してください'),
+];
+
+// Upload validation（Web 向け 署名付きURL発行のバリデーション）
+export const validateSignUpload = () => [
+  body('kind')
+    .isIn([...UPLOAD_KINDS])
+    .withMessage(`kind must be one of: ${UPLOAD_KINDS.join(', ')}`),
+  body('content_type')
+    .isIn([...ALLOWED_UPLOAD_CONTENT_TYPES])
+    .withMessage(`content_type must be one of: ${ALLOWED_UPLOAD_CONTENT_TYPES.join(', ')}`),
+  // 拡張子の判定にだけ使う（保存名には使わない）
+  body('file_name')
+    .optional({ nullable: true })
+    .isString()
+    .isLength({ min: 1, max: UPLOAD_FILE_NAME_MAX_LENGTH })
+    .withMessage(`file_name must be ${UPLOAD_FILE_NAME_MAX_LENGTH} characters or less`),
+  // kind=post のみ意味を持つ。複数枚を同じ投稿にまとめるときにクライアントが同じ値を渡す
+  body('post_uuid')
+    .optional({ nullable: true })
+    .isUUID()
+    .withMessage('post_uuid must be a valid UUID'),
 ];

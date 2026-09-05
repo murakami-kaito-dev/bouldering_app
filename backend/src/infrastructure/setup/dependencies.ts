@@ -12,6 +12,7 @@ import { PostgresReportRepository } from '../repositories/PostgresReportReposito
 import { ReportService } from '../../services/reportService';
 import { PostgresBlockRepository } from '../repositories/PostgresBlockRepository';
 import { BlockService } from '../../services/blockService';
+import { UploadService } from '../../services/uploadService';
 import logger from '../../utils/logger';
 
 /**
@@ -36,6 +37,7 @@ let gymServiceInstance: GymService | null = null;
 let favoriteServiceInstance: FavoriteService | null = null;
 let reportServiceInstance: ReportService | null = null;
 let blockServiceInstance: BlockService | null = null;
+let uploadServiceInstance: UploadService | null = null;
 
 // リポジトリインスタンス
 let tweetRepository: PostgresTweetRepository | null = null;
@@ -247,6 +249,21 @@ export function getBlockService(): BlockService {
   return blockServiceInstance;
 }
 
+/**
+ * UploadServiceのインスタンスを取得
+ */
+export function getUploadService(): UploadService {
+  if (uploadServiceInstance) {
+    return uploadServiceInstance;
+  }
+
+  // GCS 署名付きURL発行のみ。リポジトリもイベントバスも使わない
+  uploadServiceInstance = new UploadService();
+
+  logger.info('UploadService initialized');
+
+  return uploadServiceInstance;
+}
 
 /**
  * アプリケーション初期化
@@ -265,6 +282,7 @@ export function initializeApplication(): void {
   getFavoriteService();
   getReportService();
   getBlockService();
+  getUploadService();
   
   logger.info('Application dependencies initialized successfully');
 }
