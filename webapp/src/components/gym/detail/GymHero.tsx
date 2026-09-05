@@ -59,7 +59,7 @@ export function GymHero({ gym }: { gym: Gym }) {
         </p>
       </div>
 
-      <dl className="flex flex-wrap items-end gap-x-10 gap-y-4 rounded-card bg-joint px-5 py-5 md:px-6" aria-label="ジムの数字">
+      <div role="group" className="flex flex-wrap items-end gap-x-10 gap-y-4 rounded-card bg-joint px-5 py-5 md:px-6" aria-label="ジムの数字">
         <Stat label="イキタイ" value={gym.ikitaiCount.toLocaleString("ja-JP")} unit="人" tone="yellow" />
         <Stat label="ボル活" value={gym.boulCount.toLocaleString("ja-JP")} unit="件" />
         <Stat
@@ -67,7 +67,7 @@ export function GymHero({ gym }: { gym: Gym }) {
           value={gym.minimumFee === null ? "—" : `¥${formatYen(gym.minimumFee)}`}
           unit={gym.minimumFee === null ? undefined : "〜"}
         />
-      </dl>
+      </div>
     </header>
   );
 }

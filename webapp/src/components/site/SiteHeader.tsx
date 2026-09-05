@@ -23,7 +23,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-crack bg-rock/90 backdrop-blur-md">
       <Container className="flex h-14 items-center justify-between gap-3 md:h-16 md:gap-4">
-        <Link href="/" className="pressable shrink-0 rounded-tape" aria-label="イワノボリタイ ホーム">
+        <Link href="/" className="pressable shrink-0 rounded-tape">
           <Logo />
         </Link>
         <nav className="flex shrink-0 items-center gap-0.5 md:gap-2" aria-label="主要">

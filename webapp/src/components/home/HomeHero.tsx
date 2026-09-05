@@ -65,7 +65,7 @@ export function HomeHero({
           <nav aria-label="ジムの多い都道府県" className="flex flex-wrap items-center gap-2">
             <span className="mr-1 text-small text-ash">人気のエリア</span>
             {QUICK_PREFECTURES.map((p) => (
-              <Link key={p} href={`/gyms/area/${PREFECTURE_SLUGS[p]}`} className="pressable rounded-tape" aria-label={`${p}のジム一覧`}>
+              <Link key={p} href={`/gyms/area/${PREFECTURE_SLUGS[p]}`} className="pressable rounded-tape">
                 <Tape tone="chalk">{p.replace(/[都府県]$/, "")}</Tape>
               </Link>
             ))}

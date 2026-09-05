@@ -41,7 +41,7 @@ export function AppCta({ variant = "default", gymName, className = "" }: { varia
       <div className="relative flex flex-col gap-4">
         <Eyebrow>iOS APP</Eyebrow>
         <div className="flex flex-col gap-1">
-          <h3 className="text-h3">{title}</h3>
+          <p className="text-h3">{title}</p>
           <p className="text-small text-dust">{body}</p>
         </div>
         <a href={env.appStoreUrl} target="_blank" rel="noopener noreferrer" className="pressable inline-flex w-fit" aria-label="App Store でイワノボリタイを入手">

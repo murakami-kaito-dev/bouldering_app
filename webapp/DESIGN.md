@@ -21,7 +21,7 @@ Live product: https://bouldering-app-dev.web.app（dev）／ iOS アプリ「イ
 | 割れ目 Crack | `#2D313A` | `--color-crack` | 罫線・区切り |
 | チョーク Chalk | `#F2F0EA` | `--color-chalk` | 主文字・見出し |
 | 砂埃 Dust | `#9AA0AA` | `--color-dust` | 副文字・ラベル・プレースホルダ |
-| 灰 Ash | `#5F6570` | `--color-ash` | 無効・三次文字・アイコンの休止色 |
+| 灰 Ash | `#838A97` | `--color-ash` | 無効・三次文字・広告ラベル（rock/joint 上で 4.5:1 以上） |
 | 壁ブルー Wall | `#5B8CFF` | `--color-wall` | ブランド・主ボタン・リンク |
 | 壁ブルー（明） | `#7AA2FF` | `--color-wall-bright` | ホバー・フォーカスリング |
 | 壁ブルー（墨） | `#0B1020` | `--color-wall-ink` | 青地の上の文字 |
@@ -174,7 +174,7 @@ ledge 面のカード。左に App Store バッジ、右に「地図でジムを
 ```css
 :root {
   --color-rock: #15171B; --color-joint: #1E2126; --color-ledge: #262A31; --color-crack: #2D313A;
-  --color-chalk: #F2F0EA; --color-dust: #9AA0AA; --color-ash: #5F6570;
+  --color-chalk: #F2F0EA; --color-dust: #9AA0AA; --color-ash: #838A97;
   --color-wall: #5B8CFF; --color-wall-bright: #7AA2FF; --color-wall-ink: #0B1020;
   --color-hold-red: #FF7264; --color-hold-green: #3FCF8E; --color-hold-cyan: #3EC6E0; --color-tape-yellow: #F5C542;
   --radius-tape: 2px; --radius-card: 14px; --radius-pill: 999px;
