@@ -16,10 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BoulLogPage() {
-  const { items } = await getAllTweets(PAGE_SIZE);
-  // バックエンドのカーソルは ISO8601 日時（tweeted_date < cursor）。lib の nextCursor（tweet_id）は使わず組み直す
-  // （/api/tweets/route.ts と同じ規約。lib 側の修正は別チーム担当）
-  const first = { items, nextCursor: items.length === PAGE_SIZE ? items[items.length - 1].tweetedAt : null };
+  const first = await getAllTweets(PAGE_SIZE);
   return (
     <Container narrow className="flex flex-col gap-8 py-10 md:py-14">
       <header className="flex flex-col gap-3">

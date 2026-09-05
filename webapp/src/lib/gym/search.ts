@@ -1,7 +1,7 @@
 import type { Gym, GymType, WeekHours } from "@/lib/api/types";
 import { isOpenNow } from "./hours";
 import { PREFECTURES, prefectureOrder } from "./prefectures";
-import { GYM_TYPES, distanceKm, normalizeQuery } from "./types";
+import { GYM_TYPES, distanceKm, matchesQuery, popularity } from "./types";
 
 /**
  * 検索ページ（/gyms・/gyms/area/[slug]）で使う軽量なジム型と、絞り込み・並び替え・URL 状態の変換。
@@ -125,20 +125,11 @@ export function hasActiveFilters(s: SearchState): boolean {
 
 // ---------------------------------------------------------------- 絞り込み・並び替え
 
-/**
- * 名前・住所での部分一致。`lib/gym/types.ts` の `matchesQuery` と同じ規則（NFKC・カナ→かな・空白除去）を
- * GymSummary にも使えるようにしたもの。
- */
-export function summaryMatchesQuery(g: GymSummary, q: string): boolean {
-  const n = normalizeQuery(q);
-  if (!n) return true;
-  return normalizeQuery(`${g.name}${g.prefecture}${g.city}${g.addressLine}`).includes(n);
-}
+/** 名前・住所での部分一致（`lib/gym/types.ts` の matchesQuery。GymSummary でも使える） */
+export const summaryMatchesQuery = (g: GymSummary, q: string): boolean => matchesQuery(g, q);
 
-/** 人気スコア（アプリと同じ重み: イキタイ 0.7 ＋ ボル活 0.3。`lib/gym/types.ts` の popularity と同じ式） */
-export function summaryPopularity(g: GymSummary): number {
-  return g.ikitaiCount * 0.7 + g.boulCount * 0.3;
-}
+/** 人気スコア（`lib/gym/types.ts` の popularity） */
+export const summaryPopularity = (g: GymSummary): number => popularity(g);
 
 export function filterGyms(gyms: GymSummary[], s: SearchState, now: Date): GymSummary[] {
   const prefSet = s.prefs.length ? new Set(s.prefs) : null;

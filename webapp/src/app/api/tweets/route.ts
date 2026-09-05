@@ -11,11 +11,7 @@ import { getAllTweets } from "@/lib/api/tweets";
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;
 
-/**
- * バックエンドのカーソルは ISO8601 の日時（`tweeted_date < cursor`、validatePagination で isISO8601）。
- * 共通ライブラリ getAllTweets() は nextCursor に tweet_id を入れてしまうため（要修正・lib 側）、
- * ここでは最後の投稿の tweetedAt から正しいカーソルを組み直す。
- */
+/** バックエンドのカーソルは ISO8601 の日時（`tweeted_date < cursor`）。lib の nextCursor はそのまま使える */
 const ISO_CURSOR = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/;
 
 export async function GET(req: NextRequest) {
@@ -29,8 +25,7 @@ export async function GET(req: NextRequest) {
   const cursor = cursorRaw && ISO_CURSOR.test(cursorRaw) && !Number.isNaN(Date.parse(cursorRaw)) ? cursorRaw : null;
 
   try {
-    const { items } = await getAllTweets(limit, cursor);
-    const page = { items, nextCursor: items.length === limit ? items[items.length - 1].tweetedAt : null };
+    const page = await getAllTweets(limit, cursor);
     return Response.json(page, {
       headers: { "Cache-Control": "public, max-age=30, s-maxage=60, stale-while-revalidate=300" },
     });
