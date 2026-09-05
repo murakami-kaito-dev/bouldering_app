@@ -74,5 +74,5 @@ export async function getGymTweets(id: number, limit = 20, cursor?: string | nul
   if (cursor) qs.set("cursor", cursor);
   const raw = await apiRequest<RawTweet[]>(`/gyms/${id}/tweets?${qs}`, { revalidate: 60, tags: [`gym:${id}:tweets`] });
   const items = raw.map(normalizeTweet);
-  return { items, nextCursor: items.length === limit ? String(items[items.length - 1].id) : null };
+  return { items, nextCursor: items.length === limit ? items[items.length - 1].tweetedAt : null };
 }

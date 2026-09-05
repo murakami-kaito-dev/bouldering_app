@@ -19,6 +19,7 @@ export function normalizeTweet(r: RawTweet): Tweet {
   };
 }
 
+/** カーソルは最後の投稿の tweeted_date（ISO8601）。バックエンドは `tweeted_date < cursor` で次ページを返す */
 export interface TweetPage {
   items: Tweet[];
   nextCursor: string | null;
@@ -30,7 +31,7 @@ export async function getAllTweets(limit = 20, cursor?: string | null, token?: s
   if (cursor) qs.set("cursor", cursor);
   const raw = await apiRequest<RawTweet[]>(`/tweets?${qs}`, token ? { token } : { revalidate: 60, tags: ["tweets"] });
   const items = raw.map(normalizeTweet);
-  return { items, nextCursor: items.length === limit ? String(items[items.length - 1].id) : null };
+  return { items, nextCursor: items.length === limit ? items[items.length - 1].tweetedAt : null };
 }
 
 /** あるユーザーのボル活 */
@@ -39,7 +40,7 @@ export async function getUserTweets(userId: string, limit = 20, cursor?: string 
   if (cursor) qs.set("cursor", cursor);
   const raw = await apiRequest<RawTweet[]>(`/tweets/users/${encodeURIComponent(userId)}?${qs}`, token ? { token } : { revalidate: 60 });
   const items = raw.map(normalizeTweet);
-  return { items, nextCursor: items.length === limit ? String(items[items.length - 1].id) : null };
+  return { items, nextCursor: items.length === limit ? items[items.length - 1].tweetedAt : null };
 }
 
 /** 投稿（要ログイン） */

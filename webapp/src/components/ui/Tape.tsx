@@ -34,7 +34,7 @@ export function Tape({
 }) {
   const c = TONE_VAR[tone];
   const style = filled
-    ? { background: c, color: tone === "chalk" || tone === "yellow" ? "var(--color-wall-ink)" : "var(--color-wall-ink)" }
+    ? { background: c, color: "var(--color-wall-ink)" }
     : { background: `color-mix(in srgb, ${c} 14%, transparent)`, color: c };
   return (
     <span className={`tape ${className}`} style={style} title={title}>

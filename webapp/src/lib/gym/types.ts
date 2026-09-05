@@ -11,18 +11,18 @@ export const GYM_TYPE_META: Record<GymType, { label: string; short: string; colo
 export const GYM_TYPES: GymType[] = ["bouldering", "lead", "speed"];
 
 /** 人気スコア（アプリと同じ重み: イキタイ 0.7 ＋ ボル活 0.3） */
-export function popularity(g: Gym): number {
+export function popularity(g: Pick<Gym, "ikitaiCount" | "boulCount">): number {
   return g.ikitaiCount * 0.7 + g.boulCount * 0.3;
 }
 
-export function sortByGeography(gyms: Gym[]): Gym[] {
+export function sortByGeography<T extends Pick<Gym, "prefecture" | "name">>(gyms: T[]): T[] {
   return [...gyms].sort((a, b) => {
     const d = prefectureOrder(a.prefecture) - prefectureOrder(b.prefecture);
     return d !== 0 ? d : a.name.localeCompare(b.name, "ja");
   });
 }
 
-export function sortByPopularity(gyms: Gym[]): Gym[] {
+export function sortByPopularity<T extends Pick<Gym, "ikitaiCount" | "boulCount" | "name">>(gyms: T[]): T[] {
   return [...gyms].sort((a, b) => popularity(b) - popularity(a) || a.name.localeCompare(b.name, "ja"));
 }
 
@@ -45,7 +45,7 @@ export function normalizeQuery(s: string): string {
     .replace(/\s+/g, "");
 }
 
-export function matchesQuery(g: Gym, q: string): boolean {
+export function matchesQuery(g: Pick<Gym, "name" | "prefecture" | "city" | "addressLine">, q: string): boolean {
   const n = normalizeQuery(q);
   if (!n) return true;
   return normalizeQuery(`${g.name}${g.prefecture}${g.city}${g.addressLine}`).includes(n);

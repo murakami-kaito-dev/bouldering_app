@@ -5,6 +5,7 @@ import { env, isProd } from "@/lib/env";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 
 const zen = Zen_Kaku_Gothic_New({ weight: ["500", "700"], subsets: ["latin"], variable: "--font-zen", display: "swap", preload: false });
 const barlow = Barlow_Condensed({ weight: ["500", "600", "700"], subsets: ["latin"], variable: "--font-barlow", display: "swap" });
@@ -33,9 +34,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ja" className={`${zen.variable} ${barlow.variable} ${noto.variable} h-full`}>
       <body className="flex min-h-full flex-col">
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
+        <AuthProvider>
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+        </AuthProvider>
         <AdSenseScript />
       </body>
     </html>
