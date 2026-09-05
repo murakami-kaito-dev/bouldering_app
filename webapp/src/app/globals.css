@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/* =====================================================================
+   イワノボリタイ Web — デザイントークン（正典は webapp/DESIGN.md）
+   ===================================================================== */
+@theme {
+  --color-rock: #15171b;
+  --color-joint: #1e2126;
+  --color-ledge: #262a31;
+  --color-crack: #2d313a;
+  --color-chalk: #f2f0ea;
+  --color-dust: #9aa0aa;
+  --color-ash: #838a97;
+  --color-wall: #5b8cff;
+  --color-wall-bright: #7aa2ff;
+  --color-wall-ink: #0b1020;
+  --color-hold-red: #ff7264;
+  --color-hold-green: #3fcf8e;
+  --color-hold-cyan: #3ec6e0;
+  --color-tape-yellow: #f5c542;
+
+  --font-display: var(--font-zen), "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --font-numeric: var(--font-barlow), "Arial Narrow", sans-serif;
+  --font-body: var(--font-noto), "Hiragino Sans", system-ui, sans-serif;
+
+  --radius-tape: 2px;
+  --radius-card: 14px;
+  --radius-pill: 999px;
+
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1200px;
+}
+
+:root {
+  --ring: 0 0 0 3px rgb(122 162 255 / 0.45);
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-rock);
+}
+
+body {
+  overflow-x: clip;
+  background: var(--color-rock);
+  color: var(--color-chalk);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 見出しは Zen Kaku、数字は Barlow（tnum） */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  color: var(--color-chalk);
+}
+
+.font-numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+::selection {
+  background: rgb(91 140 255 / 0.35);
+}
+
+/* ---------- 型スケール（DESIGN.md Type Scale） ---------- */
+.text-display { font-family: var(--font-display); font-weight: 700; font-size: clamp(40px, 5.5vw, 56px); line-height: 1.1; letter-spacing: -0.02em; }
+.text-h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 3.5vw, 36px); line-height: 1.2; letter-spacing: -0.01em; }
+.text-h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(20px, 2.4vw, 24px); line-height: 1.3; letter-spacing: -0.01em; }
+.text-h3 { font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 1.4; }
+.text-eyebrow { font-family: var(--font-numeric); font-weight: 600; font-size: 12px; line-height: 1; letter-spacing: 0.08em; text-transform: uppercase; }
+.text-stat { font-family: var(--font-numeric); font-weight: 700; line-height: 0.95; font-variant-numeric: tabular-nums; }
+.text-small { font-size: 13px; line-height: 1.6; }
+
+/* ---------- 課題テープ（署名） ---------- */
+.tape {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: var(--radius-tape);
+  font-family: var(--font-numeric);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: skewX(-8deg);
+  white-space: nowrap;
+}
+.tape > * { transform: skewX(8deg); }
+
+/* 見出し下のテープ線 */
+.tape-rule {
+  display: block;
+  width: 40px;
+  height: 3px;
+  background: var(--color-wall);
+  transform: skewX(-8deg);
+  border-radius: var(--radius-tape);
+}
+
+/* 押下スプリング（reduced-motion で停止） */
+.pressable { transition: transform 120ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease; }
+.pressable:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) {
+  .pressable, .pressable:active { transition: none; transform: none; }
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* 岩肌の粒（背景にごく薄いノイズ。画像を使わず CSS だけで） */
+.grain {
+  position: relative;
+}
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image:
+    radial-gradient(rgb(242 240 234 / 0.045) 0.6px, transparent 0.7px),
+    radial-gradient(rgb(242 240 234 / 0.03) 0.5px, transparent 0.6px);
+  background-size: 7px 7px, 11px 11px;
+  background-position: 0 0, 3px 5px;
+}
+
+/* スクロールバー（暗い面に合わせる） */
+* { scrollbar-color: var(--color-crack) transparent; scrollbar-width: thin; }

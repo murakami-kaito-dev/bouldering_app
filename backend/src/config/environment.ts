@@ -47,6 +47,12 @@ export const config = {
     apiKey: process.env.PLACES_API_KEY || '',
   },
 
+  // Cloud Storage（メディアバケット）
+  // 署名付きURL発行（routes/uploads.ts）はこの値が空だと 500 を返す（dev バケットへのフォールバックはしない）
+  storage: {
+    bucketName: process.env.GCS_BUCKET_NAME || '',
+  },
+
   // CORS
   cors: {
     origins: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],

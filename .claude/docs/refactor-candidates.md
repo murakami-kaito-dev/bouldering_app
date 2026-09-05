@@ -172,3 +172,11 @@
 | マージ済み残存ブランチ | ローカル: feature/ng-word-filtering, feature/user-block, fix/photo-viewer-close, docs/add-implementation-doc / リモート: fix/keyboard-dismiss | 高 |
 | `components/`直下3ファイル | favorite_gyms_section/my_tweets_section/this_month_boul_logだけカテゴリフォルダ外（配置不統一） | 中 |
 | `presentation/components/common/boul_log.dart` | 427行の大型コンポーネント（表示+編集+削除+ブロック+報告が1ファイル） | 中 |
+
+## 7. セキュリティ（Web 化の調査で判明・2026-09-05・**要ユーザー判断**）
+
+| No. | 内容 | 影響 | 推奨対応 |
+|---|---|---|---|
+| S-4 | `lib/shared/config/environment_config.dart` に dev/prod の **DB 接続パスワードがハードコード**され Git 管理下（`databaseConfig` はアプリから未使用） | Git 履歴・IPA から読める。Web 化しなくても既に露出 | 該当定数を削除し、**Supabase の DB パスワードをローテーション**。Git 履歴からの除去は `git filter-repo`（要相談） |
+| S-5 | `assets/keys/gcs_storage_{dev,prod}.json`（GCS **サービスアカウント鍵**）を pubspec の assets としてアプリに同梱し、`storage_service.dart` が `googleapis_auth` で直接 GCS へ書き込む（Git は未追跡） | IPA を展開すれば鍵が取れ、バケットへ任意の書き込み・削除が可能 | 写真アップロードを **バックエンド発行の V4 署名 URL**（Web 版で新設する `POST /api/uploads/sign`）に切替え、鍵を失効・削除 |
+| S-6 | `gcloud config` の既定プロジェクトが **prod**（`bouldering-app-prod-ca5d7`） | `--project` を付け忘れた操作が本番に当たる | 既定を dev に変更するか、常に `--project` 明示（Claude 側は明示を徹底） |

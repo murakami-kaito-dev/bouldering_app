@@ -1,0 +1,1 @@
+# Firebase Hosting の public ディレクトリ（意図的に空。全リクエストは firebase.json の rewrite で Cloud Run へ）

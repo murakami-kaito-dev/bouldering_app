@@ -1,0 +1,26 @@
+# Docker ビルドコンテキストから除外（イメージへの混入防止・高速化）
+# ※ Cloud Build 経由の場合はアップロード自体を .gcloudignore でも除外する（deploy-dev.sh が作成）
+
+# 依存・ビルド成果物（イメージ内で作り直す）
+node_modules
+.next
+out
+coverage
+
+# 環境変数ファイル（.env.local など。NEXT_PUBLIC_* は build-arg で渡すのでファイルは不要）
+.env*
+
+# Git・デプロイ定義・Hosting 用の空ディレクトリ
+.git
+.gitignore
+.gcloudignore
+deploy
+hosting-public
+
+# ドキュメント・雑多
+*.md
+.DS_Store
+npm-debug.log*
+.eslintcache
+.vscode
+.idea

@@ -17,6 +17,7 @@ import tweetRoutes from './routes/tweets';
 import gymRoutes from './routes/gyms';
 import reportRoutes from './routes/reports';
 import blockRoutes from './routes/blocks';
+import uploadRoutes from './routes/uploads';
 import internalTasksRoutes from './routes/internal_tasks';
 
 // Validate environment variables
@@ -65,6 +66,7 @@ app.use('/api/tweets', tweetRoutes);
 app.use('/api/gyms', gymRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/blocks', blockRoutes);
+app.use('/api/uploads', uploadRoutes); // 33. Web 向け 署名付きアップロードURL発行
 
 // Internal task routes (for Cloud Tasks workers)
 app.use('/internal/tasks', internalTasksRoutes);

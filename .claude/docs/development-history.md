@@ -56,6 +56,12 @@ App Store審査要件（UGCアプリに必須の通報・ブロック・規約�
 - `fc1f2bf`: ホーム画面・ボトムナビを「フレンドリー・カジュアル系」デザイン（クリーム/コーラル/ミント/ラベンダー基調、Zen Maru Gothic）に刷新するWIPコミット
 - 2026-08-21: Claude Code 参画。情報集約ブランチ `docs/claude-context-setup`（本ブランチ）で `.claude/` 基盤整備
 
+### フェーズ N: Web アプリ化（2026-09-05）
+
+| 日付 | 内容 |
+|---|---|
+| 09-05 | `webapp/`（Next.js 16）を新設。ジム検索・都道府県別・ジム詳細・みんなのボル活・ログイン（Google/Apple）・マイページ・投稿・公開プロフィール・SEO/広告枠。設計正典 `webapp/DESIGN.md`。バックエンドに `POST /api/uploads/sign`。dev を https://bouldering-app-dev.web.app に公開（PR #73） |
+
 ## ブランチの現状（2026-08-21時点）
 
 | ブランチ | 状態 |
