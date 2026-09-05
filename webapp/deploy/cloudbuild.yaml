@@ -1,0 +1,81 @@
+# =============================================================================
+# イワノボリタイ Web — Cloud Build 定義（Docker build → Artifact Registry push）
+#
+# 実行場所: webapp/（ビルドコンテキスト = webapp/。Dockerfile は webapp/Dockerfile）
+#   gcloud builds submit --config deploy/cloudbuild.yaml \
+#     --substitutions _ENV=dev,_TAG=dev-YYYYMMDD-<sha>,_API_BASE_URL=...,... \
+#     --project bouldering-app-dev .
+#
+# 通常は deploy/deploy-dev.sh から呼ぶ（.env.local を読んで substitutions を組み立てる）。
+#
+# 成果物: asia-northeast1-docker.pkg.dev/${PROJECT_ID}/bouldering-app-docker-${_ENV}/web:${_TAG}
+#   - Artifact Registry リポジトリは既存の backend と同じ `bouldering-app-docker-dev` / `-prod` を使う
+#     （イメージ名 `web` で backend と区別する）
+#   - `_TAG` に既定値は無い ＝ タグ無し／:latest での push を防ぐ（バックエンドと同じ運用ルール）
+#
+# NEXT_PUBLIC_* は next build 時にバンドルへ埋め込まれる公開値なので build-arg で渡す。
+# 秘密（DB 接続・サービスアカウント等）は絶対にここへ渡さない。
+# =============================================================================
+
+substitutions:
+  _ENV: dev
+  _API_BASE_URL: ""
+  _SITE_URL: ""
+  _MAPS_KEY: ""
+  _FIREBASE_API_KEY: ""
+  _FIREBASE_AUTH_DOMAIN: ""
+  _FIREBASE_PROJECT_ID: ""
+  _FIREBASE_APP_ID: ""
+  _FIREBASE_MESSAGING_SENDER_ID: ""
+  _FIREBASE_STORAGE_BUCKET: ""
+  _ADSENSE_CLIENT: ""
+  _APP_ENV: dev
+  _APP_STORE_URL: ""
+  _APP_STORE_ID: ""
+
+steps:
+  - id: docker-build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg
+      - NEXT_PUBLIC_API_BASE_URL=${_API_BASE_URL}
+      - --build-arg
+      - NEXT_PUBLIC_SITE_URL=${_SITE_URL}
+      - --build-arg
+      - NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${_MAPS_KEY}
+      - --build-arg
+      - NEXT_PUBLIC_FIREBASE_API_KEY=${_FIREBASE_API_KEY}
+      - --build-arg
+      - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${_FIREBASE_AUTH_DOMAIN}
+      - --build-arg
+      - NEXT_PUBLIC_FIREBASE_PROJECT_ID=${_FIREBASE_PROJECT_ID}
+      - --build-arg
+      - NEXT_PUBLIC_FIREBASE_APP_ID=${_FIREBASE_APP_ID}
+      - --build-arg
+      - NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${_FIREBASE_MESSAGING_SENDER_ID}
+      - --build-arg
+      - NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${_FIREBASE_STORAGE_BUCKET}
+      - --build-arg
+      - NEXT_PUBLIC_ADSENSE_CLIENT=${_ADSENSE_CLIENT}
+      - --build-arg
+      - NEXT_PUBLIC_APP_ENV=${_APP_ENV}
+      - --build-arg
+      - NEXT_PUBLIC_APP_STORE_URL=${_APP_STORE_URL}
+      - --build-arg
+      - NEXT_PUBLIC_APP_STORE_ID=${_APP_STORE_ID}
+      - --tag
+      - asia-northeast1-docker.pkg.dev/${PROJECT_ID}/bouldering-app-docker-${_ENV}/web:${_TAG}
+      - .
+
+# ビルド完了後に push されるイメージ（ここに書くと Cloud Build が push と結果表示を担う）
+images:
+  - asia-northeast1-docker.pkg.dev/${PROJECT_ID}/bouldering-app-docker-${_ENV}/web:${_TAG}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  # next build は既定の e2-medium(1 vCPU/4GB) だと遅く、メモリ不足で落ちることもあるため
+  # 8 vCPU を使う（単価は高いが分数が短いので 1 回あたり数円〜十数円）
+  machineType: E2_HIGHCPU_8
+
+timeout: 1800s

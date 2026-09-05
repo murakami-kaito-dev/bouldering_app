@@ -68,3 +68,55 @@
 6. `GCS_BUCKET_NAME` 未設定時のフォールバックが**devバケット名にハードコード**（prodで設定漏れするとdevバケットを操作）
 7. ローカルの `docs/` 配下に平文のDBパスワード・APIキー・**クレジットカード番号・自宅住所**が残存（Git非管理だがローカルに存在。`docs/setup/google_cloud_setup_private.txt` 等）。公開版 `docs_public/` はサニタイズ済みで漏洩なしを確認済み
 8. `sslmode` が資料間で不一致（移行ガイド=require、実デプロイコマンド=disable）
+
+## Web アプリ（webapp/ — Next.js 16 / Cloud Run / Firebase Hosting）2026-09-05 追加
+
+iOS と同じバックエンド API を使う Web 版。Next.js を `output: "standalone"` でコンテナ化して Cloud Run に置き、
+Firebase Hosting の rewrite（`firebase.json` の `hosting`）で **独自ドメイン + SSL + CDN** を被せる構成。
+公開手順（ドメイン購入〜AdSense）は `web-domain-setup.md`、コマンドは `commands.md`「Web アプリ」。
+
+| 項目 | dev | prod（未構築） |
+|---|---|---|
+| GCP / Firebase プロジェクト | `bouldering-app-dev` | `bouldering-app-prod-ca5d7` |
+| Cloud Run サービス | `bouldering-web-dev`（512Mi / 1 CPU / min 0 / max 3 / :8080） | `bouldering-web-prod`（max 5） |
+| イメージ | `asia-northeast1-docker.pkg.dev/bouldering-app-dev/bouldering-app-docker-dev/web:dev-YYYYMMDD-<sha>` | `.../bouldering-app-docker-prod/web:prod-YYYYMMDD-<sha>` |
+| Artifact Registry | backend と共用 `bouldering-app-docker-dev`（イメージ名 `web` で区別） | `bouldering-app-docker-prod` |
+| Firebase Hosting サイト | `bouldering-app-dev` → https://bouldering-app-dev.web.app（rewrite `**` → Cloud Run） | 未作成（案: `bouldering-app-prod`）+ 独自ドメイン |
+| 公開 URL（`NEXT_PUBLIC_SITE_URL`） | `https://bouldering-app-dev.web.app`（`X-Robots-Tag: noindex` 付き） | `https://<独自ドメイン>`（取得後） |
+| Firebase Web アプリ | `boulderingapp-dev-web`（App ID `1:946765315089:web:b969a44a1490e1b4e8c5b0`） | 未作成 |
+| Google Maps ブラウザキー | 「Web Maps API Key - Dev」（HTTP リファラ: `localhost:3000` / `bouldering-app-dev.web.app` / `.firebaseapp.com`） | 「Web Maps API Key - Prod」未作成 |
+| ビルド | Cloud Build `webapp/deploy/cloudbuild.yaml`（E2_HIGHCPU_8、Docker build-arg で `NEXT_PUBLIC_*` を埋め込み） | 同左 |
+| デプロイスクリプト | `webapp/deploy/deploy-dev.sh` | `webapp/deploy/deploy-prod.sh`（独自ドメイン設定までは実行拒否） |
+| 環境変数ファイル（Git 管理外） | `webapp/.env.local` | `webapp/.env.prod.local` |
+| リージョン | asia-northeast1（Hosting → Cloud Run rewrite 対応リージョン） | 同左 |
+
+### Web の環境変数（全て `NEXT_PUBLIC_*` = 公開値。`webapp/src/lib/env.ts`）
+
+`NEXT_PUBLIC_API_BASE_URL` `NEXT_PUBLIC_SITE_URL` `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+`NEXT_PUBLIC_FIREBASE_API_KEY` `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+`NEXT_PUBLIC_FIREBASE_APP_ID` `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+`NEXT_PUBLIC_ADSENSE_CLIENT` `NEXT_PUBLIC_APP_ENV` `NEXT_PUBLIC_APP_STORE_URL` `NEXT_PUBLIC_APP_STORE_ID`
+
+- **すべて `next build` 時に JS へ埋め込まれる**（Next.js の仕様）。Cloud Run の `--set-env-vars` では反映されない → 値を変えたら再ビルド。
+  Dockerfile は build-arg で受け、空文字は「未設定」扱い（`env.ts` の既定値が生きる）。
+- 秘密（DB・サービスアカウント・Brevo 等）は Web に一切置かない。Web は常にバックエンド API 経由。
+- `deploy-dev.sh` は `NEXT_PUBLIC_SITE_URL` / `NEXT_PUBLIC_APP_ENV` を強制上書きし、`NEXT_PUBLIC_API_BASE_URL` が dev API でなければ中断する（環境混在防止）。
+
+### Hosting rewrite の制約（Firebase 公式 docs より。2026-09-05 確認）
+
+- rewrite 先の Cloud Run は **同一 GCP プロジェクト**・**未認証呼び出し許可**が必要。`asia-northeast1` は対応リージョン。
+- `public`（`webapp/hosting-public`、意図的に空）に実ファイルがあればそちらが優先され、無いものだけ rewrite される。
+- **Cookie は `__session` 以外 Cloud Run に届かない**（Hosting が剥がす）。現状の Web は Firebase Auth をブラウザ側で扱い
+  サーバー Cookie を使わないため影響なし。将来 SSR でセッション Cookie を使うなら名前を `__session` にすること。
+- 動的レスポンスの CDN キャッシュは `Cache-Control: public, s-maxage=…` を返したものだけ（Next の `revalidate` ページは該当）。
+  `/_next/static/**` は `firebase.json` の `headers` で `immutable` を明示。
+- Hosting の予約パス `/__/*`（Auth の `/__/auth/handler` 等）は rewrite より先に Hosting が処理する。
+
+### 依存関係・要注意点
+
+- **バックエンド `ALLOWED_ORIGINS`**: `bouldering-api-dev` は未設定（既定 `http://localhost:3000` のみ）。ブラウザから直接 API を叩く機能
+  （ログイン後の投稿・マイページ）を Web で動かすには `https://bouldering-app-dev.web.app` を追加して API を再デプロイする必要がある
+  （`gcloud run services update bouldering-api-dev --region asia-northeast1 --project bouldering-app-dev --update-env-vars ALLOWED_ORIGINS=http://localhost:3000,https://bouldering-app-dev.web.app`）。サーバー側 fetch は Origin を送らないので不要。
+- Cloud Build の実行 SA は `946765315089@cloudbuild.gserviceaccount.com`（`roles/cloudbuild.builds.builder`。backend のビルドで実績あり）。
+  `gcloud run deploy` は操作者本人の権限で実行（Owner）。Web 用に専用 Cloud Run SA は作らず既定の Compute SA で動く（秘密にアクセスしないため）。
+- `webapp/.gcloudignore` は Git 管理外（`.gitignore:104`）。`deploy-dev.sh` が無ければ生成し、`.env*` 除外を必ず検証する。

@@ -92,3 +92,38 @@ flutter build ios --flavor "Runner Prod" --dart-define=ENVIRONMENT=prod --target
 
 - 環境切替は「Flavor（Runner Dev / Runner Prod）」×「`--dart-define=ENVIRONMENT=dev|prod`」×「エントリポイント（main_dev.dart / main_prod.dart）」の3点セット。
 - 日常開発は dev 系のみ使用。prod 系はリリース時のみ。
+
+## Web アプリ（webapp/ — Next.js 16）2026-09-05 追加
+
+構成・環境変数は `infrastructure.md`「Web アプリ」、独自ドメイン〜AdSense は `web-domain-setup.md`。
+
+```bash
+# ローカル開発（webapp/.env.local が必要。値の所在は webapp/README.md）
+cd webapp && npm install && npm run dev      # http://localhost:3000
+npm run lint && npm run build                # PR 前に通す（build は standalone 出力）
+
+# dev デプロイ（.env.local → Cloud Build → Artifact Registry → Cloud Run bouldering-web-dev）
+cd webapp
+deploy/deploy-dev.sh --dry-run               # 実行せずコマンド確認（値はマスク表示）
+deploy/deploy-dev.sh                         # ビルド + Cloud Run デプロイ
+deploy/deploy-dev.sh --with-hosting          # + firebase deploy --only hosting（rewrite 更新。firebase.json 変更時・初回）
+deploy/deploy-dev.sh --tag dev-20260905-abc1234   # 既存イメージを再デプロイ（ビルド省略）
+
+# Hosting だけ（リポジトリ直下の firebase.json を使う）
+firebase deploy --only hosting:bouldering-app-dev --project bouldering-app-dev
+# → https://bouldering-app-dev.web.app
+
+# 動作確認
+gcloud run services describe bouldering-web-dev --region asia-northeast1 --project bouldering-app-dev --format 'value(status.url)'
+curl -sI https://bouldering-app-dev.web.app | grep -i -E '^(HTTP|x-robots-tag)'
+gcloud run services logs read bouldering-web-dev --region asia-northeast1 --project bouldering-app-dev --limit 50
+gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/bouldering-app-dev/bouldering-app-docker-dev/web --include-tags --sort-by=~UPDATE_TIME --project bouldering-app-dev | head -5
+
+# prod（独自ドメイン取得・prod Hosting サイト作成までは実行拒否。チェックリストが出る）
+deploy/deploy-prod.sh --dry-run
+deploy/deploy-prod.sh --confirm-prod
+```
+
+- イメージタグは backend と同じ `dev-YYYYMMDD-<sha>`（未コミット変更があれば `-dirty` 付与）。`:latest` は使わない。
+- `NEXT_PUBLIC_*` はビルド時埋め込み。値を変えたら `--tag` 再デプロイではなく再ビルドする。
+- 全コマンドは `--project` 明示（gcloud の既定プロジェクトは prod）。
