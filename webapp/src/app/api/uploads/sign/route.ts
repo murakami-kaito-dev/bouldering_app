@@ -18,14 +18,16 @@ const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/h
 
 /**
  * POST /api/uploads/sign → POST /uploads/sign（バックエンドで署名付き PUT URL を発行）。
- * 契約: { kind:"post", content_type, file_name? } → { upload_url, public_url, object_path, expires_at }
+ * 契約: { kind:"post"|"icon", content_type, file_name? } → { upload_url, public_url, object_path, expires_at }
+ * icon はユーザーごとに固定パス（上書き）なので、保存時に `?v=<時刻>` を付けてキャッシュを破る
  * バックエンド未デプロイの間は 404 が返る → フォーム側で「写真のアップロードは準備中」に倒す。
  */
 export async function POST(req: Request) {
   const ctx = requireAuth(req);
   if (isResponse(ctx)) return ctx;
   const body = await readJson<SignBody>(req);
-  if (!body || body.kind !== "post") return jsonError(400, "kind は post のみ対応しています");
+  const kind = body?.kind === "icon" ? "icon" : body?.kind === "post" ? "post" : null;
+  if (!body || !kind) return jsonError(400, "kind は post / icon のみ対応しています");
   const contentType = typeof body.content_type === "string" ? body.content_type.toLowerCase() : "";
   if (!ALLOWED_TYPES.has(contentType)) return jsonError(400, "対応していない画像形式です（JPEG / PNG / WebP / HEIC）", "TYPE_INVALID");
   const fileName = typeof body.file_name === "string" ? body.file_name.slice(0, 200) : undefined;
@@ -33,7 +35,7 @@ export async function POST(req: Request) {
     const signed = await apiRequest<SignedUpload>("/uploads/sign", {
       method: "POST",
       token: ctx.token,
-      body: { kind: "post", content_type: contentType, file_name: fileName },
+      body: { kind, content_type: contentType, file_name: fileName },
     });
     return jsonOk(signed);
   } catch (e) {
