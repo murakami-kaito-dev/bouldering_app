@@ -17,6 +17,7 @@ import tweetRoutes from './routes/tweets';
 import gymRoutes from './routes/gyms';
 import reportRoutes from './routes/reports';
 import blockRoutes from './routes/blocks';
+import { tweetCommentsRouter, commentsRouter } from './routes/comments';
 import internalTasksRoutes from './routes/internal_tasks';
 
 // Validate environment variables
@@ -65,6 +66,9 @@ app.use('/api/tweets', tweetRoutes);
 app.use('/api/gyms', gymRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/blocks', blockRoutes);
+// スレッド（コメント）: /api/tweets/:tweet_id/comments と /api/comments/:comment_id
+app.use('/api/tweets', tweetCommentsRouter);
+app.use('/api/comments', commentsRouter);
 
 // Internal task routes (for Cloud Tasks workers)
 app.use('/internal/tasks', internalTasksRoutes);
