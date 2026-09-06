@@ -18,6 +18,17 @@
 
 ---
 
+## 2026-09-06 — スレッド（コメント・返信）機能の実装（Issue #19・ブランチ `feature/comment-threads`・dev DB のみ変更、デプロイなし）
+
+- **目的**: ボル活へのコメントと返信（サウナイキタイ方式の 2 段表示）。「途中のコメントを削除しても下の返信は残したい」に論理削除で答える（仕様: `social-spec.md`「2. スレッド」）
+- **DB（dev Supabase）**: `backend/migrations/2026-09-06_comments.sql` を適用（`tweet_comments` 新設・`idx_tweet_comments_tweet`・`tweets.comment_counts` 追加）。**prod 未適用**
+- **バックエンド**: `routes/comments.ts`（GET/POST `/api/tweets/:id/comments`、DELETE `/api/comments/:id`）、`PostgresCommentRepository`、`commentService`、`domain/events/CommentCreatedEvent`。既存のツイート一覧・詳細に `comment_counts` を追加。台帳行は `backend/docs-comments.md`（スプレッドシートへの転記は未実施）
+- **アプリ**: `Tweet.commentCount`、`Comment` エンティティ〜ユースケース、`tweetCommentsProvider(tweetId)`、`TweetDetailPage`（スレッド画面）、`CommentCountButton`、各一覧 Notifier の `updateCommentCount`、`BoulLog` のカード本文タップ／吹き出しで詳細へ、`AppRoutes.tweetDetail` を登録
+- **検証**: `tsc --noEmit` OK／ローカル起動（`ts-node`・dev DB）で root→reply→reply-to-reply を作り、真ん中を削除しても 3 つ目が返る・`comment_counts` が 3→2・403/401/400/404 を curl で確認（詳細は `backend/docs-comments.md`）。`flutter analyze` は baseline と同じ 54 件（新規指摘なし）。**実機・シミュレータでの画面確認は未実施**（ディスク残量のため build 不可）
+- **デプロイ**: なし（dev Cloud Run rev 00067 のまま）。マージ後に dev へデプロイし、実機で確認する
+
+---
+
 ## 2026-09-05 — 時刻の基準を JST 固定に統一（PR #72・dev デプロイ）
 
 - **目的**: DATE 列の UTC 深夜返却×端末 JST 解釈による日付ずれ（登録当日の午前中にプロフィール保存が失敗）と、統計「今月」の月範囲・経過日数を UTC で決めていたため毎月 1 日 0〜9 時（JST）に先月扱いになる問題を解消。方針は infrastructure.md「時刻の基準」
