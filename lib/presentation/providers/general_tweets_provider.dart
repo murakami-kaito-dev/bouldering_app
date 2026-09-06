@@ -133,6 +133,22 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
 
     await _fetchMoreGeneralTweets();
   }
+
+  /// 削除済みのツイートを一覧から取り除く（#75）
+  ///
+  /// サーバー側で削除が成功したあとに呼ぶ。再取得はせず、メモリ上の一覧から
+  /// 該当 ID だけを外す。nextCursor（最後のツイートの投稿日時）は境界としてそのまま有効
+  void removeTweet(int tweetId) {
+    if (!state.generalTweets.any((t) => t.id == tweetId)) return;
+    state = GeneralTweetsState(
+      generalTweets:
+          state.generalTweets.where((t) => t.id != tweetId).toList(),
+      hasMore: state.hasMore,
+      isFirstFetch: state.isFirstFetch,
+      nextCursor: state.nextCursor,
+      hasError: state.hasError,
+    );
+  }
 }
 
 /// 全体ツイート一覧Provider

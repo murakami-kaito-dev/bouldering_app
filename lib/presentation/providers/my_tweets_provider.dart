@@ -191,6 +191,18 @@ class MyTweetsNotifier extends StateNotifier<MyTweetsState> {
     }
   }
 
+  /// 削除済みのツイートを一覧から取り除く（#75）
+  ///
+  /// サーバー側で削除が成功したあとに呼ぶ。再取得はせず、メモリ上の一覧から
+  /// 該当 ID だけを外す（O(n)）。nextCursor は「取得済み最後のツイートの投稿日時」で、
+  /// そのツイートが消えても「その日時より前」を取る境界としてそのまま有効なので触らない。
+  void removeTweet(int tweetId) {
+    if (!state.tweets.any((t) => t.id == tweetId)) return;
+    state = state.copyWith(
+      tweets: state.tweets.where((t) => t.id != tweetId).toList(),
+    );
+  }
+
   /// ツイートをクリア
   void clear() {
     state = const MyTweetsState(

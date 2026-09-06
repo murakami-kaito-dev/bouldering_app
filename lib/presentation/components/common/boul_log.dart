@@ -4,6 +4,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/dependency_injection.dart';
 import '../../providers/block_provider.dart';
+import '../../providers/my_tweets_provider.dart';
+import '../../providers/general_tweets_provider.dart';
+import '../../providers/favorite_user_tweets_provider.dart';
+import '../../providers/gym_tweets_provider.dart';
+import '../../providers/other_user_tweets_provider.dart';
+import '../../providers/statistics_provider.dart';
 import '../../../shared/utils/image_url_validator.dart';
 import '../../../shared/utils/navigation_helper.dart';
 import '../../pages/activity_post_page.dart';
@@ -62,6 +68,41 @@ class _BoulLogState extends ConsumerState<BoulLog> {
     if ((widget.mediaUrls != null && widget.mediaUrls!.isNotEmpty)) {
       _imageUrls = ImageUrlValidator.filterValidImageUrls(widget.mediaUrls!);
     }
+  }
+
+  /// 削除に成功したツイートを、表示中の各一覧のメモリ上の状態から取り除く（#75）
+  ///
+  /// 一覧を丸ごと再取得せず、該当 ID だけを外す（キャッシュを活かした最小コストの更新）。
+  /// family Provider は read すると生成（＝初回取得）されてしまうので、
+  /// ref.exists ですでに生きているものだけを対象にする。
+  /// 「今月のボル活」統計は投稿・編集時と同じく invalidate して取り直す。
+  void _removeDeletedTweetFromLists(int tweetId, String myUserId) {
+    // マイページ「ボル活」タブ
+    if (ref.exists(myTweetsProvider(myUserId))) {
+      ref.read(myTweetsProvider(myUserId).notifier).removeTweet(tweetId);
+    }
+    // ボル活ページ「みんなのボル活」
+    if (ref.exists(generalTweetsProvider)) {
+      ref.read(generalTweetsProvider.notifier).removeTweet(tweetId);
+    }
+    // ボル活ページ「お気に入り」（自分を含む場合に備えて）
+    if (ref.exists(favoriteUserTweetsProvider(myUserId))) {
+      ref
+          .read(favoriteUserTweetsProvider(myUserId).notifier)
+          .removeTweet(tweetId);
+    }
+    // ジム詳細のボル活一覧
+    if (ref.exists(gymTweetsProvider(widget.gymId))) {
+      ref.read(gymTweetsProvider(widget.gymId).notifier).removeTweet(tweetId);
+    }
+    // 他ユーザー画面として自分を開いている場合
+    if (ref.exists(otherUserTweetsProvider(myUserId))) {
+      ref
+          .read(otherUserTweetsProvider(myUserId).notifier)
+          .removeTweet(tweetId);
+    }
+    // 「今月のボル活」統計（回数・施設数・ペース）を取り直す
+    ref.invalidate(statisticsProvider);
   }
 
   @override
@@ -213,8 +254,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('削除しました')),
                             );
-                            // 削除成功時にページをリフレッシュ
-                            // Note: 呼び出し元で対応が必要な場合があります
+                            _removeDeletedTweetFromLists(widget.tweetId!, myUserId);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('削除に失敗しました')),

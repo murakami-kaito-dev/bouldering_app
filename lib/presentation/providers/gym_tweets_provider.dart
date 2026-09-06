@@ -126,6 +126,19 @@ class GymTweetsNotifier extends StateNotifier<GymTweetsState> {
     );
     await _fetchGymTweets();
   }
+
+  /// 削除済みのツイートを一覧から取り除く（#75）
+  ///
+  /// サーバー側で削除が成功したあとに呼ぶ。再取得はせず、メモリ上の一覧から
+  /// 該当 ID だけを外す。ページングは offset（= 取得済み件数）方式だが、
+  /// サーバー側でも同じツイートが消えているため件数が 1 減った offset で整合する
+  void removeTweet(int tweetId) {
+    if (!state.tweets.any((t) => t.id == tweetId)) return;
+    state = state.copyWith(
+      tweets: state.tweets.where((t) => t.id != tweetId).toList(),
+      error: state.error,
+    );
+  }
 }
 
 /// 特定ジムのツイートプロバイダー
