@@ -167,7 +167,6 @@ export function GymSearch({ initialGyms, total, isComplete, initialState, nowMs 
             hoveredId={hoveredId}
             onHover={setHoveredId}
             origin={showDistance}
-            ads
             onClearFilters={hasActiveFilters(state) ? clear : undefined}
           />
         </section>

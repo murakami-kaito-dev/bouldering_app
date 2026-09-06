@@ -36,32 +36,6 @@ const HEX = {
 const TYPE_HEX: Record<GymType, string> = { bouldering: HEX.holdRed, lead: HEX.holdGreen, speed: HEX.holdCyan };
 
 /** 暗いスタイル: 水面 #0F1114・道路 #2D313A・ラベル dust */
-const DARK_STYLES: google.maps.MapTypeStyle[] = [
-  { elementType: "geometry", stylers: [{ color: HEX.rock }] },
-  { elementType: "labels.text.fill", stylers: [{ color: HEX.dust }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: HEX.rock }, { weight: 2 }] },
-  { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
-  { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: HEX.crack }] },
-  { featureType: "administrative.land_parcel", stylers: [{ visibility: "off" }] },
-  { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: HEX.chalk }] },
-  { featureType: "landscape", elementType: "geometry", stylers: [{ color: HEX.rock }] },
-  { featureType: "landscape.man_made", elementType: "geometry.stroke", stylers: [{ color: HEX.joint }] },
-  { featureType: "poi", stylers: [{ visibility: "off" }] },
-  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: HEX.joint }, { visibility: "on" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: HEX.crack }] },
-  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: HEX.joint }] },
-  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: HEX.dust }] },
-  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: HEX.ledge }] },
-  { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: HEX.crack }] },
-  { featureType: "road.local", elementType: "labels", stylers: [{ visibility: "simplified" }] },
-  { featureType: "transit", stylers: [{ visibility: "off" }] },
-  { featureType: "transit.station.rail", stylers: [{ visibility: "on" }] },
-  { featureType: "transit.station.rail", elementType: "labels.text.fill", stylers: [{ color: HEX.dust }] },
-  { featureType: "transit.line", elementType: "geometry", stylers: [{ color: HEX.ledge }, { visibility: "on" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: HEX.water }] },
-  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: HEX.ash }] },
-];
-
 /** 日本全体（結果 0 件のときの初期表示） */
 const JAPAN_CENTER = { lat: 36.2, lng: 138.25 };
 const JAPAN_ZOOM = 5;
@@ -126,7 +100,6 @@ export function GymMap(props: GymMapProps) {
           className="h-full w-full"
           defaultCenter={JAPAN_CENTER}
           defaultZoom={JAPAN_ZOOM}
-          styles={DARK_STYLES}
           disableDefaultUI
           zoomControl
           gestureHandling="greedy"

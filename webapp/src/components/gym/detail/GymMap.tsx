@@ -5,24 +5,6 @@ import { env } from "@/lib/env";
 import type { GymType } from "@/lib/api/types";
 
 /** DESIGN.md「Map」: 暗いカスタムスタイル（水面 #0F1114・道路 crack・ラベル dust）。色はトークンの値のみ */
-const DARK_STYLE: google.maps.MapTypeStyle[] = [
-  { elementType: "geometry", stylers: [{ color: "#1E2126" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#9AA0AA" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#15171B" }] },
-  { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
-  { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#2D313A" }] },
-  { featureType: "landscape.man_made", elementType: "geometry", stylers: [{ color: "#1E2126" }] },
-  { featureType: "poi", stylers: [{ visibility: "off" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#2D313A" }] },
-  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#15171B" }] },
-  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#5F6570" }] },
-  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9AA0AA" }] },
-  { featureType: "transit", stylers: [{ visibility: "off" }] },
-  { featureType: "transit.station.rail", elementType: "labels.text.fill", stylers: [{ visibility: "on" }, { color: "#9AA0AA" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0F1114" }] },
-  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#5F6570" }] },
-];
-
 /** 種別色（DESIGN.md）。SVG に埋めるため hex 直値 */
 const TYPE_HEX: Record<GymType, string> = { bouldering: "#FF7264", lead: "#3FCF8E", speed: "#3EC6E0" };
 
@@ -81,7 +63,6 @@ export function GymMap({ name, lat, lng, types, address, mapsUrl, className = ""
         <GoogleMap
           defaultCenter={{ lat, lng }}
           defaultZoom={15}
-          styles={DARK_STYLE}
           backgroundColor="#15171B"
           disableDefaultUI
           zoomControl

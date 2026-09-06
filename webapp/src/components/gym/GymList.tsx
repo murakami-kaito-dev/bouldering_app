@@ -4,12 +4,10 @@ import { Fragment, useEffect, useRef } from "react";
 import type { GeoPoint, GymSummary } from "@/lib/gym/search";
 import { groupByCity } from "@/lib/gym/search";
 import { distanceKm } from "@/lib/gym/types";
-import { AdSlot } from "@/components/ads/AdSlot";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Primitives";
 import { GymCard } from "./GymCard";
 
-const AD_EVERY = 8;
 
 export interface GymListProps {
   gyms: GymSummary[];
@@ -20,8 +18,6 @@ export interface GymListProps {
   onHover?: (id: number | null) => void;
   /** 現在地（あれば距離を出す） */
   origin?: GeoPoint | null;
-  /** 8 件ごとに in-feed 広告 */
-  ads?: boolean;
   /** 市区町村ごとに小見出しを付ける（地域順に並んでいる前提） */
   groupByCityHeaders?: boolean;
   /** 空状態の「条件をすべて解除」 */
@@ -39,7 +35,6 @@ export function GymList({
   hoveredId = null,
   onHover,
   origin = null,
-  ads = false,
   groupByCityHeaders = false,
   onClearFilters,
   className = "",
@@ -100,11 +95,8 @@ export function GymList({
 
   return (
     <div ref={rootRef} className={`flex flex-col gap-3 ${className}`}>
-      {gyms.map((g, i) => (
-        <Fragment key={g.id}>
-          {card(g)}
-          {ads && (i + 1) % AD_EVERY === 0 && i + 1 < gyms.length ? <AdSlot format="infeed" /> : null}
-        </Fragment>
+      {gyms.map((g) => (
+        <Fragment key={g.id}>{card(g)}</Fragment>
       ))}
     </div>
   );

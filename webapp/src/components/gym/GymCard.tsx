@@ -33,7 +33,6 @@ export function GymCard({
   compact?: boolean;
   className?: string;
 }) {
-  const primary = gym.types[0];
   const surface = selected || highlighted ? "border-crack bg-ledge" : "border-transparent bg-joint";
   return (
     <article
@@ -55,7 +54,6 @@ export function GymCard({
           role="img"
           aria-label={`${gym.name} の写真（準備中）`}
         >
-          <span className="absolute left-2 bottom-2">{primary ? <GymTypeTape type={primary} /> : null}</span>
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">

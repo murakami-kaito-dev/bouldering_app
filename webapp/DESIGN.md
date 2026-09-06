@@ -136,7 +136,7 @@ Background joint, radius 14px, padding 16px, border 1px transparent（hover: bor
 
 ### Map
 **Role:** 場所で選ぶ計器。
-Google Maps JS（ライトスタイルは使わず、暗いカスタムスタイル。水面 `#0F1114`、道路 `#2D313A`、ラベル dust）。マーカーは種別色の丸 + 選択時に拡大＋wall のリング。地図の上に載せるカードは ledge 面。
+Google Maps JS の**標準（ライト）スタイル**をそのまま使う（見やすさ優先。iOS アプリの「地図はライト維持」と同じ判断。周辺 UI だけダーク）。マーカーは種別色の丸 + 選択時に拡大＋wall のリング。地図の上に載せるカードは ledge 面。
 
 ### Section header
 **Role:** 見出しの前に英字アイブロウ、下にテープ線。
