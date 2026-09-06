@@ -52,11 +52,13 @@ router.get(
     try {
       const { user_id } = req.params;
       const { limit = '20', cursor } = req.query;
+      const requestUser = (req as AuthenticatedRequest).user;
 
       const tweets = await tweetService.getUserTweets(
         user_id,
         parseInt(limit as string),
-        cursor as string
+        cursor as string,
+        requestUser?.uid // 認証されている場合は liked_by_me の判定に使う
       );
 
       res.json({
@@ -78,8 +80,9 @@ router.get(
   async (req, res, next) => {
     try {
       const { tweet_id } = req.params;
+      const requestUser = (req as AuthenticatedRequest).user;
 
-      const tweet = await tweetService.getTweetById(parseInt(tweet_id));
+      const tweet = await tweetService.getTweetById(parseInt(tweet_id), requestUser?.uid);
 
       if (!tweet) {
         res.status(404).json({

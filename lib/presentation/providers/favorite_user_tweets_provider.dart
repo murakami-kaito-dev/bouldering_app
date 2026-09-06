@@ -108,6 +108,22 @@ class FavoriteUserTweetsNotifier
     _fetchMoreFavoriteUserTweets();
   }
 
+  /// いいね状態を差し替える（LikeButton → tweet_like_sync から呼ばれる）
+  ///
+  /// 同じツイートが他の一覧にもある場合の整合用。該当ツイートが無ければ何もしない
+  void updateLike(int tweetId, bool liked, int count) {
+    if (!state.favoriteUserTweets.any((t) => t.id == tweetId)) return;
+    state = FavoriteUserTweetsState(
+      favoriteUserTweets: [
+        for (final t in state.favoriteUserTweets)
+          t.id == tweetId ? t.copyWith(likedByMe: liked, likedCount: count) : t
+      ],
+      hasMore: state.hasMore,
+      isFirstFetch: state.isFirstFetch,
+      nextCursor: state.nextCursor,
+    );
+  }
+
   /// Pull-to-Refresh対応：お気に入りユーザーのツイート一覧を初期化して再取得
   Future<void> refreshTweets() async {
     if (_isLoading) return;

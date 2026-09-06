@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../services/api_client.dart';
 import '../services/storage_service.dart';
+import '../../domain/entities/like_result.dart';
 import '../../domain/entities/tweet.dart';
 
 /// ツイートデータソースクラス
@@ -346,49 +347,47 @@ class TweetDataSource {
     }
   }
 
-  /// ツイートにいいね追加
+  /// いいねを付ける
   ///
-  /// [tweetId] いいね対象のツイートID
-  /// [userId] いいね実行者のユーザーID
+  /// [tweetId] ツイートID
   ///
   /// 返り値:
-  /// [bool] いいね追加成功時はtrue、失敗時はfalse
+  /// [LikeResult] サーバーが確定した いいね状態と件数
   ///
   /// 処理フロー:
-  /// 1. REST API: POST /api/tweets/{tweetId}/likes でいいね追加
-  /// 2. APIエラー時は例外を上位に伝播
-  Future<bool> likeTweet(int tweetId, String userId) async {
+  /// 1. REST API: POST /api/tweets/{tweetId}/like（要認証・冪等）
+  /// 2. 応答 data の { liked, liked_count } を LikeResult に変換
+  Future<LikeResult> likeTweet(int tweetId) async {
     try {
       final response = await _apiClient.post(
-        endpoint: '/tweets/$tweetId/likes',
-        body: {'user_id': userId},
+        endpoint: '/tweets/$tweetId/like',
+        requireAuth: true,
       );
 
-      return response['success'] == true;
+      return LikeResult.fromJson(response['data'] ?? const {});
     } catch (e) {
       throw Exception('いいね追加に失敗しました: $e');
     }
   }
 
-  /// ツイートのいいね削除
+  /// いいねを外す
   ///
-  /// [tweetId] いいね削除対象のツイートID
-  /// [userId] いいね削除実行者のユーザーID
+  /// [tweetId] ツイートID
   ///
   /// 返り値:
-  /// [bool] いいね削除成功時はtrue、失敗時はfalse
+  /// [LikeResult] サーバーが確定した いいね状態と件数
   ///
   /// 処理フロー:
-  /// 1. REST API: DELETE /api/tweets/{tweetId}/likes?user_id={userId} でいいね削除
-  /// 2. APIエラー時は例外を上位に伝播
-  Future<bool> unlikeTweet(int tweetId, String userId) async {
+  /// 1. REST API: DELETE /api/tweets/{tweetId}/like（要認証・冪等）
+  /// 2. 応答 data の { liked, liked_count } を LikeResult に変換
+  Future<LikeResult> unlikeTweet(int tweetId) async {
     try {
       final response = await _apiClient.delete(
-        endpoint: '/tweets/$tweetId/likes',
-        parameters: {'user_id': userId},
+        endpoint: '/tweets/$tweetId/like',
+        requireAuth: true,
       );
 
-      return response['success'] == true;
+      return LikeResult.fromJson(response['data'] ?? const {});
     } catch (e) {
       throw Exception('いいね削除に失敗しました: $e');
     }
@@ -435,6 +434,7 @@ class TweetDataSource {
       gymId: tweetData['gym_id'] ?? 0,
       content: tweetData['tweet_contents'] ?? '',
       likedCount: tweetData['liked_counts'] ?? 0,
+      likedByMe: tweetData['liked_by_me'] == true,
       movieUrl: tweetData['movie_url'],
       gymName: tweetData['gym_name'] ?? '',
       prefecture: tweetData['prefecture'] ?? '',
