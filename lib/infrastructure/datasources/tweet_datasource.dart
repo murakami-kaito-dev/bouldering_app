@@ -435,6 +435,7 @@ class TweetDataSource {
       gymId: tweetData['gym_id'] ?? 0,
       content: tweetData['tweet_contents'] ?? '',
       likedCount: tweetData['liked_counts'] ?? 0,
+      commentCount: tweetData['comment_counts'] ?? 0,
       movieUrl: tweetData['movie_url'],
       gymName: tweetData['gym_name'] ?? '',
       prefecture: tweetData['prefecture'] ?? '',
