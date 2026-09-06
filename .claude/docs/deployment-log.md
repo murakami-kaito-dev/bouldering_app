@@ -18,6 +18,15 @@
 
 ---
 
+## 2026-09-06 — イキタイジムカードの長押し／カード全体タップでジム詳細へ遷移（issue #76・アプリのみ・デプロイなし）
+
+- **症状**: マイページ「イキタイ」タブ（他ユーザーページのイキタイも同じ部品）で、ジム名のタップだけが遷移し、カード本体のタップや長押しは押下の見た目（`Pressable` の縮小）だけ出て遷移しなかった
+- **原因**: `FavoriteGymCard` はジム名の `GestureDetector.onTap` にしか遷移を置いておらず、`Pressable` は設計上「押下中の見た目だけ」（`Listener`）でタップ判定を持たない
+- **修正（ブランチ `fix/gym-card-long-press`）**: `FavoriteGymCard` を `GymListCard` と同じ構造（Container → `InkWell` → Padding）に揃え、`InkWell` の `onTap` / `onLongPress` の両方で `NavigationHelper.toGymDetail` を呼ぶ（ジム名側の個別ハンドラは撤去＝二重遷移なし）。`GymListCard`（検索結果）も `onLongPress: onTap` を追加。`Pressable` 本体は変更なし（ホーム／ジム詳細のボタンに影響させない）
+- **検証**: `flutter analyze` は修正前後とも 58 件（変更ファイルの指摘 0）。ディスク残量のため `flutter build` / `flutter run` は未実施 → **実機確認待ち**（イキタイタブ・他ユーザーのイキタイ・検索結果の 3 か所で、タップ／長押しとも 1 回だけ遷移すること、長押し時に Pressable の縮小が戻ること）
+
+---
+
 ## 2026-09-05 — 時刻の基準を JST 固定に統一（PR #72・dev デプロイ）
 
 - **目的**: DATE 列の UTC 深夜返却×端末 JST 解釈による日付ずれ（登録当日の午前中にプロフィール保存が失敗）と、統計「今月」の月範囲・経過日数を UTC で決めていたため毎月 1 日 0〜9 時（JST）に先月扱いになる問題を解消。方針は infrastructure.md「時刻の基準」
