@@ -36,7 +36,16 @@ class MyTweetsState {
   final List<Tweet> tweets;
   final bool isLoading;
   final bool hasMore;
+
+  /// 初回取得（まだ一度もサーバーから結果を受け取っていない）かどうか。
+  /// 骨組み（スケルトン）はこれが true の間だけ出す。
+  /// プルリフレッシュでは true に戻さない（更新中も今の一覧／空状態を出し続ける・#77）
   final bool isFirstFetch;
+
+  /// プルリフレッシュで先頭ページを取り直している最中か。
+  /// この間も tweets は保持したまま（新しいページが届いた時点で差し替える）
+  final bool isRefreshing;
+
   final String? error;
 
   /// 次ページ取得用カーソル（＝取得済み最後のツイートの投稿日時ISO8601）。
@@ -48,16 +57,21 @@ class MyTweetsState {
     required this.isLoading,
     required this.hasMore,
     required this.isFirstFetch,
+    this.isRefreshing = false,
     this.error,
     this.nextCursor,
   });
 
+  /// [clearError] を true にすると error を null に戻す
+  /// （`error: null` は「変更なし」扱いになるため、明示的に消すためのフラグ）
   MyTweetsState copyWith({
     List<Tweet>? tweets,
     bool? isLoading,
     bool? hasMore,
     bool? isFirstFetch,
+    bool? isRefreshing,
     String? error,
+    bool clearError = false,
     String? nextCursor,
   }) {
     return MyTweetsState(
@@ -65,7 +79,8 @@ class MyTweetsState {
       isLoading: isLoading ?? this.isLoading,
       hasMore: hasMore ?? this.hasMore,
       isFirstFetch: isFirstFetch ?? this.isFirstFetch,
-      error: error ?? this.error,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
+      error: clearError ? null : (error ?? this.error),
       nextCursor: nextCursor ?? this.nextCursor,
     );
   }
@@ -109,14 +124,14 @@ class MyTweetsNotifier extends StateNotifier<MyTweetsState> {
         state = state.copyWith(
           hasMore: false,
           isFirstFetch: false,
-          error: null,
+          clearError: true,
         );
       } else {
         state = state.copyWith(
           tweets: [...state.tweets, ...newTweetsList],
           hasMore: newTweetsList.length >= _pageSize,
           isFirstFetch: false,
-          error: null,
+          clearError: true,
           // 次ページは「今回取得した最後のツイートより前」を取りに行く
           nextCursor: newTweetsList.last.tweetedDate.toIso8601String(),
         );
@@ -138,14 +153,42 @@ class MyTweetsNotifier extends StateNotifier<MyTweetsState> {
   }
 
   /// ツイート一覧を更新（プルリフレッシュ用）
-  Future<void> refresh() async {
-    state = const MyTweetsState(
-      tweets: [],
-      isLoading: false,
-      hasMore: true,
-      isFirstFetch: true,
-    );
-    await _fetchTweets();
+  ///
+  /// 表示中の一覧（または空状態）はそのまま残し、先頭ページを取り直して
+  /// 届いた時点で差し替える（tweets を先に空にしない・isFirstFetch も立てない＝骨組みを出さない・#77）。
+  /// 取得に失敗した場合は以前の一覧を保持したまま false を返す
+  /// （呼び出し側で SnackBar 等で知らせる。一覧をエラー表示に置き換えない）。
+  Future<bool> refresh() async {
+    // 初回取得や追加読込が進行中なら重ねて取りに行かない（進行中の結果がそのまま反映される）
+    if (_isLoading) return true;
+
+    _isLoading = true;
+    state = state.copyWith(isRefreshing: true);
+
+    try {
+      final tweets = await _getUserTweetsUseCase.execute(
+        userId,
+        cursor: null,
+        limit: _pageSize,
+      );
+
+      state = MyTweetsState(
+        tweets: tweets,
+        isLoading: false,
+        hasMore: tweets.length >= _pageSize,
+        isFirstFetch: false,
+        isRefreshing: false,
+        error: null,
+        nextCursor:
+            tweets.isEmpty ? null : tweets.last.tweetedDate.toIso8601String(),
+      );
+      return true;
+    } catch (_) {
+      state = state.copyWith(isRefreshing: false);
+      return false;
+    } finally {
+      _isLoading = false;
+    }
   }
 
   /// ツイートをクリア
@@ -172,7 +215,8 @@ final myTweetsProvider = StateNotifierProvider.family<
 
 /// 自分のツイートローディング状態Provider
 ///
-/// ツイート読み込み状態を取得
+/// 「初回読込中（まだ一度もデータを受け取っていない）」かどうかを返す。
+/// プルリフレッシュ中は true にならない（isRefreshing を見ること）
 final isMyTweetsLoadingProvider =
     Provider.family<bool, String>((ref, userId) {
   final tweetsState = ref.watch(myTweetsProvider(userId));
