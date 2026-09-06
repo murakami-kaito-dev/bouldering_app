@@ -24,6 +24,7 @@ class UserNotifier extends StateNotifier<AsyncValue<User?>> {
   final UpdateUserProfileUseCase _updateProfileUseCase;
   final UpdateUserIconUseCase _updateIconUseCase;
   final UpdateUserEmailUseCase _updateEmailUseCase;
+  final RequestEmailVerificationUseCase _requestEmailVerificationUseCase;
   final DeleteUserUseCase _deleteUserUseCase;
 
   /// コンストラクタ
@@ -40,6 +41,7 @@ class UserNotifier extends StateNotifier<AsyncValue<User?>> {
     this._updateProfileUseCase,
     this._updateIconUseCase,
     this._updateEmailUseCase,
+    this._requestEmailVerificationUseCase,
     this._deleteUserUseCase,
   ) : super(const AsyncValue.data(null));
 
@@ -286,6 +288,25 @@ class UserNotifier extends StateNotifier<AsyncValue<User?>> {
   /// - 本人確認（確認メールのリンク押下）が済んだメールだけを渡すこと。
   ///   バックエンドも Firebase トークンの確認済みメールしか保存しない
   /// - 別アカウントで登録済みの場合は ValidationException(EMAIL_ALREADY_REGISTERED)
+  /// 通知用メールアドレスの登録申請（確認メール送信）。'sent' / 'already_registered'
+  Future<String> requestEmailVerification(String uid, String email) =>
+      _requestEmailVerificationUseCase.execute(uid, email);
+
+  /// 画面を「読込中」にせずにユーザー情報を取り直す
+  ///
+  /// 確認メールのリンク押下は DB 側だけで完結するので、設定画面を開いたときや
+  /// アプリ復帰時にこれで最新（登録済みのメール等）へ揃える。失敗しても現状維持
+  Future<void> refreshQuietly() async {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    try {
+      final user = await _loginUseCase.execute(current.id);
+      state = AsyncValue.data(user);
+    } catch (_) {
+      // 通信断などは無視（次の機会に再取得）
+    }
+  }
+
   Future<void> updateEmailByUid(String uid, String? newEmail) async {
     final success = await _updateEmailUseCase.execute(uid, newEmail);
     if (!success) {
@@ -311,6 +332,8 @@ final userProvider =
   final updateProfileUseCase = ref.read(updateUserProfileUseCaseProvider);
   final updateIconUseCase = ref.read(updateUserIconUseCaseProvider);
   final updateEmailUseCase = ref.read(updateUserEmailUseCaseProvider);
+  final requestEmailVerificationUseCase =
+      ref.read(requestEmailVerificationUseCaseProvider);
   final deleteUserUseCase = ref.read(deleteUserUseCaseProvider);
 
   return UserNotifier(
@@ -319,6 +342,7 @@ final userProvider =
     updateProfileUseCase,
     updateIconUseCase,
     updateEmailUseCase,
+    requestEmailVerificationUseCase,
     deleteUserUseCase,
   );
 });

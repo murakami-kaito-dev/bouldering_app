@@ -61,9 +61,6 @@ abstract class AuthService {
   /// サインアウト
   Future<void> signOut();
 
-  /// メールアドレスの本人確認メールを送る（リンク押下で Firebase アカウントの email が確定する）
-  Future<void> verifyBeforeUpdateEmail({required String newEmail});
-
   /// アカウント削除（Firebase 側）
   Future<void> deleteAccount();
 }

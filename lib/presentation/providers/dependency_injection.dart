@@ -277,6 +277,13 @@ final updateUserEmailUseCaseProvider = Provider<UpdateUserEmailUseCase>((ref) {
   return UpdateUserEmailUseCase(userRepository);
 });
 
+final requestEmailVerificationUseCaseProvider =
+    Provider<RequestEmailVerificationUseCase>((ref) {
+  final userRepository = ref.read(userRepositoryProvider);
+
+  return RequestEmailVerificationUseCase(userRepository);
+});
+
 /// ジム関連ユースケースProvider
 final searchGymsUseCaseProvider = Provider<SearchGymsUseCase>((ref) {
   final gymRepository = ref.read(gymRepositoryProvider);

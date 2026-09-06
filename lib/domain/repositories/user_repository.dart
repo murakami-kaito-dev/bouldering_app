@@ -22,6 +22,8 @@ abstract class UserRepository {
   Future<String?> uploadUserIcon(String userId, String imagePath);
   /// [email] が null なら未登録に戻す
   Future<bool> updateUserEmail(String userId, String? email);
+  /// 通知用メールの登録申請（確認メール送信）。'sent' / 'already_registered'
+  Future<String> requestEmailVerification(String userId, String email);
   Future<bool> deleteUser(String userId);
   
   /// ユーザーの月間統計情報を取得

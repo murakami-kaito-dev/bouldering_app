@@ -440,10 +440,14 @@ class SettingsPage extends ConsumerWidget {
   /// 通知用メールアドレスの登録・変更・削除
   Future<void> _showEmailDialog(
       BuildContext context, WidgetRef ref, User user) async {
+    // 確認リンクの押下は DB 側だけで完結するので、開く前に最新の登録状態へ揃える
+    await ref.read(userProvider.notifier).refreshQuietly();
+    if (!context.mounted) return;
+    final current = ref.read(userProvider).valueOrNull ?? user;
     final result = await showDialog<_EmailDialogResult>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => _EmailRegisterDialog(currentEmail: user.email),
+      builder: (_) => _EmailRegisterDialog(currentEmail: current.email),
     );
     if (result == null || !context.mounted) return;
 
@@ -464,7 +468,7 @@ class SettingsPage extends ConsumerWidget {
         case EmailRegistrationResult.registered:
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('メールアドレスを登録しました'),
+              content: Text('このメールアドレスは登録済みです'),
               backgroundColor: AppColors.holdGreen,
             ),
           );
@@ -474,8 +478,8 @@ class SettingsPage extends ConsumerWidget {
             context,
             title: '確認メールを送信しました',
             message: '「${result.email}」宛てに確認メールを送りました。\n'
-                'メール内のリンクを押すと本人確認が完了します。\n'
-                'その後、一度ログアウトされるので、再度ログインすると登録が完了します。\n\n'
+                'メール内のリンクを開くと登録が完了します（アプリでの操作は不要です）。\n'
+                '登録後、この設定画面を開き直すと反映されます。\n\n'
                 '届かない場合は迷惑メールフォルダも確認してください。',
           );
       }
@@ -514,8 +518,14 @@ class SettingsPage extends ConsumerWidget {
     if (s.contains('INVALID_EMAIL_FORMAT') || s.contains('形式')) {
       return '正しいメールアドレス形式で入力してください。';
     }
-    if (s.contains('キャンセル')) {
-      return '本人確認がキャンセルされました。';
+    if (s.contains('TOO_MANY_REQUESTS')) {
+      return '確認メールを送ったばかりです。1分ほど待ってからもう一度お試しください。';
+    }
+    if (s.contains('EMAIL_VERIFICATION_UNAVAILABLE')) {
+      return 'メールアドレス登録は現在準備中です。';
+    }
+    if (s.contains('MAIL_SEND_FAILED')) {
+      return '確認メールを送信できませんでした。時間をおいてお試しください。';
     }
     if (s.contains('network')) {
       return AuthNotifier.networkRequestFailedMessage;
@@ -592,8 +602,7 @@ class _EmailRegisterDialogState extends State<_EmailRegisterDialog> {
           children: [
             Text(
               'お知らせの受け取りに使います（任意）。\n'
-              '入力したアドレスに確認メールを送り、リンクを押すと登録が完了します。\n'
-              '本人確認のため、続けて Google / Apple のログイン画面が表示されることがあります。',
+              '入力したアドレスに確認メールを送り、メール内のリンクを開くと登録が完了します。',
               style: AppText.body(size: 13),
             ),
             const SizedBox(height: 16),

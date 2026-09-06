@@ -103,13 +103,6 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
-  Future<void> verifyBeforeUpdateEmail({required String newEmail}) async {
-    final user = _firebaseAuth.currentUser;
-    if (user == null) throw Exception('ログインしていません');
-    await user.verifyBeforeUpdateEmail(newEmail);
-  }
-
-  @override
   Future<void> deleteAccount() async {
     final user = _firebaseAuth.currentUser;
     if (user == null) throw Exception('ログインしていません');
