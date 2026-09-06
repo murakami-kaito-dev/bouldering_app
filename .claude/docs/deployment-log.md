@@ -18,6 +18,17 @@
 
 ---
 
+## 2026-09-06 — 通知タブ（Issue #81）実装（ブランチ `feature/notifications`・dev DB のみ変更・デプロイなし）
+
+- **目的**: Bottom Navigation に「通知」タブを追加し、いいね（#17）・コメント／返信（#19）のイベントからアプリ内通知を作る。右の「お知らせ」（運営・ジム発信）は DB・API・画面まで実装しつつ、当面は `FeatureFlags.showAnnouncementsTab = false` で隠す。契約は `social-spec.md`「3. 通知」
+- **DB（dev Supabase）**: `backend/migrations/2026-09-06_notifications.sql`（`notifications`＋部分ユニーク索引、`announcements`。冪等）を **dev に適用済み**（2026-09-06、psql）。**prod は未適用**（likes / comments の後に同じファイルを流す）
+- **バックエンド**: `services/notificationService.ts` が `TweetLiked` / `TweetUnliked` / `CommentCreated` を購読（`dependencies.ts` の `setupEventSystem()` で登録）し、投稿者へ `like`／`comment`、親コメント主へ `reply` を作る（自分自身・ブロック関係は作らない。投稿者＝親コメント主なら `reply` 1 件だけ。解除で `like` を削除）。`routes/notifications.ts`（`GET /api/users/:id/notifications`・`/unread-count`・`POST /read`。要認証・本人のみ。`/api/users` の後段にマウント）、`routes/announcements.ts`（`GET /api/announcements`。任意認証で公式＋ホームジム・イキタイジム）。いいねの集約は「同じツイート × JST の同じ日」で 1 行（代表行の `created_at` をカーソルに、重複なくページングできる決定的な区切り）。台帳用メモ `backend/docs-notifications.md`
+- **アプリ**: 5 タブ（ホーム／ボル活／投稿／通知／マイページ。`app.dart`。テープ下線は `_pages.length` で割るので 5 分割に自動追従）、通知アイコンに未読バッジ（`unreadCountProvider`。起動＝ユーザー復元完了時・タブ表示時・アプリ復帰時に取得、ポーリングなし）。`NotificationPage`（通知｜お知らせの `SwitcherTab`、フラグで通知のみ）、`NotificationRow`（重ねたアイコン最大 6・一文・時間・投稿の引用。タップで `TweetDetailPage`。表示時に既読化してバッジを消す。未読の背景色は次の読み直しまで残す）、骨組みは初回のみ、引っ張って更新、空は「通知はまだありません」、未ログインはログイン導線。お知らせは `AnnouncementRow`（公式／ジムアイコン・タイトル・本文・画像・`url_launcher` のリンク）。前回タブの保存キーを `last_tab_index_v2` に変更（index 3 の意味が変わったため）
+- **検証**: `tsc --noEmit` OK／`flutter analyze` 54 件（基準値と同じ・新規指摘なし）／ts-node のサービス結合テスト 20 項目すべて OK（いいね→通知、解除→削除、2 いいね→1 行集約、コメント・返信・重複排除、カーソル、既読、ブロック除外、お知らせの対象範囲。一時データは削除済み）／ローカル HTTP: 401・400・お知らせ 200 を確認。**未実施**: Firebase トークン付き HTTP と実機（fdev）での通知バッジ〜遷移の確認
+- **デプロイ**: なし（Cloud Run / Artifact Registry 変化なし）
+
+---
+
 ## 2026-09-06 — いいね機能（Issue #17）実装（ブランチ `feature/likes`・dev DB のみ変更・デプロイなし）
 
 - **目的**: ボル活カードに「ハート＋件数」を付け、いいね／解除できるようにする（サウナイキタイ方式）。コメント（#19）・通知（#81）と同時並行の契約 `social-spec.md` に従う
