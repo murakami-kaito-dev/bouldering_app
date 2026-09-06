@@ -11,6 +11,7 @@ import '../../pages/report_page.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/app_text.dart';
 import 'image_viewer.dart';
+import 'like_button.dart';
 
 class BoulLog extends ConsumerStatefulWidget {
   final String userId;
@@ -26,6 +27,12 @@ class BoulLog extends ConsumerStatefulWidget {
   final VoidCallback? onBlockSuccess; // ブロック成功時のコールバック
   final String? contextPrefix; // Hero tag用のコンテキストプレフィックス
 
+  // ---- 操作行（本文の下: 左から「ハート＋数」「吹き出し＋数」）----
+  final int likedCount; // いいね数（API の liked_counts）
+  final bool likedByMe; // ログイン中ユーザーがいいね済みか（API の liked_by_me）
+  final int? commentCount; // コメント数（コメント機能チームが差し込む枠。現状は未表示）
+  final VoidCallback? onCommentTap; // 吹き出しタップ時（同上）
+
   const BoulLog({
     super.key,
     required this.userId,
@@ -40,6 +47,10 @@ class BoulLog extends ConsumerStatefulWidget {
     this.tweetId,
     this.onBlockSuccess, // ブロック成功時の処理を親から受け取る
     this.contextPrefix, // コンテキストを区別するためのプレフィックス
+    this.likedCount = 0,
+    this.likedByMe = false,
+    this.commentCount,
+    this.onCommentTap,
   });
 
   @override
@@ -421,6 +432,25 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                       },
                     ),
                   ),
+
+                // 操作行（いいね／コメント）。tweetId が無いプレビュー等では出さない
+                if (widget.tweetId != null) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      LikeButton(
+                        tweetId: widget.tweetId!,
+                        gymId: widget.gymId,
+                        authorUserId: widget.userId,
+                        liked: widget.likedByMe,
+                        count: widget.likedCount,
+                      ),
+                      const SizedBox(width: 8),
+                      // ここに「吹き出し＋コメント数」（comment_count_button.dart）が入る。
+                      // commentCount / onCommentTap を受け取る枠だけ用意し、現状は何も描画しない
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
