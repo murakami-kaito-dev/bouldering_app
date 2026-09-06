@@ -161,6 +161,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                       tweetId: tweet.id,
                       likedCount: tweet.likedCount,
                       likedByMe: tweet.likedByMe,
+                      commentCount: tweet.commentCount, // [comments]
                       content: tweet.content,
                       mediaUrls: tweet.mediaUrls,
                       contextPrefix: 'my_tweets', // マイツイート画面用

@@ -124,6 +124,28 @@ class FavoriteUserTweetsNotifier
     );
   }
 
+  /// コメント数の同期（スレッド画面で投稿／削除したとき。+1 / -1）
+  ///
+  /// 同じツイートが他の一覧にも載っていても件数が食い違わないように、
+  /// tweet_comments_provider.dart の syncTweetCommentCount から呼ばれる
+  void updateCommentCount(int tweetId, int delta) {
+    if (!state.favoriteUserTweets.any((t) => t.id == tweetId)) return;
+    final updated = [
+      for (final t in state.favoriteUserTweets)
+        t.id == tweetId
+            ? t.copyWith(
+                commentCount:
+                    (t.commentCount + delta) < 0 ? 0 : t.commentCount + delta)
+            : t,
+    ];
+    state = FavoriteUserTweetsState(
+      favoriteUserTweets: updated,
+      hasMore: state.hasMore,
+      isFirstFetch: state.isFirstFetch,
+      nextCursor: state.nextCursor,
+    );
+  }
+
   /// Pull-to-Refresh対応：お気に入りユーザーのツイート一覧を初期化して再取得
   Future<void> refreshTweets() async {
     if (_isLoading) return;

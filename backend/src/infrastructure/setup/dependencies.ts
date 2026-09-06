@@ -14,6 +14,8 @@ import { PostgresBlockRepository } from '../repositories/PostgresBlockRepository
 import { BlockService } from '../../services/blockService';
 import { PostgresLikeRepository } from '../repositories/PostgresLikeRepository';
 import { LikeService } from '../../services/likeService';
+import { PostgresCommentRepository } from '../repositories/PostgresCommentRepository';
+import { CommentService } from '../../services/commentService';
 import logger from '../../utils/logger';
 
 /**
@@ -258,6 +260,38 @@ export function getBlockService(): BlockService {
   return blockServiceInstance;
 }
 
+let commentServiceInstance: CommentService | null = null;
+let commentRepository: PostgresCommentRepository | null = null;
+
+function getCommentRepository(): PostgresCommentRepository {
+  if (!commentRepository) {
+    commentRepository = new PostgresCommentRepository();
+  }
+  return commentRepository;
+}
+
+/**
+ * CommentService（スレッド機能）の依存性注入済みインスタンスを取得
+ *
+ * コメント作成時に CommentCreatedEvent を発行するのでイベントバスを注入する
+ */
+export function getCommentService(): CommentService {
+  if (commentServiceInstance) {
+    return commentServiceInstance;
+  }
+
+  const eventBusInstance = setupEventSystem();
+  const commentRepo = getCommentRepository();
+  commentServiceInstance = new CommentService(commentRepo, eventBusInstance);
+
+  logger.info('CommentService initialized with Clean Architecture', {
+    hasEventBus: true,
+    hasRepository: true
+  });
+
+  return commentServiceInstance;
+}
+
 /**
  * LikeServiceの依存性注入済みインスタンスを取得
  */
@@ -298,6 +332,7 @@ export function initializeApplication(): void {
   getReportService();
   getBlockService();
   getLikeService();
+  getCommentService();
   
   logger.info('Application dependencies initialized successfully');
 }

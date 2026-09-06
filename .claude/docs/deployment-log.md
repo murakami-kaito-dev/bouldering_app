@@ -26,6 +26,14 @@
 - **アプリ**: `Tweet.likedByMe`、`LikeResult`、`LikeTweetUseCase`、datasource を新 API（`/like`、トークン認証）へ差し替え（旧 `/likes`＋user_id ボディの死にコードと「自分の投稿へのいいね禁止」を撤去＝仕様どおり自分の投稿にも可）。`LikeButton`（楽観的更新→失敗で戻す＋SnackBar、未ログインはログイン導線ダイアログ、いいね済み＝ホールド赤）。`BoulLog` に操作行（左ハート、右にコメント枠 `commentCount`/`onCommentTap` を受けるだけで未描画）。5 つの一覧 Notifier に `updateLike` を追加し `tweet_like_sync.dart` で生きている一覧だけ揃える
 - **検証**: `tsc` OK／`flutter analyze` 54 件＝ベースラインと同数（新規指摘なし）／ローカル `npm run dev` で未認証 GET が `liked_by_me: false`・like API がトークン無し 401／dev DB へのリポジトリ結合テストで冪等性・カウンタ整合・各一覧の `liked_by_me` を確認（詳細は `backend/docs-likes.md`）
 - **未実施**: 実機（fdev）でのいいね操作・楽観的更新の見た目確認、ID トークン付き HTTP テスト、API 一覧スプレッドシートへの転記（行は `backend/docs-likes.md`）、dev Cloud Run デプロイ
+## 2026-09-06 — スレッド（コメント・返信）機能の実装（Issue #19・ブランチ `feature/comment-threads`・dev DB のみ変更、デプロイなし）
+
+- **目的**: ボル活へのコメントと返信（サウナイキタイ方式の 2 段表示）。「途中のコメントを削除しても下の返信は残したい」に論理削除で答える（仕様: `social-spec.md`「2. スレッド」）
+- **DB（dev Supabase）**: `backend/migrations/2026-09-06_comments.sql` を適用（`tweet_comments` 新設・`idx_tweet_comments_tweet`・`tweets.comment_counts` 追加）。**prod 未適用**
+- **バックエンド**: `routes/comments.ts`（GET/POST `/api/tweets/:id/comments`、DELETE `/api/comments/:id`）、`PostgresCommentRepository`、`commentService`、`domain/events/CommentCreatedEvent`。既存のツイート一覧・詳細に `comment_counts` を追加。台帳行は `backend/docs-comments.md`（スプレッドシートへの転記は未実施）
+- **アプリ**: `Tweet.commentCount`、`Comment` エンティティ〜ユースケース、`tweetCommentsProvider(tweetId)`、`TweetDetailPage`（スレッド画面）、`CommentCountButton`、各一覧 Notifier の `updateCommentCount`、`BoulLog` のカード本文タップ／吹き出しで詳細へ、`AppRoutes.tweetDetail` を登録
+- **検証**: `tsc --noEmit` OK／ローカル起動（`ts-node`・dev DB）で root→reply→reply-to-reply を作り、真ん中を削除しても 3 つ目が返る・`comment_counts` が 3→2・403/401/400/404 を curl で確認（詳細は `backend/docs-comments.md`）。`flutter analyze` は baseline と同じ 54 件（新規指摘なし）。**実機・シミュレータでの画面確認は未実施**（ディスク残量のため build 不可）
+- **デプロイ**: なし（dev Cloud Run rev 00067 のまま）。マージ後に dev へデプロイし、実機で確認する
 
 ---
 

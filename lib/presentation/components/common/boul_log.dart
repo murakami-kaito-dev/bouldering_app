@@ -12,6 +12,7 @@ import '../../theme/app_tokens.dart';
 import '../../theme/app_text.dart';
 import 'image_viewer.dart';
 import 'like_button.dart';
+import 'comment_count_button.dart';
 
 class BoulLog extends ConsumerStatefulWidget {
   final String userId;
@@ -30,8 +31,9 @@ class BoulLog extends ConsumerStatefulWidget {
   // ---- 操作行（本文の下: 左から「ハート＋数」「吹き出し＋数」）----
   final int likedCount; // いいね数（API の liked_counts）
   final bool likedByMe; // ログイン中ユーザーがいいね済みか（API の liked_by_me）
-  final int? commentCount; // コメント数（コメント機能チームが差し込む枠。現状は未表示）
-  final VoidCallback? onCommentTap; // 吹き出しタップ時（同上）
+  final int? commentCount; // コメント数（null なら 0 表示）
+  final VoidCallback? onCommentTap; // 吹き出しタップ時の処理（省略時はスレッド画面へ）
+  final bool openDetailOnTap; // カード本文のタップでスレッド画面へ（スレッド画面自身では false）
 
   const BoulLog({
     super.key,
@@ -51,6 +53,7 @@ class BoulLog extends ConsumerStatefulWidget {
     this.likedByMe = false,
     this.commentCount,
     this.onCommentTap,
+    this.openDetailOnTap = true,
   });
 
   @override
@@ -73,6 +76,13 @@ class _BoulLogState extends ConsumerState<BoulLog> {
     if ((widget.mediaUrls != null && widget.mediaUrls!.isNotEmpty)) {
       _imageUrls = ImageUrlValidator.filterValidImageUrls(widget.mediaUrls!);
     }
+  }
+
+  // [comments] スレッド画面（コメント一覧）を開く
+  void _openThread() {
+    final id = widget.tweetId;
+    if (id == null) return;
+    NavigationHelper.toTweetDetail(context, id);
   }
 
   @override
@@ -104,15 +114,17 @@ class _BoulLogState extends ConsumerState<BoulLog> {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: AppColors.wareme,
-                backgroundImage: ImageUrlValidator.isValidImageUrl(widget.userIconUrl)
-                    ? ResizeImage(
-                        CachedNetworkImageProvider(widget.userIconUrl!),
-                        width: 144, // 表示48px × 最大DPR3
-                      )
-                    : null,
+                backgroundImage:
+                    ImageUrlValidator.isValidImageUrl(widget.userIconUrl)
+                        ? ResizeImage(
+                            CachedNetworkImageProvider(widget.userIconUrl!),
+                            width: 144, // 表示48px × 最大DPR3
+                          )
+                        : null,
                 child: ImageUrlValidator.isValidImageUrl(widget.userIconUrl)
                     ? null
-                    : const Icon(Icons.person, color: AppColors.sunabokori, size: 24),
+                    : const Icon(Icons.person,
+                        color: AppColors.sunabokori, size: 24),
               ),
               const SizedBox(width: 12),
 
@@ -123,7 +135,8 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        NavigationHelper.toOtherUserProfile(context, widget.userId);
+                        NavigationHelper.toOtherUserProfile(
+                            context, widget.userId);
                       },
                       child: Text(
                         widget.userName,
@@ -189,7 +202,8 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           ),
                           content: const Text(
                             "一度削除すると戻すことはできません．本当にこのボル活を削除しますか？\n",
-                            style: TextStyle(fontSize: 14, color: AppColors.chalk),
+                            style:
+                                TextStyle(fontSize: 14, color: AppColors.chalk),
                             textAlign: TextAlign.center,
                           ),
                           actionsAlignment: MainAxisAlignment.spaceBetween,
@@ -211,15 +225,17 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           ],
                         ),
                       );
-                      
+
                       // myUserId はこのブロックの外側で null チェック済みのため再チェック不要
                       if (shouldDelete == true) {
                         try {
-                          final deleteTweetUseCase = ref.read(deleteTweetUseCaseProvider);
-                          final success = await deleteTweetUseCase.execute(widget.tweetId!, myUserId);
-                          
+                          final deleteTweetUseCase =
+                              ref.read(deleteTweetUseCaseProvider);
+                          final success = await deleteTweetUseCase.execute(
+                              widget.tweetId!, myUserId);
+
                           if (!context.mounted) return;
-                          
+
                           if (success) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('削除しました')),
@@ -233,7 +249,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           }
                         } catch (e) {
                           if (!context.mounted) return;
-                          
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('削除に失敗しました: $e')),
                           );
@@ -270,7 +286,8 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           ),
                           content: const Text(
                             "このユーザーについて\n本当にブロックしてよろしいですか？\n",
-                            style: TextStyle(fontSize: 14, color: AppColors.chalk),
+                            style:
+                                TextStyle(fontSize: 14, color: AppColors.chalk),
                             textAlign: TextAlign.center,
                           ),
                           actionsAlignment: MainAxisAlignment.spaceBetween,
@@ -292,23 +309,25 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                           ],
                         ),
                       );
-                      
+
                       if (shouldBlock == true) {
                         try {
-                          await ref.read(blockProvider.notifier).blockUser(widget.userId);
-                          
+                          await ref
+                              .read(blockProvider.notifier)
+                              .blockUser(widget.userId);
+
                           if (!context.mounted) return;
-                          
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('ユーザーをブロックしました')),
                           );
-                          
+
                           // ブロック成功時、親コンポーネントに通知
                           // これにより、ツイート一覧が更新される
                           widget.onBlockSuccess?.call();
                         } catch (e) {
                           if (!context.mounted) return;
-                          
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('ブロックに失敗しました')),
                           );
@@ -329,7 +348,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                   },
                   itemBuilder: (context) {
                     final isMyTweet = widget.userId == myUserId;
-                    
+
                     return [
                       // 自分のツイートの場合は編集・削除を表示
                       if (isMyTweet) ...[
@@ -363,100 +382,111 @@ class _BoulLogState extends ConsumerState<BoulLog> {
           ),
           const SizedBox(height: 8),
 
-          Padding(
-            padding: const EdgeInsets.only(right: 6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 活動内容
-                if (widget.content.isNotEmpty) ...[
-                  Text(
-                    widget.content,
-                    style: AppText.body(size: 14),
-                  ),
-                  const SizedBox(height: 10),
-                ],
+          // [comments] 本文タップでスレッド画面へ（ジム名・ユーザー名・画像の各タップは内側が優先される）
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: widget.openDetailOnTap && widget.tweetId != null
+                ? _openThread
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 活動内容
+                  if (widget.content.isNotEmpty) ...[
+                    Text(
+                      widget.content,
+                      style: AppText.body(size: 14),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
 
-                // 画像がある場合だけ表示（横スクロール）
-                if (_imageUrls.isNotEmpty)
-                  SizedBox(
-                    height: 160,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _imageUrls.length,
-                      itemBuilder: (context, index) {
-                        final imageUrl = _imageUrls[index];
-                        return Padding(
-                          padding: EdgeInsets.only(
-                              right:
-                                  index != _imageUrls.length - 1 ? 8.0 : 0.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              // 画像拡大表示を開く
-                              ImageViewer.show(
-                                context: context,
-                                imageUrls: _imageUrls,
-                                initialIndex: index,
-                                heroTagPrefix: '${widget.contextPrefix ?? 'general'}_tweet_media_${widget.userId}_${widget.tweetId}',
-                              );
-                            },
-                            child: Hero(
-                              tag: '${widget.contextPrefix ?? 'general'}_tweet_media_${widget.userId}_${widget.tweetId}_$index',
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: CachedNetworkImage(
-                                  imageUrl: imageUrl,
-                                  width: 200,
-                                  height: 160,
-                                  fit: BoxFit.cover,
-                                  // memCacheWidth: 原寸(数MB級)をフルデコードするとメモリキャッシュから
-                                  // 即座に追い出され、画面を開き直すたびに再デコード＝ローディング表示になる。
-                                  // 表示200px×最大DPR3相当に縮小デコードしてキャッシュに乗せ続ける。
-                                  // （拡大表示のImageViewerは原寸デコードのままで別管理）
-                                  memCacheWidth: 600,
-                                  // スピナーは出さない: 静かな面→フェードイン
-                                  fadeInDuration:
-                                      const Duration(milliseconds: 200),
-                                  placeholder: (context, url) => Container(
-                                      color: AppColors.wareme),
-                                  errorWidget: (context, url, error) =>
-                                      Container(
-                                          color: AppColors.wareme,
-                                          child: const Icon(Icons.broken_image,
-                                              color: AppColors.sunabokori)),
+                  // 画像がある場合だけ表示（横スクロール）
+                  if (_imageUrls.isNotEmpty)
+                    SizedBox(
+                      height: 160,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _imageUrls.length,
+                        itemBuilder: (context, index) {
+                          final imageUrl = _imageUrls[index];
+                          return Padding(
+                            padding: EdgeInsets.only(
+                                right:
+                                    index != _imageUrls.length - 1 ? 8.0 : 0.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                // 画像拡大表示を開く
+                                ImageViewer.show(
+                                  context: context,
+                                  imageUrls: _imageUrls,
+                                  initialIndex: index,
+                                  heroTagPrefix:
+                                      '${widget.contextPrefix ?? 'general'}_tweet_media_${widget.userId}_${widget.tweetId}',
+                                );
+                              },
+                              child: Hero(
+                                tag:
+                                    '${widget.contextPrefix ?? 'general'}_tweet_media_${widget.userId}_${widget.tweetId}_$index',
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: CachedNetworkImage(
+                                    imageUrl: imageUrl,
+                                    width: 200,
+                                    height: 160,
+                                    fit: BoxFit.cover,
+                                    // memCacheWidth: 原寸(数MB級)をフルデコードするとメモリキャッシュから
+                                    // 即座に追い出され、画面を開き直すたびに再デコード＝ローディング表示になる。
+                                    // 表示200px×最大DPR3相当に縮小デコードしてキャッシュに乗せ続ける。
+                                    // （拡大表示のImageViewerは原寸デコードのままで別管理）
+                                    memCacheWidth: 600,
+                                    // スピナーは出さない: 静かな面→フェードイン
+                                    fadeInDuration:
+                                        const Duration(milliseconds: 200),
+                                    placeholder: (context, url) =>
+                                        Container(color: AppColors.wareme),
+                                    errorWidget: (context, url, error) =>
+                                        Container(
+                                            color: AppColors.wareme,
+                                            child: const Icon(
+                                                Icons.broken_image,
+                                                color: AppColors.sunabokori)),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                // 操作行（いいね／コメント）。tweetId が無いプレビュー等では出さない
-                if (widget.tweetId != null) ...[
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      LikeButton(
-                        tweetId: widget.tweetId!,
-                        gymId: widget.gymId,
-                        authorUserId: widget.userId,
-                        liked: widget.likedByMe,
-                        count: widget.likedCount,
+                          );
+                        },
                       ),
-                      const SizedBox(width: 8),
-                      // ここに「吹き出し＋コメント数」（comment_count_button.dart）が入る。
-                      // commentCount / onCommentTap を受け取る枠だけ用意し、現状は何も描画しない
-                    ],
-                  ),
+                    ),
+
+                  // 操作行（いいね／コメント）。tweetId が無いプレビュー等では出さない
+                  if (widget.tweetId != null) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        LikeButton(
+                          tweetId: widget.tweetId!,
+                          gymId: widget.gymId,
+                          authorUserId: widget.userId,
+                          liked: widget.likedByMe,
+                          count: widget.likedCount,
+                        ),
+                        const SizedBox(width: 8),
+                        CommentCountButton(
+                          count: widget.commentCount ?? 0,
+                          onTap: widget.onCommentTap ?? _openThread,
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
+          ), // 本文タップ用 GestureDetector ここまで
         ],
       ),
     );
   }
-
 }

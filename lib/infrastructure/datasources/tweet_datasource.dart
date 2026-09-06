@@ -435,6 +435,7 @@ class TweetDataSource {
       content: tweetData['tweet_contents'] ?? '',
       likedCount: tweetData['liked_counts'] ?? 0,
       likedByMe: tweetData['liked_by_me'] == true,
+      commentCount: tweetData['comment_counts'] ?? 0,
       movieUrl: tweetData['movie_url'],
       gymName: tweetData['gym_name'] ?? '',
       prefecture: tweetData['prefecture'] ?? '',
