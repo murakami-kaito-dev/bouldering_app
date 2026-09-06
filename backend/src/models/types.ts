@@ -23,6 +23,7 @@ export interface Tweet {
   visited_date: Date;
   tweeted_date: Date;
   liked_counts: number;
+  comment_counts: number; // 非削除コメント数（スレッド機能）
   movie_url?: string;
 }
 

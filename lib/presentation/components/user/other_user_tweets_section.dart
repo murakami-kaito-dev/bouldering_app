@@ -151,6 +151,7 @@ class _OtherUserTweetsSectionState extends ConsumerState<OtherUserTweetsSection>
             content: tweet.content,
             mediaUrls: tweet.mediaUrls,
             tweetId: tweet.id,
+            commentCount: tweet.commentCount, // [comments]
             contextPrefix: 'profile', // プロフィール画面用のプレフィックス
           );
         },

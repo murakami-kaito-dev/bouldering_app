@@ -9,6 +9,9 @@ class Tweet {
   final int gymId;
   final String content;
   final int likedCount;
+
+  /// コメント数（非削除。バックエンド `comment_counts`）
+  final int commentCount;
   final String? movieUrl;
   final String gymName;
   final String prefecture;
@@ -24,6 +27,7 @@ class Tweet {
     required this.gymId,
     required this.content,
     required this.likedCount,
+    this.commentCount = 0,
     this.movieUrl,
     required this.gymName,
     required this.prefecture,
@@ -62,6 +66,7 @@ class Tweet {
     int? gymId,
     String? content,
     int? likedCount,
+    int? commentCount,
     String? movieUrl,
     String? gymName,
     String? prefecture,
@@ -77,6 +82,7 @@ class Tweet {
       gymId: gymId ?? this.gymId,
       content: content ?? this.content,
       likedCount: likedCount ?? this.likedCount,
+      commentCount: commentCount ?? this.commentCount,
       movieUrl: movieUrl ?? this.movieUrl,
       gymName: gymName ?? this.gymName,
       prefecture: prefecture ?? this.prefecture,
@@ -108,6 +114,7 @@ class Tweet {
       gymId: json['gym_id'] ?? 0,
       content: json['tweet_contents'] ?? json['content'] ?? '',
       likedCount: json['liked_counts'] ?? json['liked_count'] ?? 0,
+      commentCount: json['comment_counts'] ?? json['comment_count'] ?? 0,
       movieUrl: json['movie_url'],
       gymName: json['gym_name'] ?? '',
       prefecture: json['prefecture'] ?? '',
@@ -129,6 +136,7 @@ class Tweet {
       'gym_id': gymId,
       'content': content,
       'liked_count': likedCount,
+      'comment_count': commentCount,
       'movie_url': movieUrl,
       'gym_name': gymName,
       'prefecture': prefecture,

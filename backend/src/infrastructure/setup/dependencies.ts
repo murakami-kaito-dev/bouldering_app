@@ -12,6 +12,8 @@ import { PostgresReportRepository } from '../repositories/PostgresReportReposito
 import { ReportService } from '../../services/reportService';
 import { PostgresBlockRepository } from '../repositories/PostgresBlockRepository';
 import { BlockService } from '../../services/blockService';
+import { PostgresCommentRepository } from '../repositories/PostgresCommentRepository';
+import { CommentService } from '../../services/commentService';
 import logger from '../../utils/logger';
 
 /**
@@ -36,6 +38,7 @@ let gymServiceInstance: GymService | null = null;
 let favoriteServiceInstance: FavoriteService | null = null;
 let reportServiceInstance: ReportService | null = null;
 let blockServiceInstance: BlockService | null = null;
+let commentServiceInstance: CommentService | null = null;
 
 // リポジトリインスタンス
 let tweetRepository: PostgresTweetRepository | null = null;
@@ -44,6 +47,7 @@ let gymRepository: PostgresGymRepository | null = null;
 let favoriteRepository: PostgresFavoriteRepository | null = null;
 let reportRepository: PostgresReportRepository | null = null;
 let blockRepository: PostgresBlockRepository | null = null;
+let commentRepository: PostgresCommentRepository | null = null;
 
 /**
  * リポジトリインスタンスを取得
@@ -88,6 +92,13 @@ function getBlockRepository(): PostgresBlockRepository {
     blockRepository = new PostgresBlockRepository();
   }
   return blockRepository;
+}
+
+function getCommentRepository(): PostgresCommentRepository {
+  if (!commentRepository) {
+    commentRepository = new PostgresCommentRepository();
+  }
+  return commentRepository;
 }
 
 /**
@@ -249,6 +260,28 @@ export function getBlockService(): BlockService {
 
 
 /**
+ * CommentService（スレッド機能）の依存性注入済みインスタンスを取得
+ *
+ * コメント作成時に CommentCreatedEvent を発行するのでイベントバスを注入する
+ */
+export function getCommentService(): CommentService {
+  if (commentServiceInstance) {
+    return commentServiceInstance;
+  }
+
+  const eventBusInstance = setupEventSystem();
+  const commentRepo = getCommentRepository();
+  commentServiceInstance = new CommentService(commentRepo, eventBusInstance);
+
+  logger.info('CommentService initialized with Clean Architecture', {
+    hasEventBus: true,
+    hasRepository: true
+  });
+
+  return commentServiceInstance;
+}
+
+/**
  * アプリケーション初期化
  * Express アプリケーション起動時に呼び出す
  */
@@ -265,6 +298,7 @@ export function initializeApplication(): void {
   getFavoriteService();
   getReportService();
   getBlockService();
+  getCommentService();
   
   logger.info('Application dependencies initialized successfully');
 }

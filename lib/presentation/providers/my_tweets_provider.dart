@@ -137,6 +137,23 @@ class MyTweetsNotifier extends StateNotifier<MyTweetsState> {
     _fetchTweets();
   }
 
+  /// コメント数の同期（スレッド画面で投稿／削除したとき。+1 / -1）
+  ///
+  /// 同じツイートが他の一覧にも載っていても件数が食い違わないように、
+  /// tweet_comments_provider.dart の syncTweetCommentCount から呼ばれる
+  void updateCommentCount(int tweetId, int delta) {
+    if (!state.tweets.any((t) => t.id == tweetId)) return;
+    final updated = [
+      for (final t in state.tweets)
+        t.id == tweetId
+            ? t.copyWith(
+                commentCount:
+                    (t.commentCount + delta) < 0 ? 0 : t.commentCount + delta)
+            : t,
+    ];
+    state = state.copyWith(tweets: updated);
+  }
+
   /// ツイート一覧を更新（プルリフレッシュ用）
   Future<void> refresh() async {
     state = const MyTweetsState(
