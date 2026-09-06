@@ -9,6 +9,14 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
+## 2026-09-07 — Web 版の追加対応（PR #73 への修正＋プロフィール編集 PR #85）
+
+- **feature/web-app（#73 に追加）**: 地図を Google Maps 標準（ライト）スタイルに戻す／一覧カードの写真枠に出ていた種別テープ「BOULDER」を削除／一覧内の広告枠（AD · IN-FEED）を削除／**一覧カードにジム写真を表示**（`GymThumb`: 画面に入ったカードだけ BFF `GET /api/gyms/[id]/photos?limit=1` から 1 枚を遅延取得、サーバー側 1 日キャッシュ、Google 由来は「Google」表示＝Places API の出典表示義務）
+- **feature/web-profile-edit（PR #85・ベース feature/web-app）**: `/me/settings` でプロフィール編集（アイコン・名前・性別・生年月日・ボルダリングデビュー・ホームジム・好きなジム・自己紹介。メールは表示のみ）。`PATCH /api/me/profile` の BFF が変更項目だけをバックエンドの各エンドポイントへ振り分け。アイコンは署名 URL（kind: icon）→ GCS 直接 PUT（実行 SA の Token Creator 付与までは「準備中」）
+- Web の dev デプロイ（feature/web-app）: 結果は本項に追記
+
+---
+
 ## イメージタグ付けルール（2026-08-29 制定）
 
 - **prod（既存ルールを維持）**: `supabase-vX.Y.Z`（アプリのマーケティングバージョンと一致させる）。App Storeリジェクト時は `-rejected1, -rejected2, …` を採番し、承認後に正規タグへ付け替える。
