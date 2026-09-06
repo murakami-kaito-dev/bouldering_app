@@ -159,6 +159,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                       gymName: tweet.gymName,
                       prefecture: tweet.prefecture,
                       tweetId: tweet.id,
+                      commentCount: tweet.commentCount, // [comments]
                       content: tweet.content,
                       mediaUrls: tweet.mediaUrls,
                       contextPrefix: 'my_tweets', // マイツイート画面用

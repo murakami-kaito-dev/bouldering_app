@@ -11,6 +11,7 @@ import '../../pages/report_page.dart';
 import '../../theme/app_tokens.dart';
 import '../../theme/app_text.dart';
 import 'image_viewer.dart';
+import 'comment_count_button.dart'; // [comments]
 
 class BoulLog extends ConsumerStatefulWidget {
   final String userId;
@@ -26,6 +27,11 @@ class BoulLog extends ConsumerStatefulWidget {
   final VoidCallback? onBlockSuccess; // ブロック成功時のコールバック
   final String? contextPrefix; // Hero tag用のコンテキストプレフィックス
 
+  // [comments] スレッド機能（吹き出し＋件数・カード本文タップで詳細へ）
+  final int? commentCount; // コメント数（null なら 0 表示）
+  final VoidCallback? onCommentTap; // 吹き出しタップ時の処理（省略時はスレッド画面へ）
+  final bool openDetailOnTap; // カード本文のタップでスレッド画面へ（スレッド画面自身では false）
+
   const BoulLog({
     super.key,
     required this.userId,
@@ -40,6 +46,9 @@ class BoulLog extends ConsumerStatefulWidget {
     this.tweetId,
     this.onBlockSuccess, // ブロック成功時の処理を親から受け取る
     this.contextPrefix, // コンテキストを区別するためのプレフィックス
+    this.commentCount, // [comments]
+    this.onCommentTap, // [comments]
+    this.openDetailOnTap = true, // [comments]
   });
 
   @override
@@ -62,6 +71,13 @@ class _BoulLogState extends ConsumerState<BoulLog> {
     if ((widget.mediaUrls != null && widget.mediaUrls!.isNotEmpty)) {
       _imageUrls = ImageUrlValidator.filterValidImageUrls(widget.mediaUrls!);
     }
+  }
+
+  // [comments] スレッド画面（コメント一覧）を開く
+  void _openThread() {
+    final id = widget.tweetId;
+    if (id == null) return;
+    NavigationHelper.toTweetDetail(context, id);
   }
 
   @override
@@ -352,7 +368,13 @@ class _BoulLogState extends ConsumerState<BoulLog> {
           ),
           const SizedBox(height: 8),
 
-          Padding(
+          // [comments] 本文タップでスレッド画面へ（ジム名・ユーザー名・画像の各タップは内側が優先される）
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: widget.openDetailOnTap && widget.tweetId != null
+                ? _openThread
+                : null,
+            child: Padding(
             padding: const EdgeInsets.only(right: 6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,6 +446,21 @@ class _BoulLogState extends ConsumerState<BoulLog> {
               ],
             ),
           ),
+          ), // [comments] GestureDetector ここまで
+
+          // [comments] 操作行: 吹き出し＋コメント件数（いいねチームの操作行にマージする）
+          if (widget.tweetId != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Row(
+                children: [
+                  CommentCountButton(
+                    count: widget.commentCount ?? 0,
+                    onTap: widget.onCommentTap ?? _openThread,
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
