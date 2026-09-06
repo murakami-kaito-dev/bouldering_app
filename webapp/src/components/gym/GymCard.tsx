@@ -5,11 +5,12 @@ import type { GymSummary } from "@/lib/gym/search";
 import { formatDistance } from "@/lib/gym/search";
 import { formatYen } from "@/lib/gym/types";
 import { GymTypeTape, OpenTape } from "@/components/ui/Tape";
+import { GymThumb } from "./GymThumb";
 
 /**
  * 一覧の 1 行（DESIGN.md「GymCard」）。
  * - joint 面・角丸 14・padding 16。hover で ledge ＋ crack の枠。
- * - 左 96×96 は写真プレースホルダ（一覧用の写真 API が無いので岩肌の面に種別テープ）。
+ * - 左 96×96 は写真サムネイル（GymThumb: 画面に入ったカードだけ BFF から 1 枚取得。無ければ岩肌の面）。
  * - 地図と連動: selected で左端に 3px の wall 縦線、highlighted（マーカー hover）で枠を出す。
  * - `open` が null のときは営業状態を出さない（静的ページの mount 前）。
  */
@@ -48,13 +49,8 @@ export function GymCard({
         className={`flex gap-4 rounded-card ${compact ? "p-3" : "p-4"}`}
         aria-label={`${gym.name}（${gym.prefecture}${gym.city}）の詳細`}
       >
-        {/* 写真プレースホルダ（岩肌 + 種別テープ） */}
-        <div
-          className={`grain relative flex shrink-0 items-end justify-start overflow-hidden rounded-card bg-rock ${compact ? "h-[72px] w-[72px]" : "h-24 w-24"}`}
-          role="img"
-          aria-label={`${gym.name} の写真（準備中）`}
-        >
-        </div>
+        {/* 写真（画面に入ったら遅延取得。無ければ岩肌のまま） */}
+        <GymThumb gymId={gym.id} name={gym.name} className={compact ? "h-[72px] w-[72px]" : "h-24 w-24"} sizes={compact ? "72px" : "96px"} />
 
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <div className="flex min-w-0 flex-col">
