@@ -10,7 +10,6 @@ import type { FavoriteGym } from "@/app/api/me/favorite-gyms/route";
 import { Container, Eyebrow, SectionHeader, Skeleton, Stat } from "@/components/ui/Primitives";
 import { LinkButton } from "@/components/ui/Button";
 import { Tape } from "@/components/ui/Tape";
-import { AppCta } from "@/components/site/AppCta";
 import { ProfileHeader } from "./ProfileHeader";
 import { UserTweetList } from "./UserTweetList";
 
@@ -124,10 +123,24 @@ export function MePage({ gyms }: { gyms: SlimGym[] }) {
           introduce={profile.introduce}
           boulStartDate={profile.boulStartDate}
           homeGymName={homeGymName}
+          aside={
+            <Link
+              href="/me/settings"
+              aria-label="設定（プロフィール編集）"
+              className="pressable inline-flex h-10 w-10 items-center justify-center rounded-pill border border-crack text-dust hover:bg-ledge hover:text-chalk"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+              </svg>
+            </Link>
+          }
         />
         <div className="flex flex-col gap-3 rounded-card bg-ledge p-4 md:flex-row md:items-center md:justify-between md:p-5">
-          <p className="text-small text-dust">プロフィール編集（名前・自己紹介・ホームジム・アイコン）はアプリから行えます。</p>
-          <AppCta variant="compact" />
+          <p className="text-small text-dust">名前・自己紹介・ホームジム・アイコンなどは設定画面から変更できます。</p>
+          <LinkButton href="/me/settings" variant="secondary" size="sm">
+            設定
+          </LinkButton>
         </div>
       </div>
 
