@@ -41,6 +41,8 @@ class GymListCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: onTap,
+        // 遷移先はひとつなので長押しもタップと同じ扱い（押下フィードバックだけ出て遷移しない状態を防ぐ）
+        onLongPress: onTap,
         borderRadius: BorderRadius.circular(AppRadius.card),
         child: Padding(
           padding: const EdgeInsets.all(12),
