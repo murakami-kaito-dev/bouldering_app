@@ -9,6 +9,15 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
+## 2026-09-06 — Issue #74〜#78 の修正（ブランチ分割・チーム並列）
+
+- **#74 / #75 / #77**（マイページ「ボル活」タブ: Pull-to-Refresh 不可・削除が一覧に残る・0 件時の骨組みちらつき）→ 1 チームに統合、ブランチ `fix/my-page-boul-log-refresh`・PR #80。原因: 一覧に `AlwaysScrollableScrollPhysics` 無し＋私有 ScrollController／`refresh()` が状態を初期化／削除後に一覧状態を未更新。修正: physics 付与＋NotificationListener、`isRefreshing` 新設で一覧保持、各 Notifier に `removeTweet` を追加し `ref.exists` で生きている一覧だけ更新＋統計 invalidate
+- **#76**（イキタイジムカードの長押しで詳細に遷移しない）→ `fix/gym-card-long-press`・PR #79。カード全体の InkWell に onTap/onLongPress を統一
+- **#78**（規約ページ）→ 別リポジトリ `iwanoboritai-legal` の `docs/legal-pages-redesign`・PR murakami-kaito-dev/iwanoboritai-legal#1。**main へのマージ＝公開**なので実機確認後にマージ
+- 並列作業は `git worktree`（scratchpad 配下）で実施し、完了後に削除済み。3 ブランチともユーザーの実機確認待ち
+
+---
+
 ## イメージタグ付けルール（2026-08-29 制定）
 
 - **prod（既存ルールを維持）**: `supabase-vX.Y.Z`（アプリのマーケティングバージョンと一致させる）。App Storeリジェクト時は `-rejected1, -rejected2, …` を採番し、承認後に正規タグへ付け替える。
