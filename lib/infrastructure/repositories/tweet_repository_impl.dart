@@ -1,4 +1,5 @@
 import '../../shared/utils/app_clock.dart';
+import '../../domain/entities/like_result.dart';
 import '../../domain/entities/tweet.dart';
 import '../../domain/repositories/tweet_repository.dart';
 import '../datasources/tweet_datasource.dart';
@@ -424,56 +425,25 @@ class TweetRepositoryImpl implements TweetRepository {
   /// - 自分の投稿にはいいねできない
   /// - 重複いいねは防止（バックエンド側で制御）
   @override
-  Future<bool> likeTweet(int tweetId, String userId) async {
+  /// いいねを付ける
+  ///
+  /// 自分の投稿にもいいね可（仕様 2026-09-06）。冪等なので二重に呼んでも件数は増えない。
+  @override
+  Future<LikeResult> likeTweet(int tweetId) async {
     if (tweetId <= 0) {
       throw ArgumentError('ツイートIDは正の整数で指定してください');
     }
 
-    if (userId.trim().isEmpty) {
-      throw ArgumentError('ユーザーIDは必須です');
-    }
-
-    try {
-      // 自分の投稿へのいいね防止
-      final tweet = await _dataSource.getTweetById(tweetId);
-      if (tweet == null) {
-        return false; // ツイートが存在しない
-      }
-
-      if (tweet.userId == userId) {
-        throw ArgumentError('自分の投稿にはいいねできません');
-      }
-
-      return await _dataSource.likeTweet(tweetId, userId);
-    } catch (e) {
-      rethrow;
-    }
+    return await _dataSource.likeTweet(tweetId);
   }
 
-  /// ツイートのいいね削除
-  /// 
-  /// [tweetId] いいね削除対象のツイートID
-  /// [userId] いいね削除実行者のユーザーID
-  /// 
-  /// 返り値:
-  /// [bool] いいね削除成功時はtrue、失敗時はfalse
-  /// 
-  /// ビジネスルール:
-  /// - いいね済みの投稿のみいいね削除可能
+  /// いいねを外す
   @override
-  Future<bool> unlikeTweet(int tweetId, String userId) async {
+  Future<LikeResult> unlikeTweet(int tweetId) async {
     if (tweetId <= 0) {
       throw ArgumentError('ツイートIDは正の整数で指定してください');
     }
 
-    if (userId.trim().isEmpty) {
-      throw ArgumentError('ユーザーIDは必須です');
-    }
-
-    try {
-      return await _dataSource.unlikeTweet(tweetId, userId);
-    } catch (e) {
-      rethrow;
-    }
+    return await _dataSource.unlikeTweet(tweetId);
   }
 }
