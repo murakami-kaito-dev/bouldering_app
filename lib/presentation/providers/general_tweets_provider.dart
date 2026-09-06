@@ -109,6 +109,46 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
     _fetchMoreGeneralTweets();
   }
 
+  /// いいね状態を差し替える（LikeButton → tweet_like_sync から呼ばれる）
+  ///
+  /// 同じツイートが他の一覧にもある場合の整合用。該当ツイートが無ければ何もしない
+  void updateLike(int tweetId, bool liked, int count) {
+    if (!state.generalTweets.any((t) => t.id == tweetId)) return;
+    state = GeneralTweetsState(
+      generalTweets: [
+        for (final t in state.generalTweets)
+          t.id == tweetId ? t.copyWith(likedByMe: liked, likedCount: count) : t
+      ],
+      hasMore: state.hasMore,
+      isFirstFetch: state.isFirstFetch,
+      nextCursor: state.nextCursor,
+      hasError: state.hasError,
+    );
+  }
+
+  /// コメント数の同期（スレッド画面で投稿／削除したとき。+1 / -1）
+  ///
+  /// 同じツイートが他の一覧にも載っていても件数が食い違わないように、
+  /// tweet_comments_provider.dart の syncTweetCommentCount から呼ばれる
+  void updateCommentCount(int tweetId, int delta) {
+    if (!state.generalTweets.any((t) => t.id == tweetId)) return;
+    final updated = [
+      for (final t in state.generalTweets)
+        t.id == tweetId
+            ? t.copyWith(
+                commentCount:
+                    (t.commentCount + delta) < 0 ? 0 : t.commentCount + delta)
+            : t,
+    ];
+    state = GeneralTweetsState(
+      generalTweets: updated,
+      hasMore: state.hasMore,
+      isFirstFetch: state.isFirstFetch,
+      nextCursor: state.nextCursor,
+      hasError: state.hasError,
+    );
+  }
+
   /// 初回取得が失敗して1件も表示できていない場合のみ取得し直す
   ///
   /// オフライン起動からの自己回復用（アプリ復帰時に app.dart から呼ばれる）。

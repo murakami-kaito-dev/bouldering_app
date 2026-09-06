@@ -14,9 +14,13 @@ import { initializeApplication } from './infrastructure/setup/dependencies';
 // Import routes
 import userRoutes from './routes/users';
 import tweetRoutes from './routes/tweets';
+import likeRoutes from './routes/likes';
 import gymRoutes from './routes/gyms';
 import reportRoutes from './routes/reports';
 import blockRoutes from './routes/blocks';
+import { tweetCommentsRouter, commentsRouter } from './routes/comments';
+import notificationRoutes from './routes/notifications';
+import announcementRoutes from './routes/announcements';
 import internalTasksRoutes from './routes/internal_tasks';
 
 // Validate environment variables
@@ -62,9 +66,16 @@ app.get('/health', async (req, res) => {
 // API routes
 app.use('/api/users', userRoutes);
 app.use('/api/tweets', tweetRoutes);
+app.use('/api/tweets', likeRoutes); // いいね（routes/likes.ts）。/:tweet_id/like は tweets 側の /:tweet_id と衝突しない
 app.use('/api/gyms', gymRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/blocks', blockRoutes);
+// スレッド（コメント）: /api/tweets/:tweet_id/comments と /api/comments/:comment_id
+app.use('/api/tweets', tweetCommentsRouter);
+app.use('/api/comments', commentsRouter);
+// 通知（Issue #81）: /api/users/:user_id/notifications…（routes/users.ts に無いパスなので後段で受ける）と /api/announcements
+app.use('/api/users', notificationRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 // Internal task routes (for Cloud Tasks workers)
 app.use('/internal/tasks', internalTasksRoutes);

@@ -117,6 +117,36 @@ class GymTweetsNotifier extends StateNotifier<GymTweetsState> {
     _fetchGymTweets();
   }
 
+  /// いいね状態を差し替える（LikeButton → tweet_like_sync から呼ばれる）
+  ///
+  /// 同じツイートが他の一覧にもある場合の整合用。該当ツイートが無ければ何もしない
+  void updateLike(int tweetId, bool liked, int count) {
+    if (!state.tweets.any((t) => t.id == tweetId)) return;
+    state = state.copyWith(
+      tweets: [
+        for (final t in state.tweets)
+          t.id == tweetId ? t.copyWith(likedByMe: liked, likedCount: count) : t
+      ],
+    );
+  }
+
+  /// コメント数の同期（スレッド画面で投稿／削除したとき。+1 / -1）
+  ///
+  /// 同じツイートが他の一覧にも載っていても件数が食い違わないように、
+  /// tweet_comments_provider.dart の syncTweetCommentCount から呼ばれる
+  void updateCommentCount(int tweetId, int delta) {
+    if (!state.tweets.any((t) => t.id == tweetId)) return;
+    final updated = [
+      for (final t in state.tweets)
+        t.id == tweetId
+            ? t.copyWith(
+                commentCount:
+                    (t.commentCount + delta) < 0 ? 0 : t.commentCount + delta)
+            : t,
+    ];
+    state = state.copyWith(tweets: updated, error: state.error);
+  }
+
   /// リフレッシュ（最初から取得し直し）
   Future<void> refresh() async {
     state = const GymTweetsState(

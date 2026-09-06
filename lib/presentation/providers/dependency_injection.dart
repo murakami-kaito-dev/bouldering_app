@@ -23,6 +23,9 @@ import '../../infrastructure/datasources/tweet_datasource.dart';
 import '../../infrastructure/datasources/favorite_datasource.dart';
 import '../../infrastructure/datasources/report_datasource.dart';
 import '../../infrastructure/datasources/block_datasource.dart';
+import '../../infrastructure/datasources/comment_datasource.dart';
+import '../../infrastructure/datasources/notification_datasource.dart';
+import '../../infrastructure/datasources/announcement_datasource.dart';
 import '../../infrastructure/repositories/user_repository_impl.dart';
 import '../../infrastructure/repositories/gym_repository_impl.dart';
 import '../../infrastructure/repositories/tweet_repository_impl.dart';
@@ -30,6 +33,9 @@ import '../../infrastructure/repositories/favorite_repository_impl.dart';
 import '../../infrastructure/repositories/storage_repository_impl.dart';
 import '../../infrastructure/repositories/report_repository_impl.dart';
 import '../../infrastructure/repositories/block_repository_impl.dart';
+import '../../infrastructure/repositories/comment_repository_impl.dart';
+import '../../infrastructure/repositories/notification_repository_impl.dart';
+import '../../infrastructure/repositories/announcement_repository_impl.dart';
 
 // Domain
 import '../../domain/repositories/user_repository.dart';
@@ -39,6 +45,9 @@ import '../../domain/repositories/favorite_repository.dart';
 import '../../domain/repositories/storage_repository.dart';
 import '../../domain/repositories/report_repository.dart';
 import '../../domain/repositories/block_repository.dart';
+import '../../domain/repositories/comment_repository.dart';
+import '../../domain/repositories/notification_repository.dart';
+import '../../domain/repositories/announcement_repository.dart';
 import '../../domain/usecases/auth_usecases.dart';
 import '../../domain/usecases/user_usecases.dart';
 import '../../domain/usecases/gym_usecases.dart';
@@ -50,6 +59,9 @@ import '../../domain/usecases/image_picker_usecases.dart';
 import '../../domain/usecases/get_user_favorite_gyms_usecase.dart';
 import '../../domain/usecases/report_usecase.dart';
 import '../../domain/usecases/block_usecase.dart';
+import '../../domain/usecases/comment_usecases.dart';
+import '../../domain/usecases/notification_usecases.dart';
+import '../../domain/usecases/tweet_detail_usecases.dart';
 
 /// 依存関係注入（DI）コンテナ
 ///
@@ -346,6 +358,12 @@ final deleteTweetUseCaseProvider = Provider<DeleteTweetUseCase>((ref) {
   return DeleteTweetUseCase(tweetRepository);
 });
 
+final likeTweetUseCaseProvider = Provider<LikeTweetUseCase>((ref) {
+  final tweetRepository = ref.read(tweetRepositoryProvider);
+
+  return LikeTweetUseCase(tweetRepository);
+});
+
 /// お気に入り関連ユースケースProvider
 final manageFavoriteUserUseCaseProvider =
     Provider<ManageFavoriteUserUseCase>((ref) {
@@ -452,4 +470,88 @@ final blockRepositoryProvider = Provider<BlockRepository>((ref) {
 final blockUseCaseProvider = Provider<BlockUseCase>((ref) {
   final blockRepository = ref.read(blockRepositoryProvider);
   return BlockUseCase(blockRepository);
+});
+
+// ==================== スレッド（コメント）関連 ====================
+
+/// コメントデータソースProvider
+final commentDataSourceProvider = Provider<CommentDataSource>((ref) {
+  final apiClient = ref.read(apiClientProvider);
+  return CommentDataSource(apiClient);
+});
+
+/// コメントリポジトリProvider
+final commentRepositoryProvider = Provider<CommentRepository>((ref) {
+  final dataSource = ref.read(commentDataSourceProvider);
+  return CommentRepositoryImpl(dataSource);
+});
+
+/// コメント一覧取得ユースケースProvider
+final getTweetCommentsUseCaseProvider =
+    Provider<GetTweetCommentsUseCase>((ref) {
+  return GetTweetCommentsUseCase(ref.read(commentRepositoryProvider));
+});
+
+/// コメント投稿ユースケースProvider
+final createCommentUseCaseProvider = Provider<CreateCommentUseCase>((ref) {
+  return CreateCommentUseCase(ref.read(commentRepositoryProvider));
+});
+
+/// コメント削除ユースケースProvider
+final deleteCommentUseCaseProvider = Provider<DeleteCommentUseCase>((ref) {
+  return DeleteCommentUseCase(ref.read(commentRepositoryProvider));
+});
+
+/// ツイート 1 件取得ユースケースProvider（スレッド画面の投稿表示用）
+final getTweetByIdUseCaseProvider = Provider<GetTweetByIdUseCase>((ref) {
+  return GetTweetByIdUseCase(ref.read(tweetRepositoryProvider));
+});
+
+// ==================== 通知・お知らせ（Issue #81） ====================
+
+/// 通知データソースProvider
+final notificationDataSourceProvider = Provider<NotificationDataSource>((ref) {
+  final apiClient = ref.read(apiClientProvider);
+  return NotificationDataSource(apiClient);
+});
+
+/// 通知リポジトリProvider
+final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
+  final dataSource = ref.read(notificationDataSourceProvider);
+  return NotificationRepositoryImpl(dataSource);
+});
+
+/// 通知一覧取得ユースケースProvider
+final getNotificationsUseCaseProvider = Provider<GetNotificationsUseCase>((ref) {
+  return GetNotificationsUseCase(ref.read(notificationRepositoryProvider));
+});
+
+/// 未読数取得ユースケースProvider
+final getUnreadNotificationCountUseCaseProvider =
+    Provider<GetUnreadNotificationCountUseCase>((ref) {
+  return GetUnreadNotificationCountUseCase(
+      ref.read(notificationRepositoryProvider));
+});
+
+/// 既読化ユースケースProvider
+final markNotificationsReadUseCaseProvider =
+    Provider<MarkNotificationsReadUseCase>((ref) {
+  return MarkNotificationsReadUseCase(ref.read(notificationRepositoryProvider));
+});
+
+/// お知らせデータソースProvider
+final announcementDataSourceProvider = Provider<AnnouncementDataSource>((ref) {
+  final apiClient = ref.read(apiClientProvider);
+  return AnnouncementDataSource(apiClient);
+});
+
+/// お知らせリポジトリProvider
+final announcementRepositoryProvider = Provider<AnnouncementRepository>((ref) {
+  final dataSource = ref.read(announcementDataSourceProvider);
+  return AnnouncementRepositoryImpl(dataSource);
+});
+
+/// お知らせ一覧取得ユースケースProvider
+final getAnnouncementsUseCaseProvider = Provider<GetAnnouncementsUseCase>((ref) {
+  return GetAnnouncementsUseCase(ref.read(announcementRepositoryProvider));
 });

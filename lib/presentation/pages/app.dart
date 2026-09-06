@@ -29,6 +29,10 @@ import 'terms_agreement_page.dart';
 import 'splash_page.dart';
 import 'block_list_page.dart';
 import 'blocked_user_page.dart';
+import 'tweet_detail_page.dart';
+import 'notification_page.dart';
+import '../providers/unread_count_provider.dart';
+import '../../domain/entities/tweet.dart';
 
 /// メインアプリケーションクラス
 ///
@@ -96,7 +100,16 @@ class BoulderingApp extends ConsumerWidget {
       },
       AppRoutes.blockList: (context) => const BlockListPage(),
       AppRoutes.blockedUser: (context) => const BlockedUserPage(),
-      // Note: Tweet detail uses parameters, so it's handled in navigation helper
+      // スレッド画面（ボル活の詳細＋コメント）
+      AppRoutes.tweetDetail: (context) {
+        final args = ModalRoute.of(context)!.settings.arguments as Map?;
+        final tweetId = args?[RouteParams.tweetId];
+        final initialTweet = args?[RouteParams.tweet];
+        return TweetDetailPage(
+          tweetId: tweetId is int ? tweetId : int.tryParse('$tweetId') ?? 0,
+          initialTweet: initialTweet is Tweet ? initialTweet : null,
+        );
+      },
     };
   }
 
@@ -278,7 +291,7 @@ class _AppRootState extends ConsumerState<AppRoot> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getInt(ScaffoldWithNavBar.lastTabIndexKey);
-      if (saved != null && saved >= 0 && saved < 4 && saved != 2) {
+      if (saved != null && saved >= 0 && saved < 5 && saved != 2) {
         _initialTab = saved;
       }
     } catch (_) {
@@ -348,7 +361,10 @@ class ScaffoldWithNavBar extends ConsumerStatefulWidget {
   final int initialIndex;
 
   /// タブ復元用の保存キー（AppRootからも参照）
-  static const String lastTabIndexKey = 'last_tab_index';
+  ///
+  /// v2: 通知タブの追加（Issue #81）で index 3 の意味が「マイページ」から「通知」に変わったため
+  /// キーを改めた（旧キーの値を読むと更新後の初回だけ通知タブで開いてしまう）
+  static const String lastTabIndexKey = 'last_tab_index_v2';
 
   @override
   ConsumerState<ScaffoldWithNavBar> createState() => _ScaffoldWithNavBarState();
@@ -363,8 +379,12 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
     const BoulLogPage(),
     // 投稿はモーダルシートで開くためタブ本体は使わない（onTapでシートを表示）
     const SizedBox.shrink(),
+    const NotificationPage(),
     const MyPage(),
   ];
+
+  /// 通知タブの index（バッジ・未読数の取り直しに使う）
+  static const int _notificationTabIndex = 3;
 
   @override
   void initState() {
@@ -380,6 +400,9 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
     // ここで一度 read して生成しておかないと、マイページを開くまで復元処理が走らず、
     // 投稿ページ等が「未ログイン」表示のままになる不具合があった。
     ref.read(authProvider);
+    // 通知の未読数（タブのバッジ）。生成すると userProvider を購読し、ログイン復元の完了で取得する。
+    // 以降はタブ表示時・アプリ復帰時に取り直す（ポーリングはしない）
+    ref.read(unreadCountProvider);
     // 前回選択タブの復元は AppRoot がスプラッシュ中に行い initialIndex で受け取る
     // （ここで非同期に切り替えるとホームが1フレーム見えてチラつくため廃止）
   }
@@ -428,6 +451,9 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
           await ref
               .read(generalTweetsProvider.notifier)
               .retryInitialIfFailed();
+
+          // 通知の未読数（バッジ）も復帰時に取り直す
+          await ref.read(unreadCountProvider.notifier).refresh();
         } catch (e) {
           debugPrint('[APP LIFECYCLE ERROR] トークン失効チェックエラー: $e');
         }
@@ -456,6 +482,10 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
             _currentIndex = index;
           });
           _saveLastTab(index); // fire-and-forget（UIを待たせない）
+          if (index == _notificationTabIndex) {
+            // 通知タブを開いたら未読数を取り直す（ページ側が既読化した後にバッジを消す）
+            ref.read(unreadCountProvider.notifier).refresh();
+          }
         },
         items: [
           const BottomNavigationBarItem(
@@ -471,10 +501,18 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
             label: '投稿',
           ),
           BottomNavigationBarItem(
+            // 通知（Issue #81）。未読があれば右上に件数バッジ（9 件超は「9+」）
+            icon: _NotificationNavIcon(
+              selected: _currentIndex == _notificationTabIndex,
+              unreadCount: ref.watch(unreadCountProvider),
+            ),
+            label: '通知',
+          ),
+          BottomNavigationBarItem(
             // 登攀グリフ（Noun Project由来・単色）。選択で壁ブルー、非選択で砂埃
             icon: _NavClimberGlyph(
               color:
-                  _currentIndex == 3 ? AppColors.kabeBlue : AppColors.sunabokori,
+                  _currentIndex == 4 ? AppColors.kabeBlue : AppColors.sunabokori,
             ),
             label: 'マイページ',
           ),
@@ -485,7 +523,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
         unselectedLabelStyle: const TextStyle(fontSize: 12),
           ),
           // 選択中タブを示す「課題テープ」。タブ切替で横にスライドする。
-          // 各タブ(幅=全幅/4)の中心にテープ中心をピクセル単位で合わせる
+          // 各タブ(幅=全幅/タブ数)の中心にテープ中心をピクセル単位で合わせる
           // （Alignment指定だと子幅ぶん内寄せされ両端がズレるため、実測で配置）
           Positioned(
             top: 0,
@@ -525,6 +563,66 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
                     ),
                   );
                 },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 通知タブのアイコン（未読バッジ付き）
+///
+/// 選択中は塗りのベル、非選択は輪郭のベル。未読が 1 件以上なら右上にホールド赤の
+/// 件数バッジを重ねる（10 件以上は「9+」）。アイコンの寸法は他タブと同じ 24px
+class _NotificationNavIcon extends StatelessWidget {
+  const _NotificationNavIcon({
+    required this.selected,
+    required this.unreadCount,
+  });
+
+  final bool selected;
+  final int unreadCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = Icon(
+      selected ? Icons.notifications : Icons.notifications_outlined,
+      size: 24,
+      color: selected ? AppColors.kabeBlue : AppColors.sunabokori,
+    );
+    if (unreadCount <= 0) return icon;
+
+    final label = unreadCount > 9 ? '9+' : '$unreadCount';
+    return SizedBox(
+      width: 24,
+      height: 24,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          icon,
+          Positioned(
+            top: -4,
+            right: -8,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 16),
+              height: 16,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color: AppColors.holdRed,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+                border: Border.all(color: AppColors.navi, width: 1.5),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 10,
+                  height: 1.0,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.onHoldRed,
+                ),
               ),
             ),
           ),

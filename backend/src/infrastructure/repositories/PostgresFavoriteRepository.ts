@@ -3,6 +3,7 @@ import { IFavoriteRepository } from '../../domain/repositories/IFavoriteReposito
 import { FavoriteUserRelation, FavoriteGym } from '../../models/types';
 import { ApiError } from '../../middleware/error';
 import logger from '../../utils/logger';
+import { likedByMeSql } from './sqlFragments';
 
 /**
  * PostgreSQL お気に入りリポジトリ実装
@@ -287,6 +288,7 @@ export class PostgresFavoriteRepository implements IFavoriteRepository {
             t.visited_date,
             t.tweeted_date,
             t.liked_counts,
+            t.comment_counts,
             t.movie_url,
             u.user_name,
             u.user_icon_url,
@@ -298,7 +300,8 @@ export class PostgresFavoriteRepository implements IFavoriteRepository {
               (SELECT json_agg(media_url)
                FROM tweet_media
                WHERE tweet_id = t.tweet_id), '[]'
-            ) AS media_urls
+            ) AS media_urls,
+          ${likedByMeSql(1)}
           FROM
             tweets t
           INNER JOIN
@@ -330,6 +333,7 @@ export class PostgresFavoriteRepository implements IFavoriteRepository {
             t.tweeted_date,
             t.tweet_contents,
             t.liked_counts,
+            t.comment_counts,
             t.movie_url,
             g.gym_id,
             g.gym_name,
@@ -338,7 +342,8 @@ export class PostgresFavoriteRepository implements IFavoriteRepository {
               (SELECT json_agg(media_url)
                FROM tweet_media
                WHERE tweet_id = t.tweet_id), '[]'
-            ) AS media_urls
+            ) AS media_urls,
+          ${likedByMeSql(1)}
           FROM
             tweets t
           INNER JOIN

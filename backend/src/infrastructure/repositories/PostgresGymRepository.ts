@@ -2,6 +2,7 @@ import { db } from '../../config/database';
 import { IGymRepository } from '../../domain/repositories/IGymRepository';
 import { ApiError } from '../../middleware/error';
 import logger from '../../utils/logger';
+import { likedByMeSql } from './sqlFragments';
 
 /**
  * PostgreSQL Gym リポジトリ実装
@@ -147,7 +148,7 @@ export class PostgresGymRepository implements IGymRepository {
    * - 投稿ユーザー情報
    * - メディア（画像・動画）のURL一覧
    */
-  async findGymTweets(gymId: number, limit: number, cursor?: string): Promise<any[]> {
+  async findGymTweets(gymId: number, limit: number, cursor?: string, requestUserId?: string): Promise<any[]> {
     try {
       let query: string;
       let params: any[];
@@ -160,6 +161,7 @@ export class PostgresGymRepository implements IGymRepository {
             t.visited_date,
             t.tweeted_date,
             t.liked_counts,
+            t.comment_counts,
             t.movie_url,
             u.user_id,
             u.user_name,
@@ -171,14 +173,15 @@ export class PostgresGymRepository implements IGymRepository {
               (SELECT json_agg(media_url)
                FROM tweet_media
                WHERE tweet_id = t.tweet_id), '[]'
-            ) AS media_urls
+            ) AS media_urls,
+          ${likedByMeSql(4)}
           FROM tweets AS t
           INNER JOIN users AS u ON t.user_id = u.user_id
           INNER JOIN gyms AS g ON t.gym_id = g.gym_id
           WHERE t.gym_id = $1 AND t.tweeted_date < $2
           ORDER BY t.tweeted_date DESC
           LIMIT $3`;
-        params = [gymId, cursor, limit];
+        params = [gymId, cursor, limit, requestUserId ?? null];
       } else {
         query = `
           SELECT
@@ -187,6 +190,7 @@ export class PostgresGymRepository implements IGymRepository {
             t.visited_date,
             t.tweeted_date,
             t.liked_counts,
+            t.comment_counts,
             t.movie_url,
             u.user_id,
             u.user_name,
@@ -198,14 +202,15 @@ export class PostgresGymRepository implements IGymRepository {
               (SELECT json_agg(media_url)
                FROM tweet_media
                WHERE tweet_id = t.tweet_id), '[]'
-            ) AS media_urls
+            ) AS media_urls,
+          ${likedByMeSql(3)}
           FROM tweets AS t
           INNER JOIN users AS u ON t.user_id = u.user_id
           INNER JOIN gyms AS g ON t.gym_id = g.gym_id
           WHERE t.gym_id = $1
           ORDER BY t.tweeted_date DESC
           LIMIT $2`;
-        params = [gymId, limit];
+        params = [gymId, limit, requestUserId ?? null];
       }
 
       const result = await db.query(query, params);
