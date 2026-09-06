@@ -9,6 +9,15 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
+## 2026-09-06 — いいね・スレッド・通知の dev デプロイ（バックエンド）
+
+- **rev 00069**（`backend:dev-20260906-db5800e`）: いいね（#17）＋スレッド（#19）。`GET /api/tweets` に `liked_by_me` / `comment_counts` が載ることを確認、`POST /api/tweets/:id/like` 未認証 → 401、`GET /api/tweets/:id/comments` → 200
+- **rev 00070**（`backend:dev-20260906-20930d9`）: 上に通知（#81）を追加した統合版。`GET /api/users/:id/notifications` 未認証 → 401、`GET /api/announcements` → 200
+- dev DB のマイグレーション適用済み: `tweet_likes` / `tweet_comments` + `tweets.comment_counts` / `notifications` + `announcements`（いずれも冪等・追加のみ。prod 未適用）
+- API は後方互換（列と経路の追加のみ）なので、古い枝（#79・#80）のアプリからでも従来どおり動く
+
+---
+
 ## イメージタグ付けルール（2026-08-29 制定）
 
 - **prod（既存ルールを維持）**: `supabase-vX.Y.Z`（アプリのマーケティングバージョンと一致させる）。App Storeリジェクト時は `-rejected1, -rejected2, …` を採番し、承認後に正規タグへ付け替える。
