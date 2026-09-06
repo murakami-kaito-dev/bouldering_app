@@ -13,7 +13,7 @@
 
 - **feature/web-app（#73 に追加）**: 地図を Google Maps 標準（ライト）スタイルに戻す／一覧カードの写真枠に出ていた種別テープ「BOULDER」を削除／一覧内の広告枠（AD · IN-FEED）を削除／**一覧カードにジム写真を表示**（`GymThumb`: 画面に入ったカードだけ BFF `GET /api/gyms/[id]/photos?limit=1` から 1 枚を遅延取得、サーバー側 1 日キャッシュ、Google 由来は「Google」表示＝Places API の出典表示義務）
 - **feature/web-profile-edit（PR #85・ベース feature/web-app）**: `/me/settings` でプロフィール編集（アイコン・名前・性別・生年月日・ボルダリングデビュー・ホームジム・好きなジム・自己紹介。メールは表示のみ）。`PATCH /api/me/profile` の BFF が変更項目だけをバックエンドの各エンドポイントへ振り分け。アイコンは署名 URL（kind: icon）→ GCS 直接 PUT（実行 SA の Token Creator 付与までは「準備中」）
-- Web の dev デプロイ（feature/web-app）: `web:dev-20260906-8e61d0c` → `bouldering-web-dev` **rev 00003**。https://bouldering-app-dev.web.app で `/gyms` 200、`/api/gyms/143/photos` が Google 写真を返すことを確認
+- Web の dev デプロイ（feature/web-app）: `web:dev-20260906-8e61d0c` → **rev 00003**（写真・地図・広告枠）。その後 PR #85 を `feature/web-app` にマージし、統合版 `web:dev-20260906-68283e8` → **rev 00005** を配信中（`/`・`/me/settings`・`/gyms` すべて 200。プロフィール編集は https://bouldering-app-dev.web.app/me/settings ）
 
 ---
 
