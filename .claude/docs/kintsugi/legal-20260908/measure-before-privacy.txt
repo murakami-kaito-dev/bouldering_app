@@ -1,0 +1,75 @@
+=== desktop ===
+散らかり度4 定番度0 ずれ度3 未卒業
+撮影条件: 幅1280px・スクロール通し済み（smooth無効化）・演出待ち0.9s・全長スクショあり
+表示の健全性: 見えない節なし
+━━ ものさし v1.6.2 ━━
+散らかり度: 4 / 定番度: 0 → 🏆 金継ぎ基準の卒業圏
+要素数: 74 | 色クラスタ5（似て非なる色0） | 余白4種 | 文字6段 | 角丸0種 | 影0種
+合格圏への道筋（→は上から順にそこまで直し切った場合の散らかり度。修理の順は下の「最優先3件」）: 文字サイズの段数過多 1件=4点→0
+  ▼ 文字サイズ 役割内の割れ 1（全ページ6段・採点は役割内だけ）: h1 2段→1（32(1 #イワノボリタイ--プライバシーポリシー-) 42(1 h1.post-title)）
+最優先3件（統合・破れ→乱れ→型紙の順）: ①[破れ] 低コントラスト3件（個票の色を床まで上げる） ②[乱れ] 文字サイズの段数過多(4点)
+破れ: コントラスト3・タップ0・はみ出しなし・極小文字0・未計測0（簡易検査・WCAG適合判定ではない）
+  ▼ 低コントラスト 3件: div.post-content > p > a 比4.15/床4.5 文字#2A7AE2/地#FDFDFD ・ li.p-name 比3.78/床4.5 文字#828282/地#FDFDFD ・ div.footer-col > p 比3.78/床4.5 文字#828282/地#FDFDFD
+読みやすさ（行長・行間は報告のみ／詰まり・段落なしは採点）: 行長45字超 11ブロック（最長46字 div.post-content > p）・行間1.6未満 12ブロック・詰まり 0ブロック・段落なし 0ブロック
+  ▼ 行間1.6未満 12件: div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.footer-col > p 行間1.5（15px）
+主要動線: a.site-title「イワノボリタイ 規約類」→ https://murakami-kaito-dev.github.io/iwanoboritai-legal/
+卒業判定: 未卒業 ← 低コントラスト3件
+━━ そろい v0（整列台帳・報告のみ） ━━
+ずれ度: 3（参考点・卒業ラインへの算入は裁定待ち）
+▼ 言葉の泣き別れ: div.post-content > p で「アップデート」が「アッ|プデート」で行またぎ（1行に収まる幅はある）→ nowrapで束ねるか word-break: auto-phrase（文節折り・Chromium）を当てる
+▼ 言葉の泣き別れ: div.footer-col > p で「イワノボリタイ」が「イ|ワノボリタイ」で行またぎ（1行に収まる幅はある）→ nowrapで束ねるか word-break: auto-phrase（文節折り・Chromium）を当てる
+▼ 言葉の泣き別れ: div.footer-col > p で「プライバシーポリシー」が「プライバシーポリ|シー」で行またぎ（1行に収まる幅はある）→ nowrapで束ねるか word-break: auto-phrase（文節折り・Chromium）を当てる
+=== tablet ===
+散らかり度4 定番度0 ずれ度1 未卒業
+撮影条件: 幅768px・スクロール通し済み（smooth無効化）・演出待ち0.9s・全長スクショあり
+表示の健全性: 見えない節なし
+━━ ものさし v1.6.2 ━━
+散らかり度: 4 / 定番度: 0 → 🏆 金継ぎ基準の卒業圏
+要素数: 74 | 色クラスタ5（似て非なる色0） | 余白3種 | 文字8段 | 角丸0種 | 影0種
+合格圏への道筋（→は上から順にそこまで直し切った場合の散らかり度。修理の順は下の「最優先3件」）: 文字サイズの段数過多 1件=4点→0
+  ▼ 文字サイズ 役割内の割れ 1（全ページ8段・採点は役割内だけ）: h1 2段→1（32(1 #イワノボリタイ--プライバシーポリシー-) 36(1 h1.post-title)）
+最優先3件（統合・破れ→乱れ→型紙の順）: ①[破れ] 低コントラスト3件（個票の色を床まで上げる） ②[乱れ] 文字サイズの段数過多(4点)
+破れ: コントラスト3・タップ0・はみ出しなし・極小文字0・未計測0（簡易検査・WCAG適合判定ではない）
+  ▼ 低コントラスト 3件: div.post-content > p > a 比4.15/床4.5 文字#2A7AE2/地#FDFDFD ・ li.p-name 比3.78/床4.5 文字#828282/地#FDFDFD ・ div.footer-col > p 比3.78/床4.5 文字#828282/地#FDFDFD
+読みやすさ（行長・行間は報告のみ／詰まり・段落なしは採点）: 行長45字超 12ブロック（最長49字 div.footer-col > p）・行間1.6未満 12ブロック・詰まり 0ブロック・段落なし 0ブロック
+  ▼ 行間1.6未満 12件: div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.footer-col > p 行間1.5（15px）
+主要動線: a.site-title「イワノボリタイ 規約類」→ https://murakami-kaito-dev.github.io/iwanoboritai-legal/
+卒業判定: 未卒業 ← 低コントラスト3件
+━━ そろい v0（整列台帳・報告のみ） ━━
+ずれ度: 1（参考点・卒業ラインへの算入は裁定待ち）
+▼ 言葉の泣き別れ: div.post-content > p で「アップデート」が「アッ|プデート」で行またぎ（1行に収まる幅はある）→ nowrapで束ねるか word-break: auto-phrase（文節折り・Chromium）を当てる
+=== mobile ===
+散らかり度6 定番度0 ずれ度4 未卒業
+撮影条件: 幅390px・スクロール通し済み（smooth無効化）・演出待ち0.9s・全長スクショあり
+表示の健全性: 見えない節なし
+━━ ものさし v1.6.2 ━━
+散らかり度: 6 / 定番度: 0 → 🏆 金継ぎ基準の卒業圏
+要素数: 73 | 色クラスタ5（似て非なる色1） | 余白3種 | 文字8段 | 角丸1種 | 影0種
+合格圏への道筋（→は上から順にそこまで直し切った場合の散らかり度。修理の順は下の「最優先3件」）: 文字サイズの段数過多 1件=4点→2 ・ 似て非なる色 1件=2点→0
+  ▼ 似て非なる色 1件（元色→寄せ先 使用箇所）: #FDFDFD→#E8E8E8 nav.site-nav
+  ▼ 文字サイズ 役割内の割れ 1（全ページ8段・採点は役割内だけ）: h1 2段→1（32(1 #イワノボリタイ--プライバシーポリシー-) 36(1 h1.post-title)）
+最優先3件（統合・破れ→乱れ→型紙の順）: ①[破れ] 低コントラスト3件（個票の色を床まで上げる） ②[乱れ] 文字サイズの段数過多(4点) ③[乱れ] 似て非なる色(2点)
+破れ: コントラスト3・タップ0・はみ出しなし・極小文字0・未計測0（簡易検査・WCAG適合判定ではない）
+  ▼ 低コントラスト 3件: div.post-content > p > a 比4.15/床4.5 文字#2A7AE2/地#FDFDFD ・ li.p-name 比3.78/床4.5 文字#828282/地#FDFDFD ・ div.footer-col > p 比3.78/床4.5 文字#828282/地#FDFDFD
+読みやすさ（行長・行間は報告のみ／詰まり・段落なしは採点）: 行長45字超 0ブロック・行間1.6未満 12ブロック・詰まり 0ブロック・段落なし 0ブロック
+  ▼ 行間1.6未満 12件: div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.post-content > p 行間1.5（16px） ・ div.footer-col > p 行間1.5（15px）
+主要動線: a.site-title「イワノボリタイ 規約類」→ https://murakami-kaito-dev.github.io/iwanoboritai-legal/
+卒業判定: 未卒業 ← 低コントラスト3件
+━━ そろい v0（整列台帳・報告のみ） ━━
+ずれ度: 4（参考点・卒業ラインへの算入は裁定待ち）
+▼ 言葉の泣き別れ: #イワノボリタイ--プライバシーポリシー- で「プライバシーポリシー」が「プライ|バシーポリシー」で行またぎ（1行に収まる幅はある）→ nowrapで束ねるか word-break: auto-phrase（文節折り・Chromium）を当てる
+▼ 言葉の泣き別れ: #プライバシーポリシーイワノボリタイ で「イワノボリタイ」が「イ|ワノボリタイ」で行またぎ（1行に収まる幅はある）→ nowrapで束ねるか word-break: auto-phrase（文節折り・Chromium）を当てる
+▼ 言葉の泣き別れ: div.post-content > p で「パスワード」が「パス|ワード」で行またぎ（1行に収まる幅はある）→ nowrapで束ねるか word-break: auto-phrase（文節折り・Chromium）を当てる
+▼ 言葉の泣き別れ: div.footer-col > p で「イワノボリタイ」が「イワノボ|リタイ」で行またぎ（1行に収まる幅はある）→ nowrapで束ねるか word-break: auto-phrase（文節折り・Chromium）を当てる
+━━ ここまでは機械の分。診断として返すには、skill/mitate.md の12問を通して
+   「見立て（当たった問いだけ・効く順0〜5・見えた3語）」を添えること。
+   0件でも「見立ての指摘なし（12問通した）」と書く＝通した証跡。
+   診断書の「現状」は総評（言葉の評価。よく出来ている点も言葉で言う）から書き出す。
+   完成形は診断書ファイル SHINDAN-<日付>.md（5点の型＋修理デモの記録・SKILL.md「診断書の型」）＋前後比較の証書 compare.html。
+   証書まで一本道: 写しを取り（node field/capture-pages.mjs <capture.config.mjs>）→ 写しに修理デモ
+   （node field/naoshi.mjs demo/before/<page>.html で下書き → 上位3件を kintsugi-repair.css に集約 → capture再実行・本体は無改変）→ 再計測（--delta）→
+   node field/compare-builder.mjs <compare.config.mjs> で前後比較（金の継ぎ目スライダー）を刷る。
+   mode:'shindan'（現状のみ）は途中経過の仮の証書で、門を通れない（駆動第5弾 2026-08-24）。
+   刷ったら診断書に「証書: compare.html」の1行を書き、
+   node field/shindan-check.mjs <診断書> --stamp <measure.json> で門を通す（門は証書の実在と前後比較であることまで見る）。
+   見立てを通していないなら、この台帳は「仮の台帳」と明記して渡す。 ━━

@@ -9,6 +9,16 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
+## 2026-09-08 — 規約ページの作り直し（GitHub Pages 公開）と Web 版への移植（dev rev 00006）
+
+- **GitHub Pages（iwanoboritai-legal）**: 利用規約・プライバシーポリシーを明るい文書スタイルに作り直し（PR #1 → main マージ済み・公開中）。公開 URL: https://murakami-kaito-dev.github.io/iwanoboritai-legal/terms/ ・ /privacy/ 。公開後の実測（金継ぎ・1280/768/390）: 両ページとも散らかり度 4/4/4・定番度 0・破れ 0（旧: 利用規約 8/8/30・低コントラスト 5 件、プライバシー 4/4/6・低コントラスト 3 件）
+- **Web（feature/web-app）**: `/terms`・`/privacy` を新設（`content/legal/*.md` を marked で描画）。フッター・ログイン・about のリンクを内部パスへ。イメージ `web:dev-20260908-69ff624-dirty` → Cloud Run `bouldering-web-dev` **rev 00006-hnr** → Hosting 反映。疎通: `/` `/gyms` `/me/settings` `/terms` `/privacy` すべて 200、Markdown リンクの素出し 0、条文 id 付き見出し 12 件。公開後の実測: 両ページとも散らかり度 24/24/24・定番度 8・破れ 0（残りはサイト共通ヘッダー／フッター由来）
+- **ハマりどころ（2 回失敗）**: `.dockerignore` と、`deploy/_common.sh` が生成する `.gcloudignore` の `*.md` が `content/legal/*.md` まで除外し、Cloud Build 内の `next build` が本文ファイル無しで失敗（ローカル build は通る）。両方に `!content/**/*.md` を追加し、`.gcloudignore` は古い書式なら作り直すよう `ensure_gcloudignore` を変更（既存の `.gcloudignore` は Git 管理外なので、他の作業ツリーでは自動で作り直される）。`-dirty` はこの 2 ファイルの未コミット変更によるもの（同内容を続くコミットに含めた）
+- **診断書・証書**: `.claude/docs/kintsugi/legal-20260908/`（`SHINDAN-20260908.md`・前後スライダー `compare.html`・詳細 `compare-shosai.html`・各台帳）。門（shindan-check）合格
+- **prod**: 未反映（Web 全体が独自ドメイン取得後）
+
+---
+
 ## 2026-09-07 — Web 版の追加対応（PR #73 への修正＋プロフィール編集 PR #85）
 
 - **feature/web-app（#73 に追加）**: 地図を Google Maps 標準（ライト）スタイルに戻す／一覧カードの写真枠に出ていた種別テープ「BOULDER」を削除／一覧内の広告枠（AD · IN-FEED）を削除／**一覧カードにジム写真を表示**（`GymThumb`: 画面に入ったカードだけ BFF `GET /api/gyms/[id]/photos?limit=1` から 1 枚を遅延取得、サーバー側 1 日キャッシュ、Google 由来は「Google」表示＝Places API の出典表示義務）

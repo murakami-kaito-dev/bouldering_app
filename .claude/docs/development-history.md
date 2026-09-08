@@ -61,6 +61,7 @@ App Store審査要件（UGCアプリに必須の通報・ブロック・規約�
 | 日付 | 内容 |
 |---|---|
 | 09-05 | `webapp/`（Next.js 16）を新設。ジム検索・都道府県別・ジム詳細・みんなのボル活・ログイン（Google/Apple）・マイページ・投稿・公開プロフィール・SEO/広告枠。設計正典 `webapp/DESIGN.md`。バックエンドに `POST /api/uploads/sign`。dev を https://bouldering-app-dev.web.app に公開（PR #73） |
+| 09-08 | 利用規約・プライバシーポリシーのページを明るい文書スタイルに作り直し（iwanoboritai-legal PR #1 → main 公開済み）。Web 版にも `/terms`・`/privacy` として同じ本文を移植。金継ぎ診断で 3 幅とも破れ 0・散らかり度 4（Web 版は 24・卒業候補）。診断書・証書は `.claude/docs/kintsugi/legal-20260908/` |
 
 ## ブランチの現状（2026-08-21時点）
 

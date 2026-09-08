@@ -19,6 +19,8 @@ hosting-public
 
 # ドキュメント・雑多
 *.md
+# 規約本文（content/legal/*.md）はページの元データなので除外しない
+!content/**/*.md
 .DS_Store
 npm-debug.log*
 .eslintcache

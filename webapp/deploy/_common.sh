@@ -102,7 +102,8 @@ build_substitutions() {
 # （無いと .env.local 等がアップロードされ得る。backend と同じく Git 管理外のファイル）
 ensure_gcloudignore() {
   local f="${WEBAPP_DIR}/.gcloudignore"
-  if [[ ! -f "$f" ]]; then
+  # 無い、または古い書式（規約本文 content/**/*.md の除外解除が無い）なら作り直す
+  if [[ ! -f "$f" ]] || ! grep -q '^!content/\*\*/\*\.md$' "$f"; then
     if $DRY_RUN; then
       log "[dry-run] .gcloudignore が無いので作成します: $f"
       return 0
@@ -119,6 +120,7 @@ coverage/
 deploy/
 hosting-public/
 *.md
+!content/**/*.md
 .DS_Store
 EOF
     log ".gcloudignore を作成しました: $f"
