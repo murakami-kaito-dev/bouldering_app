@@ -9,7 +9,6 @@ updated: 2026-09-06
 summary:
   - 'ログインは <strong>Google または Apple のアカウント</strong>で行い、当方はパスワードを預かりません。<br>メールアドレスの登録は<strong>任意</strong>で、お知らせの通知にのみ使います（<a href="#privacy-2">第2条</a>）。'
   - '投稿・写真・プロフィールは<strong>一般公開</strong>され、アプリでも Web 版でもログインしていなくても閲覧できます。<br>メールアドレスと位置情報は公開されません（<a href="#privacy-4">第4条</a>）。'
-  - 'Web 版では <strong>Google AdSense の広告</strong>を表示し、Cookie を利用することがあります。<br>パーソナライズ広告はいつでも無効にできます。iOS アプリに広告はありません（<a href="#privacy-6">第6条</a>）。'
   - '退会すると、アカウントと投稿のデータは<strong>原則 30 日以内に削除</strong>されます（<a href="#privacy-7">第7条</a>）。'
   - 'データは Google Cloud・Supabase 等のサーバー（国外を含む）で保管します。<br>開示・削除等のご請求やお問い合わせは <a href="mailto:km.solo.developer@gmail.com">km.solo.developer@gmail.com</a> へ（<a href="#privacy-1">第1条</a>・<a href="#privacy-11">第11条</a>）。'
 ---
