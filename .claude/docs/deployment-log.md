@@ -9,6 +9,14 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
+## 2026-09-08 — 規約・ポリシーの文言修正（ユーザー指摘）を公開ページと Web dev rev 00008 に反映
+
+- **修正内容（iwanoboritai-legal PR #2・#3・#4 → main 公開済み／Web は feature/web-app に同期）**: ①公開範囲の「Web 版では未ログインでも表示」を「アプリでも Web 版でも」に訂正（iOS アプリにもゲスト表示があり投稿一覧 API は認証不要。検索エンジンへの表示だけ Web 固有） ②利用規約の要点で自己責任とお問い合わせを別項目に ③プライバシーの要点から広告・保管先の 2 項目を削除 ④目次の ol 自動番号を消し「1. 1.」の二重表示を解消 ⑤委託先を事業者名と役割のみに簡素化（製品名を削除。Google の広告 Cookie・オプトアウトの開示は AdSense ポリシーの必須記載として維持） ⑥年齢制限の条項（旧第10条）を削除し第11・12条を繰り上げ ⑦改訂履歴に 9月8日 の行
+- **Web**: `web:dev-20260908-d69ed07` → Cloud Run `bouldering-web-dev` **rev 00008-p6n** → Hosting。検証（公開ページ・Web 版とも）: 旧文言 0、要点 利用規約 6 項目／プライバシー 3 項目、条番号 1〜11、13 歳・製品名の記述 0、目次 CSS 反映、Markdown 生リンク 0（途中の rev 00007 は①②のみを含む中間版）
+- **未対応（質問への回答のみ）**: 利用規約 第1条の「現在の URL：https://bouldering-app-dev.web.app」は `_config.yml` の `web_url`（Web 側は同梱 md に直書き）。独自ドメイン確定時に差し替えるか削除する前提のプレースホルダー
+
+---
+
 ## 2026-09-08 — 規約ページの作り直し（GitHub Pages 公開）と Web 版への移植（dev rev 00006）
 
 - **GitHub Pages（iwanoboritai-legal）**: 利用規約・プライバシーポリシーを明るい文書スタイルに作り直し（PR #1 → main マージ済み・公開中）。公開 URL: https://murakami-kaito-dev.github.io/iwanoboritai-legal/terms/ ・ /privacy/ 。公開後の実測（金継ぎ・1280/768/390）: 両ページとも散らかり度 4/4/4・定番度 0・破れ 0（旧: 利用規約 8/8/30・低コントラスト 5 件、プライバシー 4/4/6・低コントラスト 3 件）
