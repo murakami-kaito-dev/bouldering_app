@@ -1,0 +1,87 @@
+/* 規約ページ（/terms・/privacy）— GitHub Pages 版 assets/legal.css と同じ「明るい文書」スタイル。
+   サイト全体はダークなので、本文を白い紙（.legal-paper）として置く。値は両者で揃える（14/16/18/20/26px、角丸 6/10）。 */
+.legal {
+  --lg-bg: var(--color-chalk);      /* 紙＝サイトの「チョーク」。白を新たに増やさない */
+  --lg-fg: var(--color-rock);       /* 文字＝「岩肌」 */
+  --lg-muted: #4a515c;
+  --lg-card: #dedbd3;               /* 目次・囲み・要点の地・罫線（1 色に統一。紙より一段沈める） */
+  --lg-tape: var(--color-wall);
+  --lg-link: #1f4fc9;
+  --lg-note-bg: #dedbd3;
+  padding: 32px 0 64px;
+  color-scheme: light;
+}
+.legal-wrap { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+
+.legal-paper {
+  background: var(--lg-bg);
+  color: var(--lg-fg);
+  border-radius: 14px;
+  padding: 32px 24px 40px;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  font-size: 16px;
+  line-height: 1.9;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 768px) { .legal-paper { padding: 40px 40px 48px; } }
+
+.legal-site { margin: 0 0 4px; color: var(--lg-muted); font-size: 14px; font-weight: 700; letter-spacing: 0.02em; }
+.legal-paper h1 { font-family: inherit; font-size: 26px; line-height: 1.4; margin: 0 0 8px; letter-spacing: 0.01em; color: var(--lg-fg); text-wrap: initial; }
+.legal .meta { color: var(--lg-muted); font-size: 14px; margin: 0 0 24px; }
+
+.legal a { color: var(--lg-link); text-decoration: underline; text-underline-offset: 3px; }
+.legal a:hover { text-decoration-thickness: 2px; }
+.legal a:focus-visible { outline: 3px solid var(--lg-tape); outline-offset: 2px; box-shadow: none; border-radius: 2px; }
+
+.legal .doc h2 { font-family: inherit; color: var(--lg-fg); font-size: 18px; line-height: 1.5; margin: 44px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--lg-card); letter-spacing: 0; text-wrap: initial; }
+.legal .doc h3 { font-family: inherit; color: var(--lg-fg); font-size: 16px; margin: 24px 0 8px; letter-spacing: 0; }
+.legal .doc p { margin: 0 0 16px; }
+.legal .doc p, .legal .doc li { word-break: auto-phrase; }
+.legal .doc ul, .legal .doc ol { margin: 0 0 16px; padding-left: 1.4em; list-style: revert; }
+.legal .doc li { margin: 0 0 6px; }
+.legal .doc li > ul, .legal .doc li > ol { margin-top: 6px; margin-bottom: 0; }
+.legal .doc strong { font-weight: 700; }
+.legal .doc hr { border: 0; border-top: 1px solid var(--lg-card); margin: 32px 0; }
+
+.legal .note { background: var(--lg-note-bg); border-left: 4px solid var(--lg-tape); border-radius: 2px; padding: 16px 18px; margin: 0 0 32px; }
+.legal .note > strong { display: block; margin-bottom: 8px; font-size: 16px; }
+.legal .note ul { margin: 0; padding-left: 1.3em; }
+.legal .note li { margin: 0 0 6px; }
+.legal .note-foot { margin: 10px 0 0; color: var(--lg-muted); font-size: 14px; }
+
+.legal .toc { background: var(--lg-card); border-radius: 14px; padding: 16px 18px; margin: 0 0 32px; }
+.legal .toc-title { margin: 0 0 8px; padding: 0; border: 0; font-size: 16px; }
+.legal .toc ol { margin: 0; padding-left: 1.4em; columns: 2; column-gap: 24px; }
+.legal .toc li { margin: 0 0 4px; break-inside: avoid; }
+.legal .toc a { text-decoration: none; }
+.legal .toc a:hover { text-decoration: underline; }
+
+.legal .doc table { width: 100%; border-collapse: collapse; margin: 0 0 16px; font-size: 14px; }
+.legal .doc th, .legal .doc td { border: 1px solid var(--lg-card); padding: 8px 10px; text-align: left; vertical-align: top; }
+.legal .doc th { background: var(--lg-card); font-weight: 700; }
+.legal .doc td:first-child, .legal time { white-space: nowrap; }
+
+.legal .callout { background: var(--lg-card); border-radius: 14px; padding: 14px 16px; margin: 0 0 16px; }
+.legal .callout p:last-child { margin-bottom: 0; }
+
+/* 関連ページ（ブロック型のリンク・紙の外＝ダーク地の上） */
+.legal nav.links { margin: 24px 0 0; }
+.legal nav.links a {
+  display: block;
+  padding: 12px 14px;
+  border: 1px solid var(--color-crack);
+  border-radius: 14px;
+  margin: 0 0 10px;
+  text-decoration: none;
+  color: var(--color-chalk);
+  font-weight: 700;
+  font-size: 14px;
+  background: var(--color-joint);
+}
+.legal nav.links a:hover { border-color: var(--lg-tape); }
+.legal nav.links a span { display: block; color: var(--color-dust); font-size: 14px; font-weight: 400; }
+
+@media (max-width: 600px) {
+  .legal .toc ol { columns: 1; }
+}

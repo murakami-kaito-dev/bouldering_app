@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 
 /** フッターと同じ URL（SiteFooter.tsx の LEGAL と揃える） */
 const LEGAL = [
-  { href: "https://murakami-kaito-dev.github.io/iwanoboritai-legal/terms/", label: "利用規約" },
-  { href: "https://murakami-kaito-dev.github.io/iwanoboritai-legal/privacy/", label: "プライバシーポリシー" },
+  { href: "/terms", label: "利用規約" },
+  { href: "/privacy", label: "プライバシーポリシー" },
 ] as const;
 
 const FEATURES = [

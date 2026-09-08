@@ -4,12 +4,12 @@ import { Eyebrow } from "@/components/ui/Primitives";
 /** App Store バッジ（SVG 自前。公式素材はビルド時に差し替え可） */
 function AppStoreBadge() {
   return (
-    <span className="inline-flex items-center gap-2 rounded-[8px] border border-crack bg-rock px-3 py-2 text-chalk">
+    <span className="inline-flex items-center gap-2 rounded-card border border-crack bg-rock px-3 py-2 text-chalk">
       <svg width="18" height="22" viewBox="0 0 18 22" aria-hidden="true" fill="currentColor">
         <path d="M14.9 11.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.4 1.2 0 1.6-.8 3-.8s1.8.8 3 .7c1.3 0 2-1.1 2.8-2.3.9-1.3 1.2-2.6 1.3-2.6-.1 0-2.5-.9-2.5-3.8zM12.6 4.8c.6-.8 1.1-1.9.9-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1.1.1 2.1-.5 2.8-1.3z" />
       </svg>
       <span className="flex flex-col leading-none">
-        <span className="text-[9px] text-dust">Download on the</span>
+        <span className="text-[12px] text-dust">Download on the</span>
         <span className="font-display text-[15px] font-bold">App Store</span>
       </span>
     </span>

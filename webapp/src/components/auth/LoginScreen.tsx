@@ -7,8 +7,8 @@ import { useAuth, safeNextPath } from "@/lib/auth";
 import { Container, Eyebrow } from "@/components/ui/Primitives";
 import { AppleButton, GoogleButton } from "./ProviderButtons";
 
-const TERMS = "https://murakami-kaito-dev.github.io/iwanoboritai-legal/terms/";
-const PRIVACY = "https://murakami-kaito-dev.github.io/iwanoboritai-legal/privacy/";
+const TERMS = "/terms";
+const PRIVACY = "/privacy";
 
 /** /login の本体。?next= があればログイン後にそこへ戻る（同一オリジンのパスのみ） */
 export function LoginScreen() {

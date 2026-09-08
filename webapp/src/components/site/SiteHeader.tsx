@@ -7,7 +7,7 @@ export function Logo({ size = "md" }: { size?: "md" | "lg" }) {
   return (
     <span className={`inline-flex items-center gap-2 whitespace-nowrap font-display font-bold tracking-[-0.01em] ${size === "lg" ? "text-[26px]" : "text-[17px] md:text-[19px]"}`}>
       <span className="tape bg-wall text-wall-ink px-[6px] py-[3px]" aria-hidden="true">
-        <span className="text-[11px]">IWA</span>
+        <span className="text-[12px]">IWA</span>
       </span>
       <span className="text-chalk">イワノボリタイ</span>
     </span>

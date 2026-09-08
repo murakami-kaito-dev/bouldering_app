@@ -5,8 +5,8 @@ import { Logo } from "./SiteHeader";
 import { REGIONS, PREFECTURE_SLUGS } from "@/lib/gym/prefectures";
 
 const LEGAL = [
-  { href: "https://murakami-kaito-dev.github.io/iwanoboritai-legal/terms/", label: "利用規約" },
-  { href: "https://murakami-kaito-dev.github.io/iwanoboritai-legal/privacy/", label: "プライバシーポリシー" },
+  { href: "/terms", label: "利用規約" },
+  { href: "/privacy", label: "プライバシーポリシー" },
 ];
 
 export function SiteFooter() {
@@ -38,9 +38,9 @@ export function SiteFooter() {
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-small text-dust">
             {LEGAL.map((l) => (
-              <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="hover:text-chalk hover:underline underline-offset-4">
+              <Link key={l.href} href={l.href} className="hover:text-chalk hover:underline underline-offset-4">
                 {l.label}
-              </a>
+              </Link>
             ))}
             <Link href="/about" className="hover:text-chalk hover:underline underline-offset-4">
               イワノボリタイとは
