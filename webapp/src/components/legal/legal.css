@@ -52,7 +52,7 @@
 
 .legal .toc { background: var(--lg-card); border-radius: 14px; padding: 16px 18px; margin: 0 0 32px; }
 .legal .toc-title { margin: 0 0 8px; padding: 0; border: 0; font-size: 16px; }
-.legal .toc ol { margin: 0; padding-left: 1.4em; columns: 2; column-gap: 24px; }
+.legal .toc ol { margin: 0; padding-left: 0; list-style: none; columns: 2; column-gap: 24px; } /* 見出し文中の番号を使う（ol の自動番号と二重にしない） */
 .legal .toc li { margin: 0 0 4px; break-inside: avoid; }
 .legal .toc a { text-decoration: none; }
 .legal .toc a:hover { text-decoration: underline; }
