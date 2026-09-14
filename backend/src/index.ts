@@ -17,6 +17,7 @@ import tweetRoutes from './routes/tweets';
 import likeRoutes from './routes/likes';
 import gymRoutes from './routes/gyms';
 import reportRoutes from './routes/reports';
+import emailRoutes from './routes/email';
 import blockRoutes from './routes/blocks';
 import internalTasksRoutes from './routes/internal_tasks';
 
@@ -67,6 +68,7 @@ app.use('/api/tweets', likeRoutes); // いいね（routes/likes.ts）。/:tweet_
 app.use('/api/gyms', gymRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/blocks', blockRoutes);
+app.use('/email', emailRoutes); // 確認リンクの着地ページ（公開・HTML）
 
 // Internal task routes (for Cloud Tasks workers)
 app.use('/internal/tasks', internalTasksRoutes);

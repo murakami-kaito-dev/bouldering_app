@@ -47,6 +47,18 @@ export const config = {
     apiKey: process.env.PLACES_API_KEY || '',
   },
 
+  // 通知用メールアドレスの本人確認メール（Brevo のトランザクションメール API）
+  // 未設定の間は「準備中」(503) を返し、既存機能には影響しない
+  email: {
+    brevoApiKey: process.env.BREVO_API_KEY || '',
+    senderEmail: process.env.SENDER_EMAIL || '',
+    senderName: process.env.SENDER_NAME || 'イワノボリタイ',
+    // 確認リンクの土台 URL（例: https://bouldering-api-dev-xxxx-an.a.run.app）
+    publicBaseUrl: (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, ''),
+    // 確認リンクの有効期限（分）
+    tokenTtlMinutes: parseInt(process.env.EMAIL_VERIFY_TTL_MINUTES || '1440', 10),
+  },
+
   // CORS
   cors: {
     origins: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],

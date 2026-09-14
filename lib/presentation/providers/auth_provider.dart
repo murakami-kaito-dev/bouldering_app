@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/services/auth_service.dart';
 import '../../domain/exceptions/app_exceptions.dart';
 import 'user_provider.dart';
@@ -10,10 +9,10 @@ import 'dependency_injection.dart' as di;
 
 /// 通知用メールアドレス登録の結果
 enum EmailRegistrationResult {
-  /// すでに本人確認済みのメールだったので、その場で登録できた
+  /// すでにそのメールで登録済みだった（何もしていない）
   registered,
 
-  /// 確認メールを送った。リンク押下 → 再ログイン後に登録が完了する
+  /// 確認メールを送った。リンク押下で登録が完了する（アプリ側の操作は不要）
   verificationSent,
 }
 
@@ -37,9 +36,6 @@ class AuthNotifier extends StateNotifier<bool> {
 
   StreamSubscription<User?>? _authSub;
   StreamSubscription<User?>? _userSub;
-
-  /// 確認メール送信後、リンク押下→再ログインで登録を完了させるための保留メール
-  static const String pendingEmailKey = 'pending_email_registration';
 
   // エラーメッセージ定数
   static const String networkRequestFailed = "network-request-failed";
@@ -99,7 +95,6 @@ class AuthNotifier extends StateNotifier<bool> {
   Future<void> _loadUserQuietly(User user) async {
     try {
       await ref.read(userProvider.notifier).loginOrRegister(user.uid);
-      await _completePendingEmailRegistration(user);
     } catch (e) {
       debugPrint('[AUTH] ユーザー情報の読込に失敗: $e');
     }
@@ -148,7 +143,6 @@ class AuthNotifier extends StateNotifier<bool> {
         rethrow;
       }
 
-      await _completePendingEmailRegistration(user);
       state = true;
       return true;
     } finally {
@@ -215,50 +209,29 @@ class AuthNotifier extends StateNotifier<bool> {
       // ローカル状態をクリア
       state = false;
       ref.read(userProvider.notifier).logout();
-      await _clearPendingEmail();
       return true;
     } finally {
       _isDeleting = false;
     }
   }
 
-  /// 通知用メールアドレスの登録（本人確認つき）
+  /// 通知用メールアドレスの登録（本人確認つき・Firebase は関与しない）
   ///
-  /// - 入力したメールが Firebase アカウントの確認済みメールと同じなら、その場で DB に登録
-  ///   （例: Google アカウントのメール。Google が本人確認済み）
-  /// - それ以外は確認メールを送る。リンク押下で Firebase アカウントのメールが確定し、
-  ///   古いセッションは失効する → 次回ログイン時に [_completePendingEmailRegistration] が
-  ///   DB へ登録して完了する
+  /// バックエンドが確認メールを送り（Brevo）、ユーザーがメール内のリンクを押した時点で
+  /// バックエンドが DB に確定する。アプリ側はその後 refreshQuietly() で反映するだけ。
+  /// 再認証・セッション失効・ログアウトは起きない。
   ///
-  /// 例外: 形式エラー・別アカウントで登録済み（ValidationException）・通信エラー
+  /// 例外: 形式エラー・別アカウントで登録済み・連打（ValidationException）、
+  ///       送信基盤の未設定／送信失敗（DataSaveException）、通信エラー
   Future<EmailRegistrationResult> registerEmail(String newEmail) async {
     final user = _authService.currentUser;
     if (user == null) throw Exception('ログインしていません');
-    final email = newEmail.trim();
-
-    if (user.email == email && user.emailVerified) {
-      await ref.read(userProvider.notifier).updateEmailByUid(user.uid, email);
-      return EmailRegistrationResult.registered;
-    }
-
-    try {
-      await _authService.verifyBeforeUpdateEmail(newEmail: email);
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'requires-recent-login') {
-        // 直近ログインが必要 → 同じプロバイダで再認証してやり直す
-        final ok = await _authService.reauthenticate();
-        if (!ok) throw Exception('本人確認がキャンセルされました');
-        await _authService.verifyBeforeUpdateEmail(newEmail: email);
-      } else if (e.code == 'invalid-email') {
-        throw Exception('メールアドレスの形式が正しくありません');
-      } else {
-        rethrow;
-      }
-    }
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(pendingEmailKey, email);
-    return EmailRegistrationResult.verificationSent;
+    final state = await ref
+        .read(userProvider.notifier)
+        .requestEmailVerification(user.uid, newEmail.trim());
+    return state == 'already_registered'
+        ? EmailRegistrationResult.registered
+        : EmailRegistrationResult.verificationSent;
   }
 
   /// 通知用メールアドレスを未登録に戻す
@@ -266,30 +239,6 @@ class AuthNotifier extends StateNotifier<bool> {
     final user = _authService.currentUser;
     if (user == null) throw Exception('ログインしていません');
     await ref.read(userProvider.notifier).updateEmailByUid(user.uid, null);
-    await _clearPendingEmail();
-  }
-
-  /// 確認メールのリンク押下後、再ログインしたタイミングで DB への登録を完了させる
-  Future<void> _completePendingEmailRegistration(User user) async {
-    final prefs = await SharedPreferences.getInstance();
-    final pending = prefs.getString(pendingEmailKey);
-    if (pending == null) return;
-
-    // Firebase 側でそのメールが確定（本人確認済み）していれば DB に登録
-    if (user.email == pending && user.emailVerified) {
-      try {
-        await ref.read(userProvider.notifier).updateEmailByUid(user.uid, pending);
-      } catch (e) {
-        // 別アカウントで登録済み等。設定画面から入力し直すと同じ判定でその場で案内される
-        debugPrint('[AUTH] 保留中メールの登録に失敗: $e');
-      }
-      await prefs.remove(pendingEmailKey);
-    }
-  }
-
-  Future<void> _clearPendingEmail() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(pendingEmailKey);
   }
 
   static String getErrorMessage(String errorCode, {bool title = false}) {
