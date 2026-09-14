@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { optionalAuthenticate } from '../middleware/auth';
+import { optionalAuthenticate, AuthenticatedRequest } from '../middleware/auth';
 import { handleValidationErrors } from '../middleware/validation';
 import { getGymService } from '../infrastructure/setup/dependencies';
 import { getGymPhotos } from '../services/placesService';
@@ -68,11 +68,13 @@ router.get(
     try {
       const { gym_id } = req.params;
       const { limit = '20', cursor } = req.query;
+      const requestUser = (req as AuthenticatedRequest).user;
 
       const tweets = await gymService.getGymTweets(
         parseInt(gym_id),
         parseInt(limit as string),
-        cursor as string
+        cursor as string,
+        requestUser?.uid // 認証されている場合は liked_by_me の判定に使う
       );
 
       res.json({

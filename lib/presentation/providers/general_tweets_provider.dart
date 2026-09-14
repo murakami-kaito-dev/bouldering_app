@@ -131,6 +131,22 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
       hasError: state.hasError,
     );
   }
+  /// いいね状態を差し替える（LikeButton → tweet_like_sync から呼ばれる）
+  ///
+  /// 同じツイートが他の一覧にもある場合の整合用。該当ツイートが無ければ何もしない
+  void updateLike(int tweetId, bool liked, int count) {
+    if (!state.generalTweets.any((t) => t.id == tweetId)) return;
+    state = GeneralTweetsState(
+      generalTweets: [
+        for (final t in state.generalTweets)
+          t.id == tweetId ? t.copyWith(likedByMe: liked, likedCount: count) : t
+      ],
+      hasMore: state.hasMore,
+      isFirstFetch: state.isFirstFetch,
+      nextCursor: state.nextCursor,
+      hasError: state.hasError,
+    );
+  }
 
   /// 初回取得が失敗して1件も表示できていない場合のみ取得し直す
   ///
@@ -155,6 +171,22 @@ class GeneralTweetsNotifier extends StateNotifier<GeneralTweetsState> {
     );
 
     await _fetchMoreGeneralTweets();
+  }
+
+  /// 削除済みのツイートを一覧から取り除く（#75）
+  ///
+  /// サーバー側で削除が成功したあとに呼ぶ。再取得はせず、メモリ上の一覧から
+  /// 該当 ID だけを外す。nextCursor（最後のツイートの投稿日時）は境界としてそのまま有効
+  void removeTweet(int tweetId) {
+    if (!state.generalTweets.any((t) => t.id == tweetId)) return;
+    state = GeneralTweetsState(
+      generalTweets:
+          state.generalTweets.where((t) => t.id != tweetId).toList(),
+      hasMore: state.hasMore,
+      isFirstFetch: state.isFirstFetch,
+      nextCursor: state.nextCursor,
+      hasError: state.hasError,
+    );
   }
 }
 

@@ -21,12 +21,12 @@ export interface ITweetRepository {
   /**
    * ユーザーのツイート取得
    */
-  getUserTweets(userId: string, limit: number, cursor?: string): Promise<any[]>;
+  getUserTweets(userId: string, limit: number, cursor?: string, requestUserId?: string): Promise<any[]>;
 
   /**
    * IDでツイート取得
    */
-  getTweetById(tweetId: number): Promise<any | null>;
+  getTweetById(tweetId: number, requestUserId?: string): Promise<any | null>;
 
   /**
    * ツイート作成

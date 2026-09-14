@@ -12,6 +12,8 @@ class Tweet {
 
   /// コメント数（非削除。バックエンド `comment_counts`）
   final int commentCount;
+  /// ログイン中のユーザーがこの投稿にいいね済みか（API の liked_by_me。未ログインは false）
+  final bool likedByMe;
   final String? movieUrl;
   final String gymName;
   final String prefecture;
@@ -28,6 +30,7 @@ class Tweet {
     required this.content,
     required this.likedCount,
     this.commentCount = 0,
+    this.likedByMe = false,
     this.movieUrl,
     required this.gymName,
     required this.prefecture,
@@ -67,6 +70,7 @@ class Tweet {
     String? content,
     int? likedCount,
     int? commentCount,
+    bool? likedByMe,
     String? movieUrl,
     String? gymName,
     String? prefecture,
@@ -83,6 +87,7 @@ class Tweet {
       content: content ?? this.content,
       likedCount: likedCount ?? this.likedCount,
       commentCount: commentCount ?? this.commentCount,
+      likedByMe: likedByMe ?? this.likedByMe,
       movieUrl: movieUrl ?? this.movieUrl,
       gymName: gymName ?? this.gymName,
       prefecture: prefecture ?? this.prefecture,
@@ -115,6 +120,7 @@ class Tweet {
       content: json['tweet_contents'] ?? json['content'] ?? '',
       likedCount: json['liked_counts'] ?? json['liked_count'] ?? 0,
       commentCount: json['comment_counts'] ?? json['comment_count'] ?? 0,
+      likedByMe: json['liked_by_me'] == true,
       movieUrl: json['movie_url'],
       gymName: json['gym_name'] ?? '',
       prefecture: json['prefecture'] ?? '',
@@ -137,6 +143,7 @@ class Tweet {
       'content': content,
       'liked_count': likedCount,
       'comment_count': commentCount,
+      'liked_by_me': likedByMe,
       'movie_url': movieUrl,
       'gym_name': gymName,
       'prefecture': prefecture,

@@ -4,6 +4,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/dependency_injection.dart';
 import '../../providers/block_provider.dart';
+import '../../providers/my_tweets_provider.dart';
+import '../../providers/general_tweets_provider.dart';
+import '../../providers/favorite_user_tweets_provider.dart';
+import '../../providers/gym_tweets_provider.dart';
+import '../../providers/other_user_tweets_provider.dart';
+import '../../providers/statistics_provider.dart';
 import '../../../shared/utils/image_url_validator.dart';
 import '../../../shared/utils/navigation_helper.dart';
 import '../../pages/activity_post_page.dart';
@@ -12,6 +18,7 @@ import '../../theme/app_tokens.dart';
 import '../../theme/app_text.dart';
 import 'image_viewer.dart';
 import 'comment_count_button.dart'; // [comments]
+import 'like_button.dart';
 
 class BoulLog extends ConsumerStatefulWidget {
   final String userId;
@@ -27,6 +34,9 @@ class BoulLog extends ConsumerStatefulWidget {
   final VoidCallback? onBlockSuccess; // ブロック成功時のコールバック
   final String? contextPrefix; // Hero tag用のコンテキストプレフィックス
 
+  // ---- 操作行（本文の下: 左から「ハート＋数」「吹き出し＋数」）----
+  final int likedCount; // いいね数（API の liked_counts）
+  final bool likedByMe; // ログイン中ユーザーがいいね済みか（API の liked_by_me）
   // [comments] スレッド機能（吹き出し＋件数・カード本文タップで詳細へ）
   final int? commentCount; // コメント数（null なら 0 表示）
   final VoidCallback? onCommentTap; // 吹き出しタップ時の処理（省略時はスレッド画面へ）
@@ -46,6 +56,8 @@ class BoulLog extends ConsumerStatefulWidget {
     this.tweetId,
     this.onBlockSuccess, // ブロック成功時の処理を親から受け取る
     this.contextPrefix, // コンテキストを区別するためのプレフィックス
+    this.likedCount = 0,
+    this.likedByMe = false,
     this.commentCount, // [comments]
     this.onCommentTap, // [comments]
     this.openDetailOnTap = true, // [comments]
@@ -78,6 +90,40 @@ class _BoulLogState extends ConsumerState<BoulLog> {
     final id = widget.tweetId;
     if (id == null) return;
     NavigationHelper.toTweetDetail(context, id);
+  }
+  /// 削除に成功したツイートを、表示中の各一覧のメモリ上の状態から取り除く（#75）
+  ///
+  /// 一覧を丸ごと再取得せず、該当 ID だけを外す（キャッシュを活かした最小コストの更新）。
+  /// family Provider は read すると生成（＝初回取得）されてしまうので、
+  /// ref.exists ですでに生きているものだけを対象にする。
+  /// 「今月のボル活」統計は投稿・編集時と同じく invalidate して取り直す。
+  void _removeDeletedTweetFromLists(int tweetId, String myUserId) {
+    // マイページ「ボル活」タブ
+    if (ref.exists(myTweetsProvider(myUserId))) {
+      ref.read(myTweetsProvider(myUserId).notifier).removeTweet(tweetId);
+    }
+    // ボル活ページ「みんなのボル活」
+    if (ref.exists(generalTweetsProvider)) {
+      ref.read(generalTweetsProvider.notifier).removeTweet(tweetId);
+    }
+    // ボル活ページ「お気に入り」（自分を含む場合に備えて）
+    if (ref.exists(favoriteUserTweetsProvider(myUserId))) {
+      ref
+          .read(favoriteUserTweetsProvider(myUserId).notifier)
+          .removeTweet(tweetId);
+    }
+    // ジム詳細のボル活一覧
+    if (ref.exists(gymTweetsProvider(widget.gymId))) {
+      ref.read(gymTweetsProvider(widget.gymId).notifier).removeTweet(tweetId);
+    }
+    // 他ユーザー画面として自分を開いている場合
+    if (ref.exists(otherUserTweetsProvider(myUserId))) {
+      ref
+          .read(otherUserTweetsProvider(myUserId).notifier)
+          .removeTweet(tweetId);
+    }
+    // 「今月のボル活」統計（回数・施設数・ペース）を取り直す
+    ref.invalidate(statisticsProvider);
   }
 
   @override
@@ -229,8 +275,7 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('削除しました')),
                             );
-                            // 削除成功時にページをリフレッシュ
-                            // Note: 呼び出し元で対応が必要な場合があります
+                            _removeDeletedTweetFromLists(widget.tweetId!, myUserId);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('削除に失敗しました')),
@@ -443,24 +488,33 @@ class _BoulLogState extends ConsumerState<BoulLog> {
                       },
                     ),
                   ),
+
+                // 操作行（いいね／コメント）。tweetId が無いプレビュー等では出さない
+                if (widget.tweetId != null) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      LikeButton(
+                        tweetId: widget.tweetId!,
+                        gymId: widget.gymId,
+                        authorUserId: widget.userId,
+                        liked: widget.likedByMe,
+                        count: widget.likedCount,
+                      ),
+                      const SizedBox(width: 8),
+                      // [comments] 吹き出し＋コメント件数（タップでスレッド画面へ）
+                      CommentCountButton(
+                        count: widget.commentCount ?? 0,
+                        onTap: widget.onCommentTap ?? _openThread,
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
           ), // [comments] GestureDetector ここまで
 
-          // [comments] 操作行: 吹き出し＋コメント件数（いいねチームの操作行にマージする）
-          if (widget.tweetId != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Row(
-                children: [
-                  CommentCountButton(
-                    count: widget.commentCount ?? 0,
-                    onTap: widget.onCommentTap ?? _openThread,
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );

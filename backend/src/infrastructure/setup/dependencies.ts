@@ -14,6 +14,8 @@ import { PostgresBlockRepository } from '../repositories/PostgresBlockRepository
 import { BlockService } from '../../services/blockService';
 import { PostgresCommentRepository } from '../repositories/PostgresCommentRepository';
 import { CommentService } from '../../services/commentService';
+import { PostgresLikeRepository } from '../repositories/PostgresLikeRepository';
+import { LikeService } from '../../services/likeService';
 import logger from '../../utils/logger';
 
 /**
@@ -39,6 +41,7 @@ let favoriteServiceInstance: FavoriteService | null = null;
 let reportServiceInstance: ReportService | null = null;
 let blockServiceInstance: BlockService | null = null;
 let commentServiceInstance: CommentService | null = null;
+let likeServiceInstance: LikeService | null = null;
 
 // リポジトリインスタンス
 let tweetRepository: PostgresTweetRepository | null = null;
@@ -48,6 +51,7 @@ let favoriteRepository: PostgresFavoriteRepository | null = null;
 let reportRepository: PostgresReportRepository | null = null;
 let blockRepository: PostgresBlockRepository | null = null;
 let commentRepository: PostgresCommentRepository | null = null;
+let likeRepository: PostgresLikeRepository | null = null;
 
 /**
  * リポジトリインスタンスを取得
@@ -99,6 +103,12 @@ function getCommentRepository(): PostgresCommentRepository {
     commentRepository = new PostgresCommentRepository();
   }
   return commentRepository;
+}
+function getLikeRepository(): PostgresLikeRepository {
+  if (!likeRepository) {
+    likeRepository = new PostgresLikeRepository();
+  }
+  return likeRepository;
 }
 
 /**
@@ -258,6 +268,27 @@ export function getBlockService(): BlockService {
   return blockServiceInstance;
 }
 
+/**
+ * LikeServiceの依存性注入済みインスタンスを取得
+ */
+export function getLikeService(): LikeService {
+  if (likeServiceInstance) {
+    return likeServiceInstance;
+  }
+
+  // イベントシステムのセットアップ（TweetLiked / TweetUnliked を通知機能が購読する）
+  const eventBusInstance = setupEventSystem();
+
+  const likeRepo = getLikeRepository();
+  likeServiceInstance = new LikeService(likeRepo, eventBusInstance);
+
+  logger.info('LikeService initialized with Clean Architecture', {
+    hasEventBus: true,
+    hasRepository: true
+  });
+
+  return likeServiceInstance;
+}
 
 /**
  * CommentService（スレッド機能）の依存性注入済みインスタンスを取得
@@ -299,6 +330,7 @@ export function initializeApplication(): void {
   getReportService();
   getBlockService();
   getCommentService();
+  getLikeService();
   
   logger.info('Application dependencies initialized successfully');
 }

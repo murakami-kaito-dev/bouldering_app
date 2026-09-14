@@ -184,6 +184,8 @@ class GymTweetsSectionState extends ConsumerState<GymTweetsSection> {
             mediaUrls: tweet.mediaUrls,
             tweetId: tweet.id,
             commentCount: tweet.commentCount, // [comments]
+            likedCount: tweet.likedCount,
+            likedByMe: tweet.likedByMe,
             contextPrefix: 'gym', // ジムツイート画面用
           );
         },

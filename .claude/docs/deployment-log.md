@@ -9,6 +9,15 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
+## 2026-09-06 — Issue #74〜#78 の修正（ブランチ分割・チーム並列）
+
+- **#74 / #75 / #77**（マイページ「ボル活」タブ: Pull-to-Refresh 不可・削除が一覧に残る・0 件時の骨組みちらつき）→ 1 チームに統合、ブランチ `fix/my-page-boul-log-refresh`・PR #80。原因: 一覧に `AlwaysScrollableScrollPhysics` 無し＋私有 ScrollController／`refresh()` が状態を初期化／削除後に一覧状態を未更新。修正: physics 付与＋NotificationListener、`isRefreshing` 新設で一覧保持、各 Notifier に `removeTweet` を追加し `ref.exists` で生きている一覧だけ更新＋統計 invalidate
+- **#76**（イキタイジムカードの長押しで詳細に遷移しない）→ `fix/gym-card-long-press`・PR #79。カード全体の InkWell に onTap/onLongPress を統一
+- **#78**（規約ページ）→ 別リポジトリ `iwanoboritai-legal` の `docs/legal-pages-redesign`・PR murakami-kaito-dev/iwanoboritai-legal#1。**main へのマージ＝公開**なので実機確認後にマージ
+- 並列作業は `git worktree`（scratchpad 配下）で実施し、完了後に削除済み。3 ブランチともユーザーの実機確認待ち
+
+---
+
 ## イメージタグ付けルール（2026-08-29 制定）
 
 - **prod（既存ルールを維持）**: `supabase-vX.Y.Z`（アプリのマーケティングバージョンと一致させる）。App Storeリジェクト時は `-rejected1, -rejected2, …` を採番し、承認後に正規タグへ付け替える。
@@ -26,6 +35,20 @@
 - **アプリ**: `Tweet.commentCount`、`Comment` エンティティ〜ユースケース、`tweetCommentsProvider(tweetId)`、`TweetDetailPage`（スレッド画面）、`CommentCountButton`、各一覧 Notifier の `updateCommentCount`、`BoulLog` のカード本文タップ／吹き出しで詳細へ、`AppRoutes.tweetDetail` を登録
 - **検証**: `tsc --noEmit` OK／ローカル起動（`ts-node`・dev DB）で root→reply→reply-to-reply を作り、真ん中を削除しても 3 つ目が返る・`comment_counts` が 3→2・403/401/400/404 を curl で確認（詳細は `backend/docs-comments.md`）。`flutter analyze` は baseline と同じ 54 件（新規指摘なし）。**実機・シミュレータでの画面確認は未実施**（ディスク残量のため build 不可）
 - **デプロイ**: なし（dev Cloud Run rev 00067 のまま）。マージ後に dev へデプロイし、実機で確認する
+## 2026-09-06 — いいね機能（Issue #17）実装（ブランチ `feature/likes`・dev DB のみ変更・デプロイなし）
+
+- **目的**: ボル活カードに「ハート＋件数」を付け、いいね／解除できるようにする（サウナイキタイ方式）。コメント（#19）・通知（#81）と同時並行の契約 `social-spec.md` に従う
+- **DB（dev Supabase）**: `backend/migrations/2026-09-06_likes.sql`（`tweet_likes` テーブル＋索引、冪等）を **dev に適用済み**（2026-09-06、psql）。**prod は未適用**（本番反映時に同じファイルを流す）
+- **バックエンド**: `routes/likes.ts`（`POST/DELETE /api/tweets/:tweet_id/like`、要認証・冪等）、`PostgresLikeRepository`（`FOR UPDATE`＋同一トランザクションで `tweets.liked_counts` ±1）、`likeService`（新規挿入／実削除の時だけ `TweetLikedEvent` / `TweetUnlikedEvent` を発行）。ツイート一覧・詳細 5 本に `liked_by_me` を追加（共通 SQL 断片 `sqlFragments.likedByMeSql`。未認証は false）。`routes/tweets.ts` / `gyms.ts` は optionalAuthenticate の uid をサービスへ渡す最小変更のみ
+- **アプリ**: `Tweet.likedByMe`、`LikeResult`、`LikeTweetUseCase`、datasource を新 API（`/like`、トークン認証）へ差し替え（旧 `/likes`＋user_id ボディの死にコードと「自分の投稿へのいいね禁止」を撤去＝仕様どおり自分の投稿にも可）。`LikeButton`（楽観的更新→失敗で戻す＋SnackBar、未ログインはログイン導線ダイアログ、いいね済み＝ホールド赤）。`BoulLog` に操作行（左ハート、右にコメント枠 `commentCount`/`onCommentTap` を受けるだけで未描画）。5 つの一覧 Notifier に `updateLike` を追加し `tweet_like_sync.dart` で生きている一覧だけ揃える
+- **検証**: `tsc` OK／`flutter analyze` 54 件＝ベースラインと同数（新規指摘なし）／ローカル `npm run dev` で未認証 GET が `liked_by_me: false`・like API がトークン無し 401／dev DB へのリポジトリ結合テストで冪等性・カウンタ整合・各一覧の `liked_by_me` を確認（詳細は `backend/docs-likes.md`）
+- **未実施**: 実機（fdev）でのいいね操作・楽観的更新の見た目確認、ID トークン付き HTTP テスト、API 一覧スプレッドシートへの転記（行は `backend/docs-likes.md`）、dev Cloud Run デプロイ
+## 2026-09-06 — イキタイジムカードの長押し／カード全体タップでジム詳細へ遷移（issue #76・アプリのみ・デプロイなし）
+
+- **症状**: マイページ「イキタイ」タブ（他ユーザーページのイキタイも同じ部品）で、ジム名のタップだけが遷移し、カード本体のタップや長押しは押下の見た目（`Pressable` の縮小）だけ出て遷移しなかった
+- **原因**: `FavoriteGymCard` はジム名の `GestureDetector.onTap` にしか遷移を置いておらず、`Pressable` は設計上「押下中の見た目だけ」（`Listener`）でタップ判定を持たない
+- **修正（ブランチ `fix/gym-card-long-press`）**: `FavoriteGymCard` を `GymListCard` と同じ構造（Container → `InkWell` → Padding）に揃え、`InkWell` の `onTap` / `onLongPress` の両方で `NavigationHelper.toGymDetail` を呼ぶ（ジム名側の個別ハンドラは撤去＝二重遷移なし）。`GymListCard`（検索結果）も `onLongPress: onTap` を追加。`Pressable` 本体は変更なし（ホーム／ジム詳細のボタンに影響させない）
+- **検証**: `flutter analyze` は修正前後とも 58 件（変更ファイルの指摘 0）。ディスク残量のため `flutter build` / `flutter run` は未実施 → **実機確認待ち**（イキタイタブ・他ユーザーのイキタイ・検索結果の 3 か所で、タップ／長押しとも 1 回だけ遷移すること、長押し時に Pressable の縮小が戻ること）
 
 ---
 

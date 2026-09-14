@@ -1,3 +1,4 @@
+import '../entities/like_result.dart';
 import '../entities/tweet.dart';
 
 abstract class TweetRepository {
@@ -26,6 +27,9 @@ abstract class TweetRepository {
     List<String>? mediaUrls,
   });
   Future<bool> deleteTweet(int tweetId, String userId);
-  Future<bool> likeTweet(int tweetId, String userId);
-  Future<bool> unlikeTweet(int tweetId, String userId);
+  /// いいねを付ける（要ログイン。誰の投稿かはトークンから決まるので userId は不要）
+  Future<LikeResult> likeTweet(int tweetId);
+
+  /// いいねを外す（要ログイン）
+  Future<LikeResult> unlikeTweet(int tweetId);
 }
