@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_routes.dart';
 import '../../domain/exceptions/app_exceptions.dart';
 import '../../presentation/theme/app_tokens.dart';
+import '../../domain/entities/tweet.dart';
 
 /// ナビゲーションヘルパークラス
 ///
@@ -53,11 +54,16 @@ class NavigationHelper {
   ///
   /// [context] BuildContext
   /// [tweetId] 表示するツイートのID
-  static Future<void> toTweetDetail(BuildContext context, int tweetId) async {
+  /// [tweet] 呼び出し元が投稿を持っていれば渡す（取得を待たずにカードを出せる）
+  static Future<void> toTweetDetail(BuildContext context, int tweetId,
+      {Tweet? tweet}) async {
     await Navigator.pushNamed(
       context,
       AppRoutes.tweetDetail,
-      arguments: {RouteParams.tweetId: tweetId},
+      arguments: {
+        RouteParams.tweetId: tweetId,
+        if (tweet != null) RouteParams.tweet: tweet,
+      },
     );
   }
 
