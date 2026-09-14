@@ -27,6 +27,14 @@
 
 ---
 
+## 2026-09-06 — いいね機能（Issue #17）実装（ブランチ `feature/likes`・dev DB のみ変更・デプロイなし）
+
+- **目的**: ボル活カードに「ハート＋件数」を付け、いいね／解除できるようにする（サウナイキタイ方式）。コメント（#19）・通知（#81）と同時並行の契約 `social-spec.md` に従う
+- **DB（dev Supabase）**: `backend/migrations/2026-09-06_likes.sql`（`tweet_likes` テーブル＋索引、冪等）を **dev に適用済み**（2026-09-06、psql）。**prod は未適用**（本番反映時に同じファイルを流す）
+- **バックエンド**: `routes/likes.ts`（`POST/DELETE /api/tweets/:tweet_id/like`、要認証・冪等）、`PostgresLikeRepository`（`FOR UPDATE`＋同一トランザクションで `tweets.liked_counts` ±1）、`likeService`（新規挿入／実削除の時だけ `TweetLikedEvent` / `TweetUnlikedEvent` を発行）。ツイート一覧・詳細 5 本に `liked_by_me` を追加（共通 SQL 断片 `sqlFragments.likedByMeSql`。未認証は false）。`routes/tweets.ts` / `gyms.ts` は optionalAuthenticate の uid をサービスへ渡す最小変更のみ
+- **アプリ**: `Tweet.likedByMe`、`LikeResult`、`LikeTweetUseCase`、datasource を新 API（`/like`、トークン認証）へ差し替え（旧 `/likes`＋user_id ボディの死にコードと「自分の投稿へのいいね禁止」を撤去＝仕様どおり自分の投稿にも可）。`LikeButton`（楽観的更新→失敗で戻す＋SnackBar、未ログインはログイン導線ダイアログ、いいね済み＝ホールド赤）。`BoulLog` に操作行（左ハート、右にコメント枠 `commentCount`/`onCommentTap` を受けるだけで未描画）。5 つの一覧 Notifier に `updateLike` を追加し `tweet_like_sync.dart` で生きている一覧だけ揃える
+- **検証**: `tsc` OK／`flutter analyze` 54 件＝ベースラインと同数（新規指摘なし）／ローカル `npm run dev` で未認証 GET が `liked_by_me: false`・like API がトークン無し 401／dev DB へのリポジトリ結合テストで冪等性・カウンタ整合・各一覧の `liked_by_me` を確認（詳細は `backend/docs-likes.md`）
+- **未実施**: 実機（fdev）でのいいね操作・楽観的更新の見た目確認、ID トークン付き HTTP テスト、API 一覧スプレッドシートへの転記（行は `backend/docs-likes.md`）、dev Cloud Run デプロイ
 ## 2026-09-06 — イキタイジムカードの長押し／カード全体タップでジム詳細へ遷移（issue #76・アプリのみ・デプロイなし）
 
 - **症状**: マイページ「イキタイ」タブ（他ユーザーページのイキタイも同じ部品）で、ジム名のタップだけが遷移し、カード本体のタップや長押しは押下の見た目（`Pressable` の縮小）だけ出て遷移しなかった

@@ -23,7 +23,7 @@ export interface IGymRepository {
   /**
    * ジムのツイートを取得（ページネーション付き）
    */
-  findGymTweets(gymId: number, limit: number, cursor?: string): Promise<any[]>;
+  findGymTweets(gymId: number, limit: number, cursor?: string, requestUserId?: string): Promise<any[]>;
 
   /**
    * イキタイ数統計を取得

@@ -14,6 +14,7 @@ import { initializeApplication } from './infrastructure/setup/dependencies';
 // Import routes
 import userRoutes from './routes/users';
 import tweetRoutes from './routes/tweets';
+import likeRoutes from './routes/likes';
 import gymRoutes from './routes/gyms';
 import reportRoutes from './routes/reports';
 import blockRoutes from './routes/blocks';
@@ -62,6 +63,7 @@ app.get('/health', async (req, res) => {
 // API routes
 app.use('/api/users', userRoutes);
 app.use('/api/tweets', tweetRoutes);
+app.use('/api/tweets', likeRoutes); // いいね（routes/likes.ts）。/:tweet_id/like は tweets 側の /:tweet_id と衝突しない
 app.use('/api/gyms', gymRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/blocks', blockRoutes);

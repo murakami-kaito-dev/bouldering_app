@@ -346,6 +346,12 @@ final deleteTweetUseCaseProvider = Provider<DeleteTweetUseCase>((ref) {
   return DeleteTweetUseCase(tweetRepository);
 });
 
+final likeTweetUseCaseProvider = Provider<LikeTweetUseCase>((ref) {
+  final tweetRepository = ref.read(tweetRepositoryProvider);
+
+  return LikeTweetUseCase(tweetRepository);
+});
+
 /// お気に入り関連ユースケースProvider
 final manageFavoriteUserUseCaseProvider =
     Provider<ManageFavoriteUserUseCase>((ref) {

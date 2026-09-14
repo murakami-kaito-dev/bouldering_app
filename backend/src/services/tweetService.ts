@@ -32,15 +32,15 @@ export class TweetService {
   /**
    * ユーザーのツイート取得
    */
-  async getUserTweets(userId: string, limit: number = 20, cursor?: string): Promise<any[]> {
-    return await this.tweetRepository.getUserTweets(userId, limit, cursor);
+  async getUserTweets(userId: string, limit: number = 20, cursor?: string, requestUserId?: string): Promise<any[]> {
+    return await this.tweetRepository.getUserTweets(userId, limit, cursor, requestUserId);
   }
 
   /**
    * IDでツイート取得
    */
-  async getTweetById(tweetId: number): Promise<any | null> {
-    return await this.tweetRepository.getTweetById(tweetId);
+  async getTweetById(tweetId: number, requestUserId?: string): Promise<any | null> {
+    return await this.tweetRepository.getTweetById(tweetId, requestUserId);
   }
 
   /**

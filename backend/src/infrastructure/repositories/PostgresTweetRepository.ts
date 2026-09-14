@@ -4,6 +4,7 @@ import { Tweet, TweetMedia } from '../../models/types';
 import { ApiError } from '../../middleware/error';
 // import { StoragePathService } from '../../domain/services/StoragePathService'; // 2025.09.15 リファクタリング予定
 import logger from '../../utils/logger';
+import { likedByMeSql } from './sqlFragments';
 
 /**
  * PostgreSQL Tweet リポジトリ実装
@@ -19,11 +20,14 @@ export class PostgresTweetRepository implements ITweetRepository {
       let query: string;
       let params: any[];
 
+      // リクエストユーザーIDのプレースホルダ（cursor有:$3, cursor無:$2）。
+      // 未認証時も null で必ず渡し、liked_by_me（sqlFragments.likedByMeSql）の判定に使う
+      const paramIndex = cursor ? 3 : 2;
+
       // ブロックフィルタ条件を構築
       let blockFilterCondition = '';
-      
+
       if (requestUserId) {
-        const paramIndex = cursor ? 3 : 2; // cursor有:$3, cursor無:$2
         blockFilterCondition = `
           AND t.user_id NOT IN (
             SELECT blocked_user_id FROM user_blocks WHERE blocker_user_id = $${paramIndex}
@@ -51,14 +55,15 @@ export class PostgresTweetRepository implements ITweetRepository {
               (SELECT json_agg(media_url)
                FROM tweet_media
                WHERE tweet_id = t.tweet_id), '[]'
-            ) AS media_urls
+            ) AS media_urls,
+          ${likedByMeSql(paramIndex)}
           FROM tweets AS t
           INNER JOIN users AS u ON t.user_id = u.user_id
           INNER JOIN gyms AS g ON t.gym_id = g.gym_id
           WHERE t.tweeted_date < $1 ${blockFilterCondition}
           ORDER BY t.tweeted_date DESC
           LIMIT $2`;
-        params = requestUserId ? [cursor, limit, requestUserId] : [cursor, limit];
+        params = [cursor, limit, requestUserId ?? null];
       } else {
         query = `
           SELECT
@@ -78,14 +83,15 @@ export class PostgresTweetRepository implements ITweetRepository {
               (SELECT json_agg(media_url)
                FROM tweet_media
                WHERE tweet_id = t.tweet_id), '[]'
-            ) AS media_urls
+            ) AS media_urls,
+          ${likedByMeSql(paramIndex)}
           FROM tweets AS t
           INNER JOIN users AS u ON t.user_id = u.user_id
           INNER JOIN gyms AS g ON t.gym_id = g.gym_id
           WHERE 1 = 1 ${blockFilterCondition}
           ORDER BY t.tweeted_date DESC
           LIMIT $1`;
-        params = requestUserId ? [limit, requestUserId] : [limit];
+        params = [limit, requestUserId ?? null];
       }
 
       const result = await db.query(query, params);
@@ -96,7 +102,7 @@ export class PostgresTweetRepository implements ITweetRepository {
     }
   }
 
-  async getUserTweets(userId: string, limit: number = 20, cursor?: string): Promise<any[]> {
+  async getUserTweets(userId: string, limit: number = 20, cursor?: string, requestUserId?: string): Promise<any[]> {
     try {
       let query: string;
       let params: any[];
@@ -120,14 +126,15 @@ export class PostgresTweetRepository implements ITweetRepository {
               (SELECT json_agg(media_url)
                FROM tweet_media
                WHERE tweet_id = t.tweet_id), '[]'
-            ) AS media_urls
+            ) AS media_urls,
+          ${likedByMeSql(4)}
           FROM tweets AS t
           INNER JOIN users AS u ON t.user_id = u.user_id
           INNER JOIN gyms AS g ON t.gym_id = g.gym_id
           WHERE t.user_id = $1 AND t.tweeted_date < $2
           ORDER BY t.tweeted_date DESC
           LIMIT $3`;
-        params = [userId, cursor, limit];
+        params = [userId, cursor, limit, requestUserId ?? null];
       } else {
         query = `
           SELECT
@@ -147,14 +154,15 @@ export class PostgresTweetRepository implements ITweetRepository {
               (SELECT json_agg(media_url)
                FROM tweet_media
                WHERE tweet_id = t.tweet_id), '[]'
-            ) AS media_urls
+            ) AS media_urls,
+          ${likedByMeSql(3)}
           FROM tweets AS t
           INNER JOIN users AS u ON t.user_id = u.user_id
           INNER JOIN gyms AS g ON t.gym_id = g.gym_id
           WHERE t.user_id = $1
           ORDER BY t.tweeted_date DESC
           LIMIT $2`;
-        params = [userId, limit];
+        params = [userId, limit, requestUserId ?? null];
       }
 
       const result = await db.query(query, params);
@@ -165,7 +173,7 @@ export class PostgresTweetRepository implements ITweetRepository {
     }
   }
 
-  async getTweetById(tweetId: number): Promise<any | null> {
+  async getTweetById(tweetId: number, requestUserId?: string): Promise<any | null> {
     try {
       const result = await db.query(
         `SELECT
@@ -185,12 +193,13 @@ export class PostgresTweetRepository implements ITweetRepository {
             (SELECT json_agg(media_url)
              FROM tweet_media
              WHERE tweet_id = t.tweet_id), '[]'
-          ) AS media_urls
+          ) AS media_urls,
+        ${likedByMeSql(2)}
         FROM tweets AS t
         INNER JOIN users AS u ON t.user_id = u.user_id
         INNER JOIN gyms AS g ON t.gym_id = g.gym_id
         WHERE t.tweet_id = $1`,
-        [tweetId]
+        [tweetId, requestUserId ?? null]
       );
 
       return result.length > 0 ? result[0] : null;

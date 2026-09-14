@@ -1,3 +1,4 @@
+import '../entities/like_result.dart';
 import '../entities/tweet.dart';
 import '../repositories/tweet_repository.dart';
 import '../exceptions/app_exceptions.dart';
@@ -141,6 +142,28 @@ class DeleteTweetUseCase {
     } catch (e) {
       throw DataSaveException(
         message: 'ツイート削除に失敗しました',
+        originalError: e,
+      );
+    }
+  }
+}
+
+/// いいねの付与／解除
+///
+/// [liked] true で付ける・false で外す。サーバーが確定した状態を返す。
+class LikeTweetUseCase {
+  final TweetRepository _tweetRepository;
+
+  LikeTweetUseCase(this._tweetRepository);
+
+  Future<LikeResult> execute(int tweetId, {required bool liked}) async {
+    try {
+      return liked
+          ? await _tweetRepository.likeTweet(tweetId)
+          : await _tweetRepository.unlikeTweet(tweetId);
+    } catch (e) {
+      throw DataSaveException(
+        message: liked ? 'いいねに失敗しました' : 'いいねの取り消しに失敗しました',
         originalError: e,
       );
     }

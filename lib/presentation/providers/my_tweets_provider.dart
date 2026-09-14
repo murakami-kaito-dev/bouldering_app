@@ -152,6 +152,19 @@ class MyTweetsNotifier extends StateNotifier<MyTweetsState> {
     _fetchTweets();
   }
 
+  /// いいね状態を差し替える（LikeButton → tweet_like_sync から呼ばれる）
+  ///
+  /// 同じツイートが他の一覧にもある場合の整合用。該当ツイートが無ければ何もしない
+  void updateLike(int tweetId, bool liked, int count) {
+    if (!state.tweets.any((t) => t.id == tweetId)) return;
+    state = state.copyWith(
+      tweets: [
+        for (final t in state.tweets)
+          t.id == tweetId ? t.copyWith(likedByMe: liked, likedCount: count) : t
+      ],
+    );
+  }
+
   /// ツイート一覧を更新（プルリフレッシュ用）
   ///
   /// 表示中の一覧（または空状態）はそのまま残し、先頭ページを取り直して

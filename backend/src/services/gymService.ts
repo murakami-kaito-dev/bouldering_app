@@ -33,8 +33,8 @@ export class GymService {
   /**
    * ジムのツイート取得
    */
-  async getGymTweets(gymId: number, limit: number = 20, cursor?: string): Promise<any[]> {
-    return await this.gymRepository.findGymTweets(gymId, limit, cursor);
+  async getGymTweets(gymId: number, limit: number = 20, cursor?: string, requestUserId?: string): Promise<any[]> {
+    return await this.gymRepository.findGymTweets(gymId, limit, cursor, requestUserId);
   }
 
   /**
