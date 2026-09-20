@@ -55,6 +55,7 @@ App Store審査要件（UGCアプリに必須の通報・ブロック・規約�
 - ブランチ `refactor/ui-design-update` で作業中（未マージ・未push）
 - `fc1f2bf`: ホーム画面・ボトムナビを「フレンドリー・カジュアル系」デザイン（クリーム/コーラル/ミント/ラベンダー基調、Zen Maru Gothic）に刷新するWIPコミット
 - 2026-08-21: Claude Code 参画。情報集約ブランチ `docs/claude-context-setup`（本ブランチ）で `.claude/` 基盤整備
+- 2026-09-14: いいね機能（Issue #17・PR #82）を main にマージ。`tweet_likes` テーブル、`POST/DELETE /api/tweets/:id/like`、投稿取得 5 本に `liked_by_me`、`TweetLikedEvent/TweetUnlikedEvent`、アプリの LikeButton と一覧間の整合（tweet_like_sync）。dev DB 適用済み／prod DB 未適用
 
 ## ブランチの現状（2026-08-21時点）
 

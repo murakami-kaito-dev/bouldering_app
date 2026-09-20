@@ -182,6 +182,7 @@ class MyTweetsSectionState extends ConsumerState<MyTweetsSection> {
                         gymName: tweet.gymName,
                         prefecture: tweet.prefecture,
                         tweetId: tweet.id,
+                        commentCount: tweet.commentCount, // [comments]
                         likedCount: tweet.likedCount,
                         likedByMe: tweet.likedByMe,
                         content: tweet.content,

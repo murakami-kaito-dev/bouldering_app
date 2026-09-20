@@ -195,6 +195,7 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                       content: favoriteUserTweet.content,
                       mediaUrls: favoriteUserTweet.mediaUrls,
                       tweetId: favoriteUserTweet.id,
+                      commentCount: favoriteUserTweet.commentCount, // [comments]
                       likedCount: favoriteUserTweet.likedCount,
                       likedByMe: favoriteUserTweet.likedByMe,
                       contextPrefix: 'favorite', // お気に入りツイート画面用

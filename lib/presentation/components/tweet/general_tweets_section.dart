@@ -108,6 +108,7 @@ class GeneralTweetsSectionState extends ConsumerState<GeneralTweetsSection> {
             content: generalTweet.content,
             mediaUrls: generalTweet.mediaUrls,
             tweetId: generalTweet.id,
+            commentCount: generalTweet.commentCount, // [comments]
             likedCount: generalTweet.likedCount,
             likedByMe: generalTweet.likedByMe,
             contextPrefix: 'general', // 一般ツイート画面用

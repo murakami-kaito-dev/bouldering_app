@@ -29,6 +29,8 @@ import 'terms_agreement_page.dart';
 import 'splash_page.dart';
 import 'block_list_page.dart';
 import 'blocked_user_page.dart';
+import 'tweet_detail_page.dart';
+import '../../domain/entities/tweet.dart';
 
 /// メインアプリケーションクラス
 ///
@@ -96,7 +98,16 @@ class BoulderingApp extends ConsumerWidget {
       },
       AppRoutes.blockList: (context) => const BlockListPage(),
       AppRoutes.blockedUser: (context) => const BlockedUserPage(),
-      // Note: Tweet detail uses parameters, so it's handled in navigation helper
+      // スレッド画面（ボル活の詳細＋コメント）
+      AppRoutes.tweetDetail: (context) {
+        final args = ModalRoute.of(context)!.settings.arguments as Map?;
+        final tweetId = args?[RouteParams.tweetId];
+        final initialTweet = args?[RouteParams.tweet];
+        return TweetDetailPage(
+          tweetId: tweetId is int ? tweetId : int.tryParse('$tweetId') ?? 0,
+          initialTweet: initialTweet is Tweet ? initialTweet : null,
+        );
+      },
     };
   }
 

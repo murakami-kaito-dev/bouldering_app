@@ -42,6 +42,7 @@ class RouteParams {
 
   // ツイート詳細ページ用
   static const String tweetId = 'tweetId';
+  static const String tweet = 'tweet'; // 呼び出し元が Tweet を持っていれば渡す（任意）
 
   // ユーザープロフィールページ用
   static const String userId = 'userId';
