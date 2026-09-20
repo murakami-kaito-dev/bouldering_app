@@ -195,9 +195,9 @@ class FavoriteTweetsSectionState extends ConsumerState<FavoriteTweetsSection> {
                       content: favoriteUserTweet.content,
                       mediaUrls: favoriteUserTweet.mediaUrls,
                       tweetId: favoriteUserTweet.id,
+                      commentCount: favoriteUserTweet.commentCount, // [comments]
                       likedCount: favoriteUserTweet.likedCount,
                       likedByMe: favoriteUserTweet.likedByMe,
-                      commentCount: favoriteUserTweet.commentCount, // [comments]
                       contextPrefix: 'favorite', // お気に入りツイート画面用
                       // ブロック成功時の処理：ツイート一覧を更新
                       onBlockSuccess: () async {

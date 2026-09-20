@@ -12,10 +12,10 @@ import { PostgresReportRepository } from '../repositories/PostgresReportReposito
 import { ReportService } from '../../services/reportService';
 import { PostgresBlockRepository } from '../repositories/PostgresBlockRepository';
 import { BlockService } from '../../services/blockService';
-import { PostgresLikeRepository } from '../repositories/PostgresLikeRepository';
-import { LikeService } from '../../services/likeService';
 import { PostgresCommentRepository } from '../repositories/PostgresCommentRepository';
 import { CommentService } from '../../services/commentService';
+import { PostgresLikeRepository } from '../repositories/PostgresLikeRepository';
+import { LikeService } from '../../services/likeService';
 import { PostgresNotificationRepository } from '../repositories/PostgresNotificationRepository';
 import { NotificationService } from '../../services/notificationService';
 import { PostgresAnnouncementRepository } from '../repositories/PostgresAnnouncementRepository';
@@ -44,6 +44,7 @@ let gymServiceInstance: GymService | null = null;
 let favoriteServiceInstance: FavoriteService | null = null;
 let reportServiceInstance: ReportService | null = null;
 let blockServiceInstance: BlockService | null = null;
+let commentServiceInstance: CommentService | null = null;
 let likeServiceInstance: LikeService | null = null;
 
 // リポジトリインスタンス
@@ -53,6 +54,7 @@ let gymRepository: PostgresGymRepository | null = null;
 let favoriteRepository: PostgresFavoriteRepository | null = null;
 let reportRepository: PostgresReportRepository | null = null;
 let blockRepository: PostgresBlockRepository | null = null;
+let commentRepository: PostgresCommentRepository | null = null;
 let likeRepository: PostgresLikeRepository | null = null;
 
 /**
@@ -100,6 +102,12 @@ function getBlockRepository(): PostgresBlockRepository {
   return blockRepository;
 }
 
+function getCommentRepository(): PostgresCommentRepository {
+  if (!commentRepository) {
+    commentRepository = new PostgresCommentRepository();
+  }
+  return commentRepository;
+}
 function getLikeRepository(): PostgresLikeRepository {
   if (!likeRepository) {
     likeRepository = new PostgresLikeRepository();
@@ -267,14 +275,26 @@ export function getBlockService(): BlockService {
   return blockServiceInstance;
 }
 
-let commentServiceInstance: CommentService | null = null;
-let commentRepository: PostgresCommentRepository | null = null;
-
-function getCommentRepository(): PostgresCommentRepository {
-  if (!commentRepository) {
-    commentRepository = new PostgresCommentRepository();
+/**
+ * LikeServiceの依存性注入済みインスタンスを取得
+ */
+export function getLikeService(): LikeService {
+  if (likeServiceInstance) {
+    return likeServiceInstance;
   }
-  return commentRepository;
+
+  // イベントシステムのセットアップ（TweetLiked / TweetUnliked を通知機能が購読する）
+  const eventBusInstance = setupEventSystem();
+
+  const likeRepo = getLikeRepository();
+  likeServiceInstance = new LikeService(likeRepo, eventBusInstance);
+
+  logger.info('LikeService initialized with Clean Architecture', {
+    hasEventBus: true,
+    hasRepository: true
+  });
+
+  return likeServiceInstance;
 }
 
 /**
@@ -297,28 +317,6 @@ export function getCommentService(): CommentService {
   });
 
   return commentServiceInstance;
-}
-
-/**
- * LikeServiceの依存性注入済みインスタンスを取得
- */
-export function getLikeService(): LikeService {
-  if (likeServiceInstance) {
-    return likeServiceInstance;
-  }
-
-  // イベントシステムのセットアップ（TweetLiked / TweetUnliked を通知機能が購読する）
-  const eventBusInstance = setupEventSystem();
-
-  const likeRepo = getLikeRepository();
-  likeServiceInstance = new LikeService(likeRepo, eventBusInstance);
-
-  logger.info('LikeService initialized with Clean Architecture', {
-    hasEventBus: true,
-    hasRepository: true
-  });
-
-  return likeServiceInstance;
 }
 
 // ---------------------------------------------------------------------------
@@ -397,8 +395,8 @@ export function initializeApplication(): void {
   getFavoriteService();
   getReportService();
   getBlockService();
-  getLikeService();
   getCommentService();
+  getLikeService();
   getNotificationService();
   getAnnouncementService();
   

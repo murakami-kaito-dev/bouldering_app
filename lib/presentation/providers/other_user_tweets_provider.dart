@@ -127,19 +127,6 @@ class OtherUserTweetsNotifier extends StateNotifier<OtherUserTweetsState> {
     _fetchTweets();
   }
 
-  /// いいね状態を差し替える（LikeButton → tweet_like_sync から呼ばれる）
-  ///
-  /// 同じツイートが他の一覧にもある場合の整合用。該当ツイートが無ければ何もしない
-  void updateLike(int tweetId, bool liked, int count) {
-    if (!state.tweets.any((t) => t.id == tweetId)) return;
-    state = state.copyWith(
-      tweets: [
-        for (final t in state.tweets)
-          t.id == tweetId ? t.copyWith(likedByMe: liked, likedCount: count) : t
-      ],
-    );
-  }
-
   /// コメント数の同期（スレッド画面で投稿／削除したとき。+1 / -1）
   ///
   /// 同じツイートが他の一覧にも載っていても件数が食い違わないように、
@@ -155,6 +142,18 @@ class OtherUserTweetsNotifier extends StateNotifier<OtherUserTweetsState> {
             : t,
     ];
     state = state.copyWith(tweets: updated);
+  }
+  /// いいね状態を差し替える（LikeButton → tweet_like_sync から呼ばれる）
+  ///
+  /// 同じツイートが他の一覧にもある場合の整合用。該当ツイートが無ければ何もしない
+  void updateLike(int tweetId, bool liked, int count) {
+    if (!state.tweets.any((t) => t.id == tweetId)) return;
+    state = state.copyWith(
+      tweets: [
+        for (final t in state.tweets)
+          t.id == tweetId ? t.copyWith(likedByMe: liked, likedCount: count) : t
+      ],
+    );
   }
 
   /// ツイート一覧を更新（プルリフレッシュ用）
@@ -175,6 +174,17 @@ class OtherUserTweetsNotifier extends StateNotifier<OtherUserTweetsState> {
       isLoading: false,
       hasMore: true,
       isFirstFetch: true,
+    );
+  }
+
+  /// 削除済みのツイートを一覧から取り除く（#75）
+  ///
+  /// 再取得はせず、メモリ上の一覧から該当 ID だけを外す。
+  /// nextCursor（最後のツイートの投稿日時）は境界としてそのまま有効
+  void removeTweet(int tweetId) {
+    if (!state.tweets.any((t) => t.id == tweetId)) return;
+    state = state.copyWith(
+      tweets: state.tweets.where((t) => t.id != tweetId).toList(),
     );
   }
 }
