@@ -19,6 +19,8 @@ import gymRoutes from './routes/gyms';
 import reportRoutes from './routes/reports';
 import blockRoutes from './routes/blocks';
 import { tweetCommentsRouter, commentsRouter } from './routes/comments';
+import notificationRoutes from './routes/notifications';
+import announcementRoutes from './routes/announcements';
 import internalTasksRoutes from './routes/internal_tasks';
 
 // Validate environment variables
@@ -71,6 +73,9 @@ app.use('/api/blocks', blockRoutes);
 // スレッド（コメント）: /api/tweets/:tweet_id/comments と /api/comments/:comment_id
 app.use('/api/tweets', tweetCommentsRouter);
 app.use('/api/comments', commentsRouter);
+// 通知（Issue #81）: /api/users/:user_id/notifications…（routes/users.ts に無いパスなので後段で受ける）と /api/announcements
+app.use('/api/users', notificationRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 // Internal task routes (for Cloud Tasks workers)
 app.use('/internal/tasks', internalTasksRoutes);

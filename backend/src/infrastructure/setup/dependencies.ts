@@ -16,6 +16,10 @@ import { PostgresCommentRepository } from '../repositories/PostgresCommentReposi
 import { CommentService } from '../../services/commentService';
 import { PostgresLikeRepository } from '../repositories/PostgresLikeRepository';
 import { LikeService } from '../../services/likeService';
+import { PostgresNotificationRepository } from '../repositories/PostgresNotificationRepository';
+import { NotificationService } from '../../services/notificationService';
+import { PostgresAnnouncementRepository } from '../repositories/PostgresAnnouncementRepository';
+import { AnnouncementService } from '../../services/announcementService';
 import logger from '../../utils/logger';
 
 /**
@@ -127,6 +131,9 @@ export function setupEventSystem(): InMemoryEventBus {
   // ストレージクリーンアップハンドラーの登録
   const storageCleanupHandler = new StorageCleanupEventHandler();
   eventBus.subscribe('TweetDeleted', (event) => storageCleanupHandler.handle(event));
+
+  // 通知（Issue #81）: TweetLiked / TweetUnliked / CommentCreated を購読して通知行を作る
+  getNotificationService().registerHandlers(eventBus);
 
   logger.info('Event system setup completed', {
     eventBus: 'InMemoryEventBus',
@@ -312,6 +319,65 @@ export function getCommentService(): CommentService {
   return commentServiceInstance;
 }
 
+// ---------------------------------------------------------------------------
+// 通知・お知らせ（Issue #81）
+// ---------------------------------------------------------------------------
+let notificationServiceInstance: NotificationService | null = null;
+let notificationRepository: PostgresNotificationRepository | null = null;
+let announcementServiceInstance: AnnouncementService | null = null;
+let announcementRepository: PostgresAnnouncementRepository | null = null;
+
+function getNotificationRepository(): PostgresNotificationRepository {
+  if (!notificationRepository) {
+    notificationRepository = new PostgresNotificationRepository();
+  }
+  return notificationRepository;
+}
+
+function getAnnouncementRepository(): PostgresAnnouncementRepository {
+  if (!announcementRepository) {
+    announcementRepository = new PostgresAnnouncementRepository();
+  }
+  return announcementRepository;
+}
+
+/**
+ * NotificationService の依存性注入済みインスタンスを取得
+ *
+ * イベントの購読登録は setupEventSystem() 側で行う（イベントバス生成時に 1 回だけ）。
+ * ここでは eventBus を要求しない（setupEventSystem から呼ばれるため、循環を避ける）
+ */
+export function getNotificationService(): NotificationService {
+  if (notificationServiceInstance) {
+    return notificationServiceInstance;
+  }
+
+  notificationServiceInstance = new NotificationService(getNotificationRepository());
+
+  logger.info('NotificationService initialized', {
+    hasRepository: true,
+  });
+
+  return notificationServiceInstance;
+}
+
+/**
+ * AnnouncementService の依存性注入済みインスタンスを取得（イベントバスは使わない）
+ */
+export function getAnnouncementService(): AnnouncementService {
+  if (announcementServiceInstance) {
+    return announcementServiceInstance;
+  }
+
+  announcementServiceInstance = new AnnouncementService(getAnnouncementRepository());
+
+  logger.info('AnnouncementService initialized', {
+    hasRepository: true,
+  });
+
+  return announcementServiceInstance;
+}
+
 /**
  * アプリケーション初期化
  * Express アプリケーション起動時に呼び出す
@@ -331,6 +397,8 @@ export function initializeApplication(): void {
   getBlockService();
   getCommentService();
   getLikeService();
+  getNotificationService();
+  getAnnouncementService();
   
   logger.info('Application dependencies initialized successfully');
 }
