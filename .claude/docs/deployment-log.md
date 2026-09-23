@@ -9,6 +9,20 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
+## 2026-09-23 — v3.1.0 本番反映の準備（Firebase prod / prod DB / Places 上限確認）
+
+- **Firebase Auth（prod・ユーザーがコンソールで実施）**: Google（公開名「イワノボリタイ」）・Apple を有効化、アカウントのリンクを「ID プロバイダごとに複数のアカウントを作成」に変更。メール/パスワードは既存のまま（旧 2 アカウントは残す方針）
+- **prod `GoogleService-Info.plist` を再取得**（`firebase apps:sdkconfig IOS 1:1021741160508:ios:957f9fe813015c06c54b39 --project bouldering-app-prod-ca5d7`）→ `ios/Runner/Firebase/prod/` を差し替え。`CLIENT_ID` / `REVERSED_CLIENT_ID` が入った（Git 管理外）
+- **DB（prod Supabase・psql・1 トランザクション）**: `ALTER TABLE users ALTER COLUMN email DROP NOT NULL`（UNIQUE `users_new_email_key` は維持）＋ `2026-09-06_likes.sql` → `comments.sql` → `notifications.sql` を適用。事後検証: `tweet_likes` / `tweet_comments` / `notifications` / `announcements` 存在、`tweets.comment_counts` 追加、索引 5 本存在、既存データ（users 2・tweets 1・gyms 430）不変。接続は prod Cloud Run の `DATABASE_URL` をシェル変数経由で使用（値は非表示）
+- **Places 上限（prod）**: 実測で `GetPhotoMediaRequest` の日次上限 2,500 が有効（9/19 適用分）。dev は未変更（既定 175,000）
+- **Apple Developer（確認のみ）**: prod App ID `com.km.boulderingapp`（N4D8TFU24J）には `APPLE_ID_AUTH`（Sign In with Apple）が dev 同様すでに付与済み → 追加作業なし。既存プロファイル「Bouldering App Distribution v2」は INVALID だが署名は自動管理（`-allowProvisioningUpdates`）のためアーカイブ時に再生成される
+- **バックエンド（prod デプロイ済み）**: main（e853036）から `docker build --platform linux/amd64` → `backend:supabase-v3.1.0` を push → `bouldering-api-prod` **rev 00024 → 00025**（`--image` のみ指定。環境変数 14 個・シークレット・SA・1Gi は引き継ぎ。新規 env 不要）。検証: `/health` healthy／`GET /api/gyms` 430 件／`GET /api/gyms/3` 200／`GET /api/tweets` に `liked_by_me`・`comment_counts` あり／未認証の `POST /tweets/:id/like`・`POST /tweets/:id/comments`・`GET /users/:id/notifications`・`POST /users` → 401／`GET /tweets/:id/comments`・`GET /announcements` → 200
+- **自動モードの分類器について**: 最初の push は「Production Deploy」として拒否 → ユーザーが `.claude/settings.local.json`（Git 管理外）に docker build/tag/push・`gcloud run deploy`（prod/dev）・`flutter build ios/ipa`・`xcrun altool` の許可ルールを作成して再開。9/1 の v2.0.0 でも同じ拒否が起きており、Claude Code 2.1.258 → 2.1.280 で判定が分類つき・厳格化した（環境側の変化なし）
+- **iOS**: ブランチ `release/v3.1.0` を main から作成し `pubspec.yaml` を `3.1.0+14` に版上げ（未コミット）。`flutter build ipa`（Runner Prod）は**署名で失敗**: `Release-Runner Prod` だけ `CODE_SIGN_STYLE = Manual` で、プロファイル「Bouldering App Distribution v2」（ASC id D2B5V9XU3K・INVALID・cert S9HFN4J4U4）に Sign In with Apple が含まれない。他 5 構成（dev 全部・prod Debug/Profile）は Automatic。ASC API でのプロファイル削除・再作成は分類器に拒否 → ユーザー対応待ち
+- **証明書の期限（要対応）**: 「Apple Distribution: Kaito Murakami」（S9HFN4J4U4）と Apple Development 系 2 枚が **2026-09-28 に期限切れ**。ローカル鍵付きの配布証明書はこの 1 枚のみ（「iOS Distribution」2 枚は Expo 管理で鍵なし）。9/28 以降は新規アーカイブ不可になるため、リリース前に更新が必要
+- **iOS 署名の解決（2026-09-24）**: 許可ルールに ASC スクリプト（`.local/asc/tools/asc.py`）を追加後、INVALID の「Bouldering App Distribution v2」（D2B5V9XU3K）を削除し同名で再作成（**5NS3J2Q5QZ**・cert S9HFN4J4U4・Sign In with Apple 入り）→ `~/Library/Developer/Xcode/UserData/Provisioning Profiles/` と `~/Library/MobileDevice/Provisioning Profiles/` に配置。`flutter build ipa` 成功（3.1.0 / 14）→ altool で TestFlight へアップロード（Delivery UUID `b9a98dd1-e670-4365-8d41-f6a74fc5ba8a`）。詳細は release-log
+- **未実施（次）**: TestFlight 実機検証 → App Store 申請（審査メモは「SNS ログイン（Google/Apple）・いいね・コメント・通知」の 4 点、スクショは通知タブ 1 枚追加）
+
 ## 2026-09-06 — いいね・スレッド・通知の dev デプロイ（バックエンド）
 
 - **rev 00069**（`backend:dev-20260906-db5800e`）: いいね（#17）＋スレッド（#19）。`GET /api/tweets` に `liked_by_me` / `comment_counts` が載ることを確認、`POST /api/tweets/:id/like` 未認証 → 401、`GET /api/tweets/:id/comments` → 200

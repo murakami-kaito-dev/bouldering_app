@@ -3,6 +3,19 @@
 バージョン・ビルド番号の変更と配信の記録。新しいものを上に積む（1エントリ＝1ビルド番号）。
 ※ 2026-08-21 に git 履歴・docs から遡って復元。git からは「配信したか」は分からないため、不明なものは不明と明記。
 
+## 【本番版】3.1.0 (build 14) — 2026-09-24 · TestFlight（イワノボリタイ・内部テスト）
+
+- **v3.0.0 公開後に main へ入った全変更を同梱**（25 PR）: **SNS ログイン（Google / Apple のみ・メール/パスワード撤廃・メール任意登録）#68**／**いいね #82・スレッド（コメント／返信）#83・通知タブ #84**／時刻の JST 統一 #72／UI 修正群（#54〜#67・#69・#70・#79・#80: iPad 対応維持・スプラッシュ暗転・統計の色・日付ピッカー日本語化・骨組み表示・ボル活タブ更新 など）
+- ブランチ `release/v3.1.0`（main e853036 から。`pubspec.yaml` を 3.0.0+12 → **3.1.0+14**。dev が 13 を使用済み）
+- **バックエンド**: prod `bouldering-api-prod` rev 00025（`supabase-v3.1.0`）に接続。prod DB にいいね／コメント／通知のテーブルと `users.email` NULL 許容を適用済み（deployment-log 2026-09-23）
+- **Firebase prod**: Google / Apple プロバイダ有効化・複数アカウント設定（ユーザー実施）。`GoogleService-Info.plist`（prod）を CLIENT_ID 付きに再取得
+- **署名**: prod リリース構成は手動署名。プロファイル「Bouldering App Distribution v2」を Sign In with Apple 入りで再作成（ASC id 5NS3J2Q5QZ）。IPA 検証: Apple Distribution 署名／`com.apple.developer.applesignin` entitlement／URL スキーム注入／UIDeviceFamily 1,2
+- 旧メール/パスワードの 2 アカウント（いずれも運営者のもの）は削除せず残す（ユーザー決定 2026-09-23）
+
+**配信**: TestFlight にアップロード済み（2026-09-24 00:52 JST・altool・Delivery UUID `b9a98dd1-e670-4365-8d41-f6a74fc5ba8a`・エラー0）→ Apple 側で処理中。内部グループ「内部テスト」は全ビルド自動配信
+**状態**: 内部テスター配信待ち → 実機で prod 検証（Google/Apple ログイン → いいね → コメント → 通知 → 退会）→ OK なら App Store 申請（審査メモ: SNS ログイン・いいね・コメント・通知の 4 点／スクショ: 通知タブ 1 枚追加）
+**提出時の必須作業**: 提出コミットに `v3.1.0` タグ
+
 ## 【開発版】3.0.0 (build 13) — 2026-09-07 · TestFlight（イワノボリタイ Dev）
 
 - **いいね・スレッド（コメント／返信）・通知タブの実機確認用**。ブランチ `feature/notifications`（PR #84。#82 いいね・#83 スレッドを内包）からビルド
