@@ -21,7 +21,8 @@
 - **iOS**: ブランチ `release/v3.1.0` を main から作成し `pubspec.yaml` を `3.1.0+14` に版上げ（未コミット）。`flutter build ipa`（Runner Prod）は**署名で失敗**: `Release-Runner Prod` だけ `CODE_SIGN_STYLE = Manual` で、プロファイル「Bouldering App Distribution v2」（ASC id D2B5V9XU3K・INVALID・cert S9HFN4J4U4）に Sign In with Apple が含まれない。他 5 構成（dev 全部・prod Debug/Profile）は Automatic。ASC API でのプロファイル削除・再作成は分類器に拒否 → ユーザー対応待ち
 - **証明書の期限（要対応）**: 「Apple Distribution: Kaito Murakami」（S9HFN4J4U4）と Apple Development 系 2 枚が **2026-09-28 に期限切れ**。ローカル鍵付きの配布証明書はこの 1 枚のみ（「iOS Distribution」2 枚は Expo 管理で鍵なし）。9/28 以降は新規アーカイブ不可になるため、リリース前に更新が必要
 - **iOS 署名の解決（2026-09-24）**: 許可ルールに ASC スクリプト（`.local/asc/tools/asc.py`）を追加後、INVALID の「Bouldering App Distribution v2」（D2B5V9XU3K）を削除し同名で再作成（**5NS3J2Q5QZ**・cert S9HFN4J4U4・Sign In with Apple 入り）→ `~/Library/Developer/Xcode/UserData/Provisioning Profiles/` と `~/Library/MobileDevice/Provisioning Profiles/` に配置。`flutter build ipa` 成功（3.1.0 / 14）→ altool で TestFlight へアップロード（Delivery UUID `b9a98dd1-e670-4365-8d41-f6a74fc5ba8a`）。詳細は release-log
-- **未実施（次）**: TestFlight 実機検証 → App Store 申請（審査メモは「SNS ログイン（Google/Apple）・いいね・コメント・通知」の 4 点、スクショは通知タブ 1 枚追加）
+- **旧アカウントの整理（2026-09-24・prod Firebase + DB）**: TestFlight 検証で「設定からのメール登録」の確認メールが届かない事象 → 原因は旧パスワード方式アカウントがそのメールを占有していると Firebase の `verifyBeforeUpdateEmail` が **200 を返しつつ送らない**（dev で 9/4 に実測済みの挙動）。対処: ①`gPJ43l…`（むらーん）のメールを mri.benkyochannel@gmail.com → **boulder@example.com** に変更（Firebase `accounts:update` と DB `users.email` の両方）②デモ用 `baMFxYD6…`（駆け出しボルダー・boulderingapplication@gmail.com・関連データ 0 件）を Firebase と DB から**削除**（ユーザー指示。必要時に再作成）。km.solo.developer@gmail.com のアカウントは prod に存在しなかった。変更後、検証アカウント `IWtCVc…` に mri.benkyochannel@gmail.com が登録できたことを DB で確認
+- **未実施（次）**: TestFlight 実機検証（継続中）→ App Store 申請（審査メモは「SNS ログイン（Google/Apple）・いいね・コメント・通知」の 4 点、スクショは通知タブ 1 枚追加）
 
 ## 2026-09-06 — いいね・スレッド・通知の dev デプロイ（バックエンド）
 

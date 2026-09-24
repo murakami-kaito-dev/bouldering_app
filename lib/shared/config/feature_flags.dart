@@ -14,4 +14,12 @@ class FeatureFlags {
   /// 右タブ（運営・ジムからのお知らせ）は仕様が固まっていないため当面は隠す。
   /// DB・API・画面の実装は残してあり、true にすれば「通知｜お知らせ」の 2 タブになる
   static const bool showAnnouncementsTab = false;
+
+  /// 設定画面の「メールアドレス（任意）」登録の入口を出すか
+  ///
+  /// 現行の Firebase 確認メール方式は、再認証・セッション失効（自動ログアウト）・
+  /// 別アカウントが持つメール宛てには送られない、の 3 点が避けられない。
+  /// 自前送信（Brevo・PR #71）と独自ドメインに切り替える次回リリースまで隠す。
+  /// AuthNotifier.registerEmail / removeEmail と設定画面のダイアログは実装を残してある
+  static const bool showEmailRegistration = false;
 }
