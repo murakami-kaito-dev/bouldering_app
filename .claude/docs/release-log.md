@@ -3,18 +3,18 @@
 バージョン・ビルド番号の変更と配信の記録。新しいものを上に積む（1エントリ＝1ビルド番号）。
 ※ 2026-08-21 に git 履歴・docs から遡って復元。git からは「配信したか」は分からないため、不明なものは不明と明記。
 
-## 【本番版】3.1.0 (build 14) — 2026-09-24 · TestFlight（イワノボリタイ・内部テスト）
+## 【本番版】3.1.0 (build 15) — 2026-09-24 · TestFlight（イワノボリタイ・内部テスト）
 
-- **v3.0.0 公開後に main へ入った全変更を同梱**（25 PR）: **SNS ログイン（Google / Apple のみ・メール/パスワード撤廃・メール任意登録）#68**／**いいね #82・スレッド（コメント／返信）#83・通知タブ #84**／時刻の JST 統一 #72／UI 修正群（#54〜#67・#69・#70・#79・#80: iPad 対応維持・スプラッシュ暗転・統計の色・日付ピッカー日本語化・骨組み表示・ボル活タブ更新 など）
-- ブランチ `release/v3.1.0`（main e853036 から。`pubspec.yaml` を 3.0.0+12 → **3.1.0+14**。dev が 13 を使用済み）
-- **バックエンド**: prod `bouldering-api-prod` rev 00025（`supabase-v3.1.0`）に接続。prod DB にいいね／コメント／通知のテーブルと `users.email` NULL 許容を適用済み（deployment-log 2026-09-23）
-- **Firebase prod**: Google / Apple プロバイダ有効化・複数アカウント設定（ユーザー実施）。`GoogleService-Info.plist`（prod）を CLIENT_ID 付きに再取得
-- **署名**: prod リリース構成は手動署名。プロファイル「Bouldering App Distribution v2」を Sign In with Apple 入りで再作成（ASC id 5NS3J2Q5QZ）。IPA 検証: Apple Distribution 署名／`com.apple.developer.applesignin` entitlement／URL スキーム注入／UIDeviceFamily 1,2
-- 旧メール/パスワードの 2 アカウント（いずれも運営者のもの）は削除せず残す（ユーザー決定 2026-09-23）
+- build 14 との差分は 1 点: **設定画面の「メールアドレス（任意）」登録の入口を非表示**（`FeatureFlags.showEmailRegistration = false`。プロフィール欄の「未登録」表示も隠す。実装は残す）。
+  理由: 現行の Firebase 確認メール方式は再認証・セッション失効・別アカウント所有メール宛て無送信が避けられない → 自前送信（Brevo・PR #71）＋独自ドメインに切り替える次回リリースで出す
+- build 14 の実機検証結果: Google ログイン・メール登録（旧アカウントのメール付け替え後）は OK（ユーザー確認）。その他の項目は build 15 で継続
+- コミット `ae89ad9`（`release/v3.1.0`）
 
-**配信**: TestFlight にアップロード済み（2026-09-24 00:52 JST・altool・Delivery UUID `b9a98dd1-e670-4365-8d41-f6a74fc5ba8a`・エラー0）→ Apple 側で処理中。内部グループ「内部テスト」は全ビルド自動配信
-**状態**: 内部テスター配信待ち → 実機で prod 検証（Google/Apple ログイン → いいね → コメント → 通知 → 退会）→ OK なら App Store 申請（審査メモ: SNS ログイン・いいね・コメント・通知の 4 点／スクショ: 通知タブ 1 枚追加）
-**提出時の必須作業**: 提出コミットに `v3.1.0` タグ
+**配信**: TestFlight にアップロード済み（2026-09-24 01:3x JST・altool・Delivery UUID `8ac5c472-a774-4e68-ba84-34a3066afe13`・エラー0）→ Apple 処理 VALID → 内部テスト配信（実機検証 OK: Google/Apple ログイン・メール登録・いいね・コメント・通知・退会）
+**状態**: **App Store 審査提出済み**（2026-09-24 17:33 JST・App Store Connect API・reviewSubmission `da271a2d-…`・appStoreVersion `7f7b8a16-…`・**WAITING_FOR_REVIEW**・承認後に自動公開）
+- 提出内容: ビルド 15／What's New（SNS ログイン・いいね・コメント・通知の 4 点）／プロモーションテキスト更新／説明文の「v3.0.0 の主な変更」→「v3.1.0 の主な変更」に差し替え・「みんなのボル活」にいいね・コメントを追記／審査メモを 4 点＋Sign in with Apple で審査可能の案内に更新し**デモアカウント不要**に変更／スクリーンショット iPhone 6.9" に **9 枚目「09 / 通知」を追加**（iPad は 8 枚のまま）
+- 9 枚目の作り方: dev シミュレータ（iPhone 16 Pro Max）でノボリタロウのアカウントに撮影用のいいね・コメント・返信通知を dev DB へ直接投入 → デバッグ帯を一時的に消して撮影（戻し済み）→ 4 枚目を土台に見出しと端末内画面を差し替え合成（`docs/app_store/screenshots/v3.1.0/compose_ip09.py`・Git 非管理）
+**提出時の必須作業**: 提出コミットに `v3.1.0` タグ → **付与済み**（`ae89ad9`・build 15 の元コミット）
 
 ## 【開発版】3.0.0 (build 13) — 2026-09-07 · TestFlight（イワノボリタイ Dev）
 
