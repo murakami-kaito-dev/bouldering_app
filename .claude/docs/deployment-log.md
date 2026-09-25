@@ -9,13 +9,17 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
-## 2026-09-25 — Issue #89 対策 E: ジム写真キャッシュをメモリから Supabase（gym_photo_cache）へ（実装のみ・Cloud Run 未デプロイ）
+## 2026-09-25 — Issue #89 対策 E: ジム写真キャッシュをメモリから Supabase（gym_photo_cache）へ（**dev・prod デプロイ済み**）
 
 - **ブランチ** `feature/gym-photo-cache-db`。API の形は不変（`/api/gyms/:id/photos` の応答は同じ）なのでアプリの再申請は不要
 - **migration** `backend/migrations/2026-09-25_gym_photo_cache.sql`: `gym_photo_cache(gym_id PK→gyms CASCADE, source google|none, photos JSONB, expires_at, updated_at)`＋`idx_gym_photo_cache_expires`。冪等・追加のみ。**dev DB に適用済み**（2026-09-25）。**prod DB は未適用**（デプロイ時に流す）
 - **placesService.ts** を書き換え: L1 プロセス内メモリ（5 分・連打吸収）→ 自前写真 `gym_photos`（キャッシュしない）→ **L2 `gym_photo_cache`（成功 30 日 / 写真なし 1 時間）**→ Google Places。DB 読み書きに失敗しても写真機能は止めない（警告ログを出してメモリだけで動く）。dev 無効化（対策 B）の分岐は維持
 - **検証（ローカル ts-node → dev DB）**: 初回呼び出しで `SELECT`（0 行）→ 解決 → `INSERT`（TTL 60 分の none 行）／同一プロセス 2 回目はメモリ／**プロセス再起動後**の呼び出しは DB の行（rows 1）を返して再解決なし。tsc 0 エラー。Docker ビルド成功（ローカルタグのみ・push なし）
-- **未実施**: dev/prod Cloud Run へのデプロイ、prod DB への migration、期限切れ行の掃除ジョブ（当面は不要。行数はジム数 430 が上限）
+- **その後の変更**: L1 メモリを 5 分 → **10 分**（ユーザー決定）。`expires_at` の索引は数百行では使われないため削除（dev DB からも DROP。残る索引は主キーのみ）
+- **prod デプロイ（2026-09-25 18:00 JST）**: PR #93 を main（4bd6042）へマージ → prod DB に migration 適用（`gym_photo_cache` 作成・索引は主キーのみ）→ イメージ **`backend:supabase-v3.1.0-r2`**（アプリ 3.1.0 のまま バックエンドだけの更新なので `-r2` を付与）→ `bouldering-api-prod` **rev 00025 → 00026**（環境変数は引き継ぎ。`PLACES_API_KEY` あり・`PLACES_PHOTOS_ENABLED` 未設定＝有効）。検証: `/health` healthy／`GET /api/gyms/3/photos` 初回 `source:google` 5 枚（Google 解決）→ **prod DB に `gym_id=3, google, 5 枚, TTL 30.0 日` の行**／2 回目 55ms（メモリ）／`/api/gyms` 430 件・`/api/tweets`・`/api/announcements` 200
+- **dev デプロイ**: 同じイメージに `dev-20260925-4bd6042` を付けて `bouldering-api-dev` **rev 00071 → 00072**（`PLACES_PHOTOS_ENABLED=false`・`PLACES_API_KEY` なしを維持）。検証: `/api/gyms/103/photos` → `none`（Google 呼び出しなし）、dev DB に `none` 行（TTL 60 分）
+- **アプリ側の変更なし**（API の応答形式は不変）のため TestFlight・App Store の更新は不要
+- **今後の観察点**: Google の写真 URL（photoUri）が 30 日以内に失効する場合、アプリでは「壊れた画像」アイコンになる。prod の `gym_photo_cache` の行が古くなった頃（10 月下旬）に実際の URL が開けるか確認する
 
 ## 2026-09-25 — Issue #89 対策 B: dev の Google 写真フォールバックを無効化（dev のみ・prod 不変）
 
