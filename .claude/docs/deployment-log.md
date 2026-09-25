@@ -14,7 +14,7 @@
 - **背景（同日の再調査）**: 9/1〜9/25 の Photo Media 成功件数は dev 6,836・prod 2,990（概算 ¥8,700）。dev は誰も使っていない 9/25 も毎時 50〜110 件が続いており、呼び出し元は dev Web（`bouldering-web-dev` の BFF、UA `node`）。dev Web の `/gyms/{id}` は `google-proxy-*.google.com`（66.249.x 等・Google の取得基盤）から雑多なブラウザ UA・リファラ無しで毎時 10〜27 ページ巡回されている（9/16 から観測。9/19 まで規約サイトに dev URL を掲載していた期間に拾われたと推定）。prod の 9/24 855 件は TestFlight 検証（1 台の iPhone・173 ジム × 最大 5 枚）
 - **コード**（ブランチ `fix/dev-disable-google-photos`）: `PLACES_PHOTOS_ENABLED`（既定 true）を `config.places.photosEnabled` として追加し、`placesService.resolvePhotos` が false なら Places に問い合わせず `source:'none'` を返す。自前写真（`gym_photos`）は従来どおり
 - **ルール化**: `.claude/rules/places-photos-dev-prod.md`（dev/prod 差分は意図的・解消しない・経緯）
-- **dev Cloud Run**: main をビルドして `--update-env-vars PLACES_PHOTOS_ENABLED=false --remove-env-vars PLACES_API_KEY` でデプロイ（二重の安全弁）。prod は変更なし
+- **dev Cloud Run（デプロイ済み）**: ブランチのコード（a69a0f8）を `backend:dev-20260925-a69a0f8` としてビルド・push → `bouldering-api-dev` **rev 00070 → 00071**（`--update-env-vars PLACES_PHOTOS_ENABLED=false --remove-env-vars PLACES_API_KEY`・二重の安全弁）。検証: `/health` healthy／`/api/gyms/{3,103,143}/photos` → `source:none`・0 枚／`/api/gyms` 430 件／`/api/tweets` 200。prod は変更なし（PR #92 は main 未マージ。マージは「レビュー無しマージ」として自動モードに拒否されたためユーザー側）
 - **未着手**: 対策 E（キャッシュを Supabase へ・30 日保持）は修正箇所の説明まで。D/F/G/H/I はユーザーの疑問に回答後に判断
 
 ## 2026-09-06 — いいね・スレッド・通知の dev デプロイ（バックエンド）
