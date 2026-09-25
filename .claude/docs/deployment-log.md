@@ -9,6 +9,14 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
+## 2026-09-25 — Issue #89 対策 B: dev の Google 写真フォールバックを無効化（dev のみ・prod 不変）
+
+- **背景（同日の再調査）**: 9/1〜9/25 の Photo Media 成功件数は dev 6,836・prod 2,990（概算 ¥8,700）。dev は誰も使っていない 9/25 も毎時 50〜110 件が続いており、呼び出し元は dev Web（`bouldering-web-dev` の BFF、UA `node`）。dev Web の `/gyms/{id}` は `google-proxy-*.google.com`（66.249.x 等・Google の取得基盤）から雑多なブラウザ UA・リファラ無しで毎時 10〜27 ページ巡回されている（9/16 から観測。9/19 まで規約サイトに dev URL を掲載していた期間に拾われたと推定）。prod の 9/24 855 件は TestFlight 検証（1 台の iPhone・173 ジム × 最大 5 枚）
+- **コード**（ブランチ `fix/dev-disable-google-photos`）: `PLACES_PHOTOS_ENABLED`（既定 true）を `config.places.photosEnabled` として追加し、`placesService.resolvePhotos` が false なら Places に問い合わせず `source:'none'` を返す。自前写真（`gym_photos`）は従来どおり
+- **ルール化**: `.claude/rules/places-photos-dev-prod.md`（dev/prod 差分は意図的・解消しない・経緯）
+- **dev Cloud Run**: main をビルドして `--update-env-vars PLACES_PHOTOS_ENABLED=false --remove-env-vars PLACES_API_KEY` でデプロイ（二重の安全弁）。prod は変更なし
+- **未着手**: 対策 E（キャッシュを Supabase へ・30 日保持）は修正箇所の説明まで。D/F/G/H/I はユーザーの疑問に回答後に判断
+
 ## 2026-09-06 — いいね・スレッド・通知の dev デプロイ（バックエンド）
 
 - **rev 00069**（`backend:dev-20260906-db5800e`）: いいね（#17）＋スレッド（#19）。`GET /api/tweets` に `liked_by_me` / `comment_counts` が載ることを確認、`POST /api/tweets/:id/like` 未認証 → 401、`GET /api/tweets/:id/comments` → 200

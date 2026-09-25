@@ -80,8 +80,9 @@ async function resolvePhotos(gymId: number): Promise<GymPhotosResult> {
     logger.warn('gym_photos query failed (continuing with Places)', { gymId, error });
   }
 
-  // 2. Places API（place_id 未解決・キー未設定なら写真なし）
-  if (!config.places.apiKey) {
+  // 2. Places API（無効化・キー未設定・place_id 未解決なら写真なし）
+  //    PLACES_PHOTOS_ENABLED=false の環境（dev）では Google へ一切問い合わせない（Issue #89 対策 B・2026-09-25）
+  if (!config.places.photosEnabled || !config.places.apiKey) {
     return { source: 'none', photos: [] };
   }
 

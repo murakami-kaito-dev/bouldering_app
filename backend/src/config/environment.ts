@@ -43,8 +43,15 @@ export const config = {
 
   // Google Places API（ジム写真取得用）
   // 未設定の場合、写真機能は静かに無効化される（photosは空で返る）
+  //
+  // PLACES_PHOTOS_ENABLED: Google 写真フォールバックの有効/無効（既定 true）
+  // - prod: 有効（利用者向けにジム写真を出す）
+  // - dev : 'false' で無効（Places の従量課金を開発環境で発生させない。2026-09-25 決定・Issue #89 対策 B）
+  //   dev では自前写真（gym_photos）だけが返り、Google 写真は source='none' になる。
+  //   この dev/prod 差分は意図的なもの。解除するときは .claude/rules/places-photos-dev-prod.md を先に読むこと
   places: {
     apiKey: process.env.PLACES_API_KEY || '',
+    photosEnabled: (process.env.PLACES_PHOTOS_ENABLED ?? 'true').toLowerCase() !== 'false',
   },
 
   // CORS
