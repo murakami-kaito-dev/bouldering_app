@@ -9,6 +9,14 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
+## 2026-09-25 — Issue #89 対策 E: ジム写真キャッシュをメモリから Supabase（gym_photo_cache）へ（実装のみ・Cloud Run 未デプロイ）
+
+- **ブランチ** `feature/gym-photo-cache-db`。API の形は不変（`/api/gyms/:id/photos` の応答は同じ）なのでアプリの再申請は不要
+- **migration** `backend/migrations/2026-09-25_gym_photo_cache.sql`: `gym_photo_cache(gym_id PK→gyms CASCADE, source google|none, photos JSONB, expires_at, updated_at)`＋`idx_gym_photo_cache_expires`。冪等・追加のみ。**dev DB に適用済み**（2026-09-25）。**prod DB は未適用**（デプロイ時に流す）
+- **placesService.ts** を書き換え: L1 プロセス内メモリ（5 分・連打吸収）→ 自前写真 `gym_photos`（キャッシュしない）→ **L2 `gym_photo_cache`（成功 30 日 / 写真なし 1 時間）**→ Google Places。DB 読み書きに失敗しても写真機能は止めない（警告ログを出してメモリだけで動く）。dev 無効化（対策 B）の分岐は維持
+- **検証（ローカル ts-node → dev DB）**: 初回呼び出しで `SELECT`（0 行）→ 解決 → `INSERT`（TTL 60 分の none 行）／同一プロセス 2 回目はメモリ／**プロセス再起動後**の呼び出しは DB の行（rows 1）を返して再解決なし。tsc 0 エラー。Docker ビルド成功（ローカルタグのみ・push なし）
+- **未実施**: dev/prod Cloud Run へのデプロイ、prod DB への migration、期限切れ行の掃除ジョブ（当面は不要。行数はジム数 430 が上限）
+
 ## 2026-09-25 — Issue #89 対策 B: dev の Google 写真フォールバックを無効化（dev のみ・prod 不変）
 
 - **背景（同日の再調査）**: 9/1〜9/25 の Photo Media 成功件数は dev 6,836・prod 2,990（概算 ¥8,700）。dev は誰も使っていない 9/25 も毎時 50〜110 件が続いており、呼び出し元は dev Web（`bouldering-web-dev` の BFF、UA `node`）。dev Web の `/gyms/{id}` は `google-proxy-*.google.com`（66.249.x 等・Google の取得基盤）から雑多なブラウザ UA・リファラ無しで毎時 10〜27 ページ巡回されている（9/16 から観測。9/19 まで規約サイトに dev URL を掲載していた期間に拾われたと推定）。prod の 9/24 855 件は TestFlight 検証（1 台の iPhone・173 ジム × 最大 5 枚）
