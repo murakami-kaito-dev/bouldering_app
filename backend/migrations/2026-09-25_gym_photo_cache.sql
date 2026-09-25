@@ -22,9 +22,6 @@ CREATE TABLE IF NOT EXISTS gym_photo_cache (
 
 -- 期限切れ行の扱い:
 -- - 期限切れの行が残っていても動作に影響はない（読み取りは expires_at > now() の行だけを使い、
---   再解決時は同じ gym_id の行を UPSERT で上書きする）。行数はジム数（430）が上限で、増え続けない。
--- - したがって定期的な掃除ジョブは置いていない。整理したくなったときだけ手動で
---   `DELETE FROM gym_photo_cache WHERE expires_at < now();` を流す（任意・いつでも安全）。
---   将来自動化するなら Supabase の pg_cron 拡張で日次実行できる。
--- - 下の索引はその手動削除と「期限内の行だけ読む」検索を速くするためのもの（無くても動く）。
-CREATE INDEX IF NOT EXISTS idx_gym_photo_cache_expires ON gym_photo_cache(expires_at);
+--   再解決時は同じ gym_id の行を UPSERT で上書きする）。行数はジム数（430・将来も数百）が上限で、増え続けない。
+-- - したがって定期的な掃除ジョブも expires_at の索引も置いていない（数百行では索引は使われない。2026-09-25 ユーザー決定）。
+--   整理したくなったときだけ手動で `DELETE FROM gym_photo_cache WHERE expires_at < now();` を流す（任意・いつでも安全）。
