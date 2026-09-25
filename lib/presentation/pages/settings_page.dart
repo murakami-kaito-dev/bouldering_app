@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../../domain/services/auth_service.dart';
 import '../components/common/loading_widget.dart';
 import '../components/common/error_widget.dart';
+import '../../shared/config/feature_flags.dart';
 import '../../shared/utils/navigation_helper.dart';
 import '../../shared/utils/url_launcher_helper.dart';
 import '../theme/app_tokens.dart';
@@ -105,9 +106,12 @@ class SettingsPage extends ConsumerWidget {
                       Text(user.userName,
                           style:
                               AppText.body(size: 14, weight: FontWeight.w700)),
-                      const SizedBox(height: 4),
-                      Text(user.email ?? 'メールアドレス未登録',
-                          style: AppText.caption(size: 12)),
+                      // メール登録の入口を隠している間は、未登録表示も出さない（FeatureFlags）
+                      if (FeatureFlags.showEmailRegistration) ...[
+                        const SizedBox(height: 4),
+                        Text(user.email ?? 'メールアドレス未登録',
+                            style: AppText.caption(size: 12)),
+                      ],
                       if (user.boulderingYearsExperience != null) ...[
                         const SizedBox(height: 4),
                         Text('ボルダリング歴: ${user.boulderingYearsExperience}年',
@@ -172,14 +176,16 @@ class SettingsPage extends ConsumerWidget {
                   style: AppText.caption(size: 12),
                 ),
               ),
-              _buildSettingsItem(
-                icon: Icons.email,
-                title: 'メールアドレス（任意）',
-                subtitle: user.email == null
-                    ? '未登録。お知らせを受け取りたい場合に登録できます'
-                    : '登録済み: ${user.email}',
-                onTap: () => _showEmailDialog(context, ref, user),
-              ),
+              // 自前送信（Brevo）＋独自ドメインへ切り替える次回リリースまで入口を隠す（FeatureFlags）
+              if (FeatureFlags.showEmailRegistration)
+                _buildSettingsItem(
+                  icon: Icons.email,
+                  title: 'メールアドレス（任意）',
+                  subtitle: user.email == null
+                      ? '未登録。お知らせを受け取りたい場合に登録できます'
+                      : '登録済み: ${user.email}',
+                  onTap: () => _showEmailDialog(context, ref, user),
+                ),
             ],
           ),
         ),

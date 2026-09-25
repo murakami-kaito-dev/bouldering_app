@@ -1,6 +1,6 @@
 # CLAUDE.md — イワノボリタイ（bouldering_app）
 
-ボルダリングジム検索・ボル活記録SNS。**iOS配信済み（v1.0.1+2）の本番アプリ**。
+ボルダリングジム検索・ボル活記録SNS。**iOS配信済み（現行 v3.1.0 build 15・2026-09-25 公開）の本番アプリ**。
 Flutter + Cloud Run(Express/TS) + Firebase Auth + Supabase。dev/prod 完全分離。
 
 ## 最重要ルール（このプロジェクト専用・グローバルルールより優先）
