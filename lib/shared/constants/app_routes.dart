@@ -33,6 +33,13 @@ class AppRoutes {
   // ブロック関連
   static const String blockList = '/block/list';
   static const String blockedUser = '/block/blocked-user';
+
+  // コンペ関連（デモ機能）
+  static const String competitionList = '/competition/list'; // 開催中の一覧（参加する）
+  static const String competitionJoined = '/competition/joined'; // 参加中の一覧（順位表を見る）
+  static const String competitionHost = '/competition/host'; // 開催者の管理（開催する・編集）
+  static const String competitionDetail = '/competition/detail'; // 確認する
+  static const String competitionLeaderboard = '/competition/leaderboard'; // 順位を見る
 }
 
 /// ルートパラメータ用のクラス
@@ -49,4 +56,8 @@ class RouteParams {
 
   // ツイート投稿ページ用（事前選択ジム）
   static const String preSelectedGymId = 'preSelectedGymId';
+
+  // コンペ詳細・順位表ページ用
+  static const String competitionId = 'competitionId';
+  static const String competition = 'competition'; // 呼び出し元が Competition を持っていれば渡す（任意）
 }

@@ -18,6 +18,44 @@ export const validateGymId = () =>
     .isInt({ min: 1 })
     .withMessage('Valid gym ID is required');
 
+// Competition validation rules（デモ機能）
+export const validateCompetitionId = () =>
+  param('competition_id')
+    .isInt({ min: 1 })
+    .withMessage('Valid competition ID is required');
+
+export const validateProblemNo = () =>
+  param('problem_no')
+    .isInt({ min: 1 })
+    .withMessage('Valid problem number is required');
+
+/** 開催・編集の入力。日付は JST の 'YYYY-MM-DD'（時刻を付けない） */
+export const validateCompetitionInput = () => [
+  body('title')
+    .optional({ nullable: true })
+    .isString()
+    .isLength({ max: 50 })
+    .withMessage('Title must be 50 characters or less'),
+  body('start_date')
+    .isISO8601({ strict: true })
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage('start_date must be YYYY-MM-DD'),
+  body('end_date')
+    .isISO8601({ strict: true })
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage('end_date must be YYYY-MM-DD'),
+  body('problem_from')
+    .isInt({ min: 1, max: 9999 })
+    .withMessage('problem_from must be an integer >= 1'),
+  body('problem_to')
+    .isInt({ min: 1, max: 9999 })
+    .withMessage('problem_to must be an integer >= 1'),
+  body('entry_fee_yen')
+    .optional({ nullable: true })
+    .isInt({ min: 0, max: 1000000 })
+    .withMessage('entry_fee_yen must be an integer between 0 and 1,000,000'),
+];
+
 // User validation rules
 export const validateCreateUser = () => [
   body('user_id')

@@ -25,6 +25,7 @@ export class PostgresUserRepository implements IUserRepository {
         `SELECT
           user_id, user_name, user_icon_url, email, home_gym_id,
           user_introduce, favorite_gym, gender, boul_start_date, birthday,
+          managed_gym_id,
           created_at, updated_at
         FROM users
         WHERE user_id = $1`,

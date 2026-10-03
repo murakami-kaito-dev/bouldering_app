@@ -398,6 +398,8 @@ class UserDataSource {
       birthday: _parseDateOnly(userData['birthday']),
       boulStartDate: _parseDateOnly(userData['boul_start_date']),
       homeGymId: userData['home_gym_id'],
+      // ジム管理者（コンペ開催者）。GET /users/{id}（本人）だけが返す。公開プロフィールには含まれない
+      managedGymId: userData['managed_gym_id'],
     );
   }
 
