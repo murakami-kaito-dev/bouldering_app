@@ -30,4 +30,7 @@ abstract class CompetitionRepository {
 
   /// 完登を記録（completed=true）／取り消す（false）。更新後の完登済み課題番号を返す
   Future<Set<int>> setProblemCompleted(int competitionId, int problemNo, bool completed);
+
+  /// 【開発用】コンペを削除する（仕様の「中止」ではない。テストデータ掃除用。dev 環境でのみ有効）
+  Future<void> deleteCompetition(int competitionId);
 }

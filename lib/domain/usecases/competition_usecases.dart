@@ -142,6 +142,28 @@ class SetProblemCompletedUseCase {
   }
 }
 
+/// 【開発用】コンペ削除（2026-10-03 ユーザー指示）
+///
+/// 仕様の「中止」機能ではない。開発中にテストデータを消すためのデバッグ用で、
+/// 画面側は開発環境（EnvironmentConfig.isDevelopment）でだけボタンを出す。
+/// バックエンドも COMPETITION_DEBUG_DELETE_ENABLED=true の環境でしか受け付けない
+class DeleteCompetitionUseCase {
+  final CompetitionRepository _repository;
+
+  DeleteCompetitionUseCase(this._repository);
+
+  Future<void> execute(int competitionId) async {
+    try {
+      await _repository.deleteCompetition(competitionId);
+    } catch (e) {
+      throw DataSaveException(
+        message: 'コンペの削除に失敗しました',
+        originalError: e,
+      );
+    }
+  }
+}
+
 /// 開催・編集の入力検査（画面でも同じ条件で案内する）
 void _validate(CompetitionInput input) {
   final errors = <String, String>{};

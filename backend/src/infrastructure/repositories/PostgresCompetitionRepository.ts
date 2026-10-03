@@ -294,4 +294,22 @@ export class PostgresCompetitionRepository implements ICompetitionRepository {
       throw new ApiError(500, 'Failed to list completions');
     }
   }
+
+  /**
+   * 【開発用】コンペの物理削除（2026-10-03 ユーザー指示・デバッグ用）
+   * competition_entries / competition_results は FK の ON DELETE CASCADE で一緒に消える
+   */
+  async deleteById(competitionId: number): Promise<boolean> {
+    try {
+      const rows = await db.query(
+        'DELETE FROM competitions WHERE competition_id = $1 RETURNING competition_id',
+        [competitionId]
+      );
+      logger.warn('[DEV ONLY] Competition physically deleted', { competitionId, deleted: rows.length > 0 });
+      return rows.length > 0;
+    } catch (error) {
+      logger.error('Error deleting competition', { competitionId, error });
+      throw new ApiError(500, 'Failed to delete competition');
+    }
+  }
 }

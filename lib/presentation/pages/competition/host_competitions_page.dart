@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/entities/competition.dart';
+import '../../../shared/config/environment_config.dart';
 import '../../../shared/utils/navigation_helper.dart';
 import '../../components/common/error_widget.dart';
 import '../../components/common/loading_widget.dart';
@@ -84,6 +85,19 @@ class HostCompetitionsPage extends ConsumerWidget {
                               icon: const Icon(Icons.leaderboard_outlined, size: 18),
                               label: const Text('順位を見る'),
                             ),
+                            // 【開発用】削除ボタン。仕様の「中止」ではなく、テストデータを消すためのデバッグ用
+                            // （2026-10-03 ユーザー指示）。開発環境のビルドでだけ表示し、本番ビルドには出さない。
+                            // バックエンドも COMPETITION_DEBUG_DELETE_ENABLED=true の dev でしか受け付けない
+                            if (EnvironmentConfig.isDevelopment)
+                              OutlinedButton.icon(
+                                onPressed: () => _debugDelete(context, ref, c),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.holdRed,
+                                  side: const BorderSide(color: AppColors.holdRed),
+                                ),
+                                icon: const Icon(Icons.delete_outline, size: 18),
+                                label: const Text('削除（開発用）'),
+                              ),
                           ],
                         ),
                   ],
@@ -91,6 +105,31 @@ class HostCompetitionsPage extends ConsumerWidget {
               ),
             ),
     );
+  }
+
+  /// 【開発用】確認ダイアログ → 物理削除（参加・完登記録も消える）。dev ビルドでしか呼ばれない
+  Future<void> _debugDelete(BuildContext context, WidgetRef ref, Competition c) async {
+    final ok = await NavigationHelper.showConfirmDialog(
+      context: context,
+      title: '【開発用】コンペを削除',
+      message: '${c.displayTitle}（${c.gymName}）を削除します。\n'
+          '参加者 ${c.participantCount} 人の参加・完登記録も消え、元に戻せません。\n\n'
+          '※ これは開発中のテストデータ掃除用の機能で、仕様の「中止」ではありません。',
+      confirmText: '削除する',
+    );
+    if (!ok || !context.mounted) return;
+    try {
+      await ref.read(competitionActionsProvider).debugDelete(c.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${c.displayTitle} を削除しました（開発用）')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(competitionErrorMessage(e))),
+      );
+    }
   }
 
   /// 設定画面（新規 or 編集）を開き、完了したら案内を出す

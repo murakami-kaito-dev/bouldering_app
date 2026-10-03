@@ -43,4 +43,9 @@ class CompetitionRepositoryImpl implements CompetitionRepository {
   @override
   Future<Set<int>> setProblemCompleted(int competitionId, int problemNo, bool completed) =>
       _dataSource.setProblemCompleted(competitionId, problemNo, completed);
+
+  /// 【開発用】テストデータ掃除用の削除（dev 環境でのみ有効）
+  @override
+  Future<void> deleteCompetition(int competitionId) =>
+      _dataSource.deleteCompetition(competitionId);
 }

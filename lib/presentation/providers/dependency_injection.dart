@@ -609,3 +609,8 @@ final setProblemCompletedUseCaseProvider =
     Provider<SetProblemCompletedUseCase>((ref) {
   return SetProblemCompletedUseCase(ref.read(competitionRepositoryProvider));
 });
+
+/// 【開発用】コンペ削除ユースケースProvider（テストデータ掃除用。dev 環境でのみボタンが出る）
+final deleteCompetitionUseCaseProvider = Provider<DeleteCompetitionUseCase>((ref) {
+  return DeleteCompetitionUseCase(ref.read(competitionRepositoryProvider));
+});

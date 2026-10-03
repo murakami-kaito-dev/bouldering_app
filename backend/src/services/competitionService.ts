@@ -5,6 +5,7 @@ import {
   LeaderboardResult,
 } from '../domain/repositories/ICompetitionRepository';
 import { ApiError } from '../middleware/error';
+import { config } from '../config/environment';
 import { jstToday } from '../utils/jstTime';
 import logger from '../utils/logger';
 
@@ -128,6 +129,26 @@ export class CompetitionService {
     const completedProblems = await this.competitionRepository.findMyCompletedProblems(competitionId, userId);
     logger.info('Competition result updated via service', { competitionId, userId, problemNo, completed });
     return { problem_no: problemNo, completed, completed_problems: completedProblems };
+  }
+
+  /**
+   * 【開発用】コンペを物理削除する（2026-10-03 ユーザー指示）
+   *
+   * - 仕様の「中止」機能ではない。開発中にテストデータを消すためのデバッグ用
+   * - COMPETITION_DEBUG_DELETE_ENABLED=true の環境（dev Cloud Run）でだけ動く。prod では常に 403
+   * - 削除できるのは開催者（本人 or 同じジムの管理者）のみ。参加・完登記録も一緒に消える（復元不可）
+   */
+  async debugDelete(competitionId: number, userId: string): Promise<void> {
+    if (!config.competition.debugDeleteEnabled) {
+      throw new ApiError(403, 'Competition delete is disabled in this environment', 'DEBUG_DELETE_DISABLED');
+    }
+    const existing = await this.getById(competitionId, userId);
+    if (!existing.is_host) {
+      throw new ApiError(403, 'Only the host can delete this competition', 'NOT_HOST');
+    }
+    const deleted = await this.competitionRepository.deleteById(competitionId);
+    if (!deleted) throw new ApiError(404, 'Competition not found', 'COMPETITION_NOT_FOUND');
+    logger.warn('[DEV ONLY] Competition deleted via service', { competitionId, userId });
   }
 
   /** 入力の整合性（express-validator で形式は見ているので、ここは組み合わせの検査） */

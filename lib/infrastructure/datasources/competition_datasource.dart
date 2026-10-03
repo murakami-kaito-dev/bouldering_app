@@ -100,6 +100,17 @@ class CompetitionDataSource {
     return list.map((e) => (e as num).toInt()).toSet();
   }
 
+  /// 【開発用】DELETE /api/competitions/{id}（要認証・開催者のみ・dev 環境でのみ有効）
+  ///
+  /// 仕様の「中止」機能ではない。開発中にテストデータを消すためのデバッグ用（2026-10-03 ユーザー指示）。
+  /// prod のバックエンドは COMPETITION_DEBUG_DELETE_ENABLED が無いため常に 403 を返す
+  Future<void> deleteCompetition(int competitionId) async {
+    await _call(() => _apiClient.delete(
+          endpoint: '/competitions/$competitionId',
+          requireAuth: true,
+        ));
+  }
+
   List<Competition> _toList(dynamic data) {
     final List<dynamic> items = data ?? [];
     return items.map((e) => Competition.fromJson(e as Map<String, dynamic>)).toList();

@@ -110,4 +110,10 @@ export interface ICompetitionRepository {
 
   /** 本人の完登済み課題番号（昇順） */
   findMyCompletedProblems(competitionId: number, userId: string): Promise<number[]>;
+
+  /**
+   * 【開発用】コンペを物理削除する（参加・完登記録は FK の CASCADE で消える）。削除できたか
+   * 仕様の「中止」ではない。テストデータの掃除用で、サービス層が COMPETITION_DEBUG_DELETE_ENABLED で門を閉じる
+   */
+  deleteById(competitionId: number): Promise<boolean>;
 }

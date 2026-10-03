@@ -195,6 +195,24 @@ router.delete(
   }
 );
 
+// 63. 【開発用】Delete a competition（仕様の「中止」ではない。テストデータ掃除用）
+//     COMPETITION_DEBUG_DELETE_ENABLED=true の環境（dev）でだけ動く。prod では 403
+router.delete(
+  '/:competition_id',
+  authenticate,
+  validateCompetitionId(),
+  handleValidationErrors,
+  async (req, res, next) => {
+    try {
+      const { uid } = requireUser(req as AuthenticatedRequest);
+      await competitionService.debugDelete(parseInt(req.params.competition_id), uid);
+      res.json({ success: true, message: 'Competition deleted (dev only)' });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 /** body → CompetitionInput（express-validator で型は確認済み） */
 function toInput(body: Record<string, unknown>) {
   return {

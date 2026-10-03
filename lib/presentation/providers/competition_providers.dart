@@ -90,6 +90,14 @@ class CompetitionActions {
     _ref.invalidate(competitionLeaderboardProvider(competitionId));
     return result;
   }
+
+  /// 【開発用】コンペを削除する（テストデータ掃除用。dev 環境でのみボタンが出る・バックエンドも dev のみ受け付ける）
+  Future<void> debugDelete(int competitionId) async {
+    await _ref.read(deleteCompetitionUseCaseProvider).execute(competitionId);
+    _ref.invalidate(hostedCompetitionsProvider);
+    _ref.invalidate(activeCompetitionsProvider);
+    _ref.invalidate(joinedCompetitionsProvider);
+  }
 }
 
 final competitionActionsProvider = Provider<CompetitionActions>((ref) {
