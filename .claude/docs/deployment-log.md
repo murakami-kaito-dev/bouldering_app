@@ -9,6 +9,17 @@
 新しいものを上に積む。確認コマンド:
 `gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/<project>/<repo> --include-tags`
 
+## 2026-10-03 — コンペティション機能（デモ・dev 先行）と Apple 署名証明書の更新
+
+- **機能**: ジム管理者がコンペを開催し、ユーザーが参加して完登を自己申告、順位表（完登数順）を見るデモ機能。ブランチ `feature/competition`（PR #96）。質問と回答・仮の判断・懸念点は **Issue #95**。**prod には一切反映していない**
+- **DB（dev Supabase）**: `backend/migrations/2026-10-03_competitions.sql` を適用（`users.managed_gym_id` 追加、`competitions` / `competition_entries` / `competition_results` 作成。冪等・追加のみ）。`Wwun1GNQ…`（駆け出しボルダー）を gym 192（folk bouldering gym）の管理者に設定（ユーザー指示・仮実装）。prod 未適用
+- **バックエンド（dev）**: `backend:dev-20261003-910c988` → `bouldering-api-dev` **rev 00072 → 00073**（環境変数は引き継ぎ。`PLACES_PHOTOS_ENABLED=false`・`PLACES_API_KEY` なしを維持）。検証: `/health` healthy／`GET /api/competitions` → `[]`／`/competitions/999` → 404／`/competitions/hosted` 未認証 → 401／`/competitions/abc` → 400。認証付きの経路（開催・参加・完登）はユーザーが TestFlight（Dev）で確認
+- **API**: 53〜62 の 10 エンドポイント（`/api/competitions` 配下）を追加。API 一覧スプレッドシートは未転記（dev 先行のため。本番展開時に転記）
+- **Apple 署名証明書の更新（必須対応だった）**: 9/28 に「Apple Development」「Apple Distribution」が失効し、ローカルの署名 ID が 0 件になっていた（dev アーカイブが `No signing certificate "iOS Development" found` で失敗）。ASC API（`POST /v1/certificates`・ローカル生成の CSR）で **Apple Development `YJY2VSY6VY`／Apple Distribution `X57GG39RB6`（2027-10-03 まで）** を発行し、ログインキーチェーンへ取り込み。秘密鍵と `.cer` は `.local/asc/signing-keys/`（Git 管理外）に退避、所在は `.local/credentials-locations.md`。※ 最初の発行分（`S8BHBPWC7J` / `ND6YMU747B`）は鍵の取り込みに失敗して使えなかったため**失効済み**
+- **要対応（次の prod リリース時）**: prod の手動プロファイル「Bouldering App Distribution v2」（`5NS3J2Q5QZ`）は旧証明書に紐づいていたため INVALID。prod アーカイブの前に新しい Apple Distribution（`X57GG39RB6`）で再作成する（9/24 と同じ手順: DELETE → POST /v1/profiles → ローカル配置）
+- **TestFlight（Dev）**: 3.1.0 (build 16) をアップロード（Delivery UUID `f612d096-…`）。`flutter build ipa` はクラウド署名権限（API キーに無い）とキャッシュ済みプロファイルの不整合で失敗 → `flutter build ios --no-codesign` → `xcodebuild archive -allowProvisioningUpdates -authenticationKeyPath …`（開発プロファイルは自動再生成された）→ dev 用 App Store プロファイル `7SARC32RFM` を ASC API で再作成・配置 → 手動署名の ExportOptions で `-exportArchive` → altool。手順は release-log と `.claude/docs/commands.md` に反映予定
+- **キーチェーンの確認ダイアログ**: `security import -A` で取り込んだ鍵には `apple-tool:` の partition list が付かず、codesign のたびに確認が出る。解消はユーザー側で `security set-key-partition-list -S apple-tool:,apple:,codesign: -s ~/Library/Keychains/login.keychain-db`（要パスワード）。次回以降、鍵の取り込みはこの登録まで含める
+
 ## 2026-09-25 — Issue #89 対策 E: ジム写真キャッシュをメモリから Supabase（gym_photo_cache）へ（**dev・prod デプロイ済み**）
 
 - **ブランチ** `feature/gym-photo-cache-db`。API の形は不変（`/api/gyms/:id/photos` の応答は同じ）なのでアプリの再申請は不要
