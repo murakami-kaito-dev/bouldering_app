@@ -3,6 +3,16 @@
 バージョン・ビルド番号の変更と配信の記録。新しいものを上に積む（1エントリ＝1ビルド番号）。
 ※ 2026-08-21 に git 履歴・docs から遡って復元。git からは「配信したか」は分からないため、不明なものは不明と明記。
 
+## 【開発版】3.1.0 (build 17) — 2026-10-03 · TestFlight（イワノボリタイ Dev）
+
+- build 16 との差分は 1 点: **【開発用】コンペ削除ボタン**（「コンペを開催する」画面の各コンペに「削除（開発用）」。確認ダイアログ → 物理削除。参加・完登記録も消える）。テストデータ掃除用で、仕様の「中止」ではない。**dev flavor のビルドにだけ表示**（`EnvironmentConfig.isDevelopment`）。バックエンドは dev の rev 00074（`COMPETITION_DEBUG_DELETE_ENABLED=true`）に接続。prod はボタンも API も無効
+- コミット `b1b262f`（`feature/competition`・PR #96）
+- 署名は build 16 と同じ新証明書・手動署名プロファイル。今回は `flutter build ipa --export-options-plist ExportOptionsDevManual.plist --build-number=17` の 1 コマンドで成功（手順は `.claude/docs/commands.md`）
+
+**版数**: `pubspec.yaml` は 3.1.0+15 のまま。**ビルド時に `--build-number=17` を指定**
+**配信**: TestFlight にアップロード済み（2026-10-03 JST・altool・Delivery UUID `06fdbbee-4ae6-4293-a067-32f050c030ce`・エラー0）→ Apple 側で処理中
+**状態**: 内部テスター配信（審査提出なし）。アプリ画面の確認はユーザーが実施
+
 ## 【開発版】3.1.0 (build 16) — 2026-10-03 · TestFlight（イワノボリタイ Dev）
 
 - **コンペティション機能（デモ）の実機確認用**。ブランチ `feature/competition`（PR #96・Issue #95）。6 つ目のタブ「コンペ」（通知とマイページの間）。参加する／参加中の順位表／開催する（ジム管理者のみ）
