@@ -20,6 +20,8 @@ import { PostgresNotificationRepository } from '../repositories/PostgresNotifica
 import { NotificationService } from '../../services/notificationService';
 import { PostgresAnnouncementRepository } from '../repositories/PostgresAnnouncementRepository';
 import { AnnouncementService } from '../../services/announcementService';
+import { PostgresCompetitionRepository } from '../repositories/PostgresCompetitionRepository';
+import { CompetitionService } from '../../services/competitionService';
 import logger from '../../utils/logger';
 
 /**
@@ -378,6 +380,36 @@ export function getAnnouncementService(): AnnouncementService {
   return announcementServiceInstance;
 }
 
+// ---------------------------------------------------------------------------
+// コンペティション（デモ機能・dev 先行）
+// ---------------------------------------------------------------------------
+let competitionServiceInstance: CompetitionService | null = null;
+let competitionRepository: PostgresCompetitionRepository | null = null;
+
+function getCompetitionRepository(): PostgresCompetitionRepository {
+  if (!competitionRepository) {
+    competitionRepository = new PostgresCompetitionRepository();
+  }
+  return competitionRepository;
+}
+
+/**
+ * CompetitionService の依存性注入済みインスタンスを取得（イベントバスは使わない）
+ */
+export function getCompetitionService(): CompetitionService {
+  if (competitionServiceInstance) {
+    return competitionServiceInstance;
+  }
+
+  competitionServiceInstance = new CompetitionService(getCompetitionRepository());
+
+  logger.info('CompetitionService initialized', {
+    hasRepository: true,
+  });
+
+  return competitionServiceInstance;
+}
+
 /**
  * アプリケーション初期化
  * Express アプリケーション起動時に呼び出す
@@ -399,6 +431,7 @@ export function initializeApplication(): void {
   getLikeService();
   getNotificationService();
   getAnnouncementService();
-  
+  getCompetitionService();
+
   logger.info('Application dependencies initialized successfully');
 }

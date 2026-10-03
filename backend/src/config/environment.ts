@@ -54,6 +54,14 @@ export const config = {
     photosEnabled: (process.env.PLACES_PHOTOS_ENABLED ?? 'true').toLowerCase() !== 'false',
   },
 
+  // コンペティション（デモ機能）
+  // COMPETITION_DEBUG_DELETE_ENABLED: 【開発用】コンペの物理削除 API（DELETE /api/competitions/:id）を有効にするか。
+  //   仕様上の「中止」機能ではなく、開発中にテストデータを消すためのデバッグ用（2026-10-03 ユーザー指示）。
+  //   既定 false。dev Cloud Run にだけ 'true' を設定し、prod では決して有効にしない
+  competition: {
+    debugDeleteEnabled: (process.env.COMPETITION_DEBUG_DELETE_ENABLED ?? 'false').toLowerCase() === 'true',
+  },
+
   // CORS
   cors: {
     origins: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],

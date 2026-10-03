@@ -11,6 +11,8 @@ export interface User {
   gender: number; // 0: unselected, 1: male, 2: female
   boul_start_date?: Date;
   birthday?: Date;
+  /** 管理しているジムの ID（ジム管理者のみ。一般ユーザーは null。運営が DB で直接登録する） */
+  managed_gym_id?: number | null;
   created_at: Date;
   updated_at: Date;
 }

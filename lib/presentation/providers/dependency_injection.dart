@@ -62,6 +62,10 @@ import '../../domain/usecases/block_usecase.dart';
 import '../../domain/usecases/comment_usecases.dart';
 import '../../domain/usecases/notification_usecases.dart';
 import '../../domain/usecases/tweet_detail_usecases.dart';
+import '../../domain/usecases/competition_usecases.dart';
+import '../../domain/repositories/competition_repository.dart';
+import '../../infrastructure/datasources/competition_datasource.dart';
+import '../../infrastructure/repositories/competition_repository_impl.dart';
 
 /// 依存関係注入（DI）コンテナ
 ///
@@ -554,4 +558,59 @@ final announcementRepositoryProvider = Provider<AnnouncementRepository>((ref) {
 /// お知らせ一覧取得ユースケースProvider
 final getAnnouncementsUseCaseProvider = Provider<GetAnnouncementsUseCase>((ref) {
   return GetAnnouncementsUseCase(ref.read(announcementRepositoryProvider));
+});
+
+// ==================== コンペティション（デモ機能） ====================
+
+/// コンペデータソースProvider
+final competitionDataSourceProvider = Provider<CompetitionDataSource>((ref) {
+  final apiClient = ref.read(apiClientProvider);
+  return CompetitionDataSource(apiClient);
+});
+
+/// コンペリポジトリProvider
+final competitionRepositoryProvider = Provider<CompetitionRepository>((ref) {
+  final dataSource = ref.read(competitionDataSourceProvider);
+  return CompetitionRepositoryImpl(dataSource);
+});
+
+/// コンペ一覧取得ユースケースProvider（開催中／自分が開催／参加中）
+final getCompetitionsUseCaseProvider = Provider<GetCompetitionsUseCase>((ref) {
+  return GetCompetitionsUseCase(ref.read(competitionRepositoryProvider));
+});
+
+/// コンペ 1 件取得ユースケースProvider
+final getCompetitionUseCaseProvider = Provider<GetCompetitionUseCase>((ref) {
+  return GetCompetitionUseCase(ref.read(competitionRepositoryProvider));
+});
+
+/// コンペ開催ユースケースProvider（ジム管理者のみ）
+final createCompetitionUseCaseProvider = Provider<CreateCompetitionUseCase>((ref) {
+  return CreateCompetitionUseCase(ref.read(competitionRepositoryProvider));
+});
+
+/// コンペ編集ユースケースProvider（開催者のみ）
+final updateCompetitionUseCaseProvider = Provider<UpdateCompetitionUseCase>((ref) {
+  return UpdateCompetitionUseCase(ref.read(competitionRepositoryProvider));
+});
+
+/// コンペ参加ユースケースProvider
+final joinCompetitionUseCaseProvider = Provider<JoinCompetitionUseCase>((ref) {
+  return JoinCompetitionUseCase(ref.read(competitionRepositoryProvider));
+});
+
+/// 順位表取得ユースケースProvider
+final getLeaderboardUseCaseProvider = Provider<GetLeaderboardUseCase>((ref) {
+  return GetLeaderboardUseCase(ref.read(competitionRepositoryProvider));
+});
+
+/// 完登の記録／取り消しユースケースProvider
+final setProblemCompletedUseCaseProvider =
+    Provider<SetProblemCompletedUseCase>((ref) {
+  return SetProblemCompletedUseCase(ref.read(competitionRepositoryProvider));
+});
+
+/// 【開発用】コンペ削除ユースケースProvider（テストデータ掃除用。dev 環境でのみボタンが出る）
+final deleteCompetitionUseCaseProvider = Provider<DeleteCompetitionUseCase>((ref) {
+  return DeleteCompetitionUseCase(ref.read(competitionRepositoryProvider));
 });

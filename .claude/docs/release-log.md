@@ -3,6 +3,27 @@
 バージョン・ビルド番号の変更と配信の記録。新しいものを上に積む（1エントリ＝1ビルド番号）。
 ※ 2026-08-21 に git 履歴・docs から遡って復元。git からは「配信したか」は分からないため、不明なものは不明と明記。
 
+## 【開発版】3.1.0 (build 17) — 2026-10-03 · TestFlight（イワノボリタイ Dev）
+
+- build 16 との差分は 1 点: **【開発用】コンペ削除ボタン**（「コンペを開催する」画面の各コンペに「削除（開発用）」。確認ダイアログ → 物理削除。参加・完登記録も消える）。テストデータ掃除用で、仕様の「中止」ではない。**dev flavor のビルドにだけ表示**（`EnvironmentConfig.isDevelopment`）。バックエンドは dev の rev 00074（`COMPETITION_DEBUG_DELETE_ENABLED=true`）に接続。prod はボタンも API も無効
+- コミット `b1b262f`（`feature/competition`・PR #96）
+- 署名は build 16 と同じ新証明書・手動署名プロファイル。今回は `flutter build ipa --export-options-plist ExportOptionsDevManual.plist --build-number=17` の 1 コマンドで成功（手順は `.claude/docs/commands.md`）
+
+**版数**: `pubspec.yaml` は 3.1.0+15 のまま。**ビルド時に `--build-number=17` を指定**
+**配信**: TestFlight にアップロード済み（2026-10-03 JST・altool・Delivery UUID `06fdbbee-4ae6-4293-a067-32f050c030ce`・エラー0）→ Apple 側で処理中
+**状態**: 内部テスター配信（審査提出なし）。アプリ画面の確認はユーザーが実施
+
+## 【開発版】3.1.0 (build 16) — 2026-10-03 · TestFlight（イワノボリタイ Dev）
+
+- **コンペティション機能（デモ）の実機確認用**。ブランチ `feature/competition`（PR #96・Issue #95）。6 つ目のタブ「コンペ」（通知とマイページの間）。参加する／参加中の順位表／開催する（ジム管理者のみ）
+- バックエンドは dev の rev 00073（`/api/competitions` を含む）に接続。dev DB にコンペ 3 テーブルと `users.managed_gym_id` を適用済み。`Wwun1GNQ…` が gym 192 の管理者
+- **署名**: 9/28 に失効した証明書を ASC API で再発行（Apple Development `YJY2VSY6VY` / Apple Distribution `X57GG39RB6`）。`flutter build ipa` は Xcode 管理プロファイルを再生成できず失敗したため、`flutter build ios --no-codesign` → `xcodebuild archive -allowProvisioningUpdates`（API キー認証）→ dev 用 App Store プロファイル「Bouldering App Dev AppStore」（`7SARC32RFM`）を API で再作成し**手動署名で `-exportArchive`**（`ExportOptionsDevManual.plist`）。詳細は deployment-log 2026-10-03
+- **既知の不便**: 鍵をコマンドで取り込んだため codesign のたびにキーチェーンの確認が出る。`security set-key-partition-list -S apple-tool:,apple:,codesign: -s ~/Library/Keychains/login.keychain-db`（ユーザーがパスワード入力）で解消
+
+**版数**: `pubspec.yaml` は 3.1.0+15 のまま。**ビルド時に `--build-number=16` を指定**（dev 13 / prod 14・15 使用済み）
+**配信**: TestFlight にアップロード済み（2026-10-03 10:5x JST・altool・Delivery UUID `f612d096-556c-4fb7-b6d6-8f2988b6eda6`・エラー0）→ Apple 側で処理中
+**状態**: 内部テスター配信（審査提出なし）。アプリ画面の確認はユーザーが実施
+
 ## 【本番版】3.1.0 (build 15) — 2026-09-24 · App Store **公開済み**（2026-09-25）
 
 - build 14 との差分は 1 点: **設定画面の「メールアドレス（任意）」登録の入口を非表示**（`FeatureFlags.showEmailRegistration = false`。プロフィール欄の「未登録」表示も隠す。実装は残す）。

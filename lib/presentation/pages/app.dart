@@ -31,8 +31,15 @@ import 'block_list_page.dart';
 import 'blocked_user_page.dart';
 import 'tweet_detail_page.dart';
 import 'notification_page.dart';
+import 'competition/competition_page.dart';
+import 'competition/competition_list_page.dart';
+import 'competition/joined_competitions_page.dart';
+import 'competition/host_competitions_page.dart';
+import 'competition/competition_detail_page.dart';
+import 'competition/competition_leaderboard_page.dart';
 import '../providers/unread_count_provider.dart';
 import '../../domain/entities/tweet.dart';
+import '../../domain/entities/competition.dart';
 
 /// メインアプリケーションクラス
 ///
@@ -108,6 +115,28 @@ class BoulderingApp extends ConsumerWidget {
         return TweetDetailPage(
           tweetId: tweetId is int ? tweetId : int.tryParse('$tweetId') ?? 0,
           initialTweet: initialTweet is Tweet ? initialTweet : null,
+        );
+      },
+      // コンペ（デモ機能）
+      AppRoutes.competitionList: (context) => const CompetitionListPage(),
+      AppRoutes.competitionJoined: (context) => const JoinedCompetitionsPage(),
+      AppRoutes.competitionHost: (context) => const HostCompetitionsPage(),
+      AppRoutes.competitionDetail: (context) {
+        final args = ModalRoute.of(context)!.settings.arguments as Map?;
+        final id = args?[RouteParams.competitionId];
+        final initial = args?[RouteParams.competition];
+        return CompetitionDetailPage(
+          competitionId: id is int ? id : int.tryParse('$id') ?? 0,
+          initial: initial is Competition ? initial : null,
+        );
+      },
+      AppRoutes.competitionLeaderboard: (context) {
+        final args = ModalRoute.of(context)!.settings.arguments as Map?;
+        final id = args?[RouteParams.competitionId];
+        final initial = args?[RouteParams.competition];
+        return CompetitionLeaderboardPage(
+          competitionId: id is int ? id : int.tryParse('$id') ?? 0,
+          initial: initial is Competition ? initial : null,
         );
       },
     };
@@ -291,7 +320,8 @@ class _AppRootState extends ConsumerState<AppRoot> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getInt(ScaffoldWithNavBar.lastTabIndexKey);
-      if (saved != null && saved >= 0 && saved < 5 && saved != 2) {
+      // 0..5 の 6 タブ（投稿タブ 2 は復元しない）
+      if (saved != null && saved >= 0 && saved < 6 && saved != 2) {
         _initialTab = saved;
       }
     } catch (_) {
@@ -364,7 +394,8 @@ class ScaffoldWithNavBar extends ConsumerStatefulWidget {
   ///
   /// v2: 通知タブの追加（Issue #81）で index 3 の意味が「マイページ」から「通知」に変わったため
   /// キーを改めた（旧キーの値を読むと更新後の初回だけ通知タブで開いてしまう）
-  static const String lastTabIndexKey = 'last_tab_index_v2';
+  /// v3: コンペタブの追加で index 4 の意味が「マイページ」から「コンペ」に変わったため再度改めた
+  static const String lastTabIndexKey = 'last_tab_index_v3';
 
   @override
   ConsumerState<ScaffoldWithNavBar> createState() => _ScaffoldWithNavBarState();
@@ -380,11 +411,16 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
     // 投稿はモーダルシートで開くためタブ本体は使わない（onTapでシートを表示）
     const SizedBox.shrink(),
     const NotificationPage(),
+    // コンペ（デモ機能）。通知とマイページの間（ユーザー決定 2026-10-03）
+    const CompetitionPage(),
     const MyPage(),
   ];
 
   /// 通知タブの index（バッジ・未読数の取り直しに使う）
   static const int _notificationTabIndex = 3;
+
+  /// マイページタブの index（登攀グリフの選択色に使う）
+  static const int _myPageTabIndex = 5;
 
   @override
   void initState() {
@@ -508,11 +544,18 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar>
             ),
             label: '通知',
           ),
+          const BottomNavigationBarItem(
+            // コンペ（デモ機能）
+            icon: Icon(Icons.emoji_events_outlined),
+            activeIcon: Icon(Icons.emoji_events),
+            label: 'コンペ',
+          ),
           BottomNavigationBarItem(
             // 登攀グリフ（Noun Project由来・単色）。選択で壁ブルー、非選択で砂埃
             icon: _NavClimberGlyph(
-              color:
-                  _currentIndex == 4 ? AppColors.kabeBlue : AppColors.sunabokori,
+              color: _currentIndex == _myPageTabIndex
+                  ? AppColors.kabeBlue
+                  : AppColors.sunabokori,
             ),
             label: 'マイページ',
           ),

@@ -3,6 +3,7 @@ import '../constants/app_routes.dart';
 import '../../domain/exceptions/app_exceptions.dart';
 import '../../presentation/theme/app_tokens.dart';
 import '../../domain/entities/tweet.dart';
+import '../../domain/entities/competition.dart';
 
 /// ナビゲーションヘルパークラス
 ///
@@ -140,6 +141,53 @@ class NavigationHelper {
   /// ブロックリスト画面への遷移
   static Future<void> toBlockList(BuildContext context) async {
     await Navigator.pushNamed(context, AppRoutes.blockList);
+  }
+
+  // ---------------------------------------------------------------------------
+  // コンペ（デモ機能）
+  // ---------------------------------------------------------------------------
+
+  /// 開催中のコンペ一覧（参加する）
+  static Future<void> toCompetitionList(BuildContext context) async {
+    await Navigator.pushNamed(context, AppRoutes.competitionList);
+  }
+
+  /// 参加中のコンペ一覧（順位表を見る）
+  static Future<void> toCompetitionJoined(BuildContext context) async {
+    await Navigator.pushNamed(context, AppRoutes.competitionJoined);
+  }
+
+  /// 開催者の管理画面（開催する・編集する）
+  static Future<void> toCompetitionHost(BuildContext context) async {
+    await Navigator.pushNamed(context, AppRoutes.competitionHost);
+  }
+
+  /// コンペの確認（詳細）
+  ///
+  /// [competition] 呼び出し元が持っていれば渡す（取得を待たずに表示できる）
+  static Future<void> toCompetitionDetail(BuildContext context, int competitionId,
+      {Competition? competition}) async {
+    await Navigator.pushNamed(
+      context,
+      AppRoutes.competitionDetail,
+      arguments: {
+        RouteParams.competitionId: competitionId,
+        if (competition != null) RouteParams.competition: competition,
+      },
+    );
+  }
+
+  /// 順位表（ライブリーダーボード）
+  static Future<void> toCompetitionLeaderboard(BuildContext context, int competitionId,
+      {Competition? competition}) async {
+    await Navigator.pushNamed(
+      context,
+      AppRoutes.competitionLeaderboard,
+      arguments: {
+        RouteParams.competitionId: competitionId,
+        if (competition != null) RouteParams.competition: competition,
+      },
+    );
   }
 
   /// 確認ダイアログの表示

@@ -65,6 +65,28 @@ gcloud run services logs read bouldering-api-dev --limit=50
   gcloud artifacts docker images list asia-northeast1-docker.pkg.dev/bouldering-app-dev/bouldering-app-docker-dev --include-tags --sort-by=~UPDATE_TIME | head -3
   ```
 
+### iOS の TestFlight ビルド（証明書を API で更新した後の手順・2026-10-03 確立）
+
+`flutter build ipa` は Xcode 管理プロファイルを再生成できず（API キーにクラウド署名権限が無い）失敗するため、3 段に分ける。
+
+```bash
+# ① Flutter 側のビルド（署名なし。--build-number は release-log の採番に従う）
+flutter build ios --flavor "Runner Dev" --dart-define=ENVIRONMENT=dev --target lib/main_dev.dart --release --no-codesign --build-number=N
+# ② アーカイブ（開発プロファイルは ASC API キー認証で自動再生成される）
+cd ios && xcodebuild -workspace Runner.xcworkspace -scheme "Runner Dev" -configuration "Release-Runner Dev" \
+  -destination 'generic/platform=iOS' -archivePath ../build/ios/archive/RunnerDev.xcarchive archive \
+  -allowProvisioningUpdates -allowProvisioningDeviceRegistration \
+  -authenticationKeyPath ../.local/asc/AuthKey_B5TW9QHTS7.p8 -authenticationKeyID B5TW9QHTS7 -authenticationKeyIssuerID <issuer> \
+  CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=XX24WCN326
+# ③ 書き出しは手動署名（App Store プロファイルは ASC API で作成してローカルに配置済みのものを名前で指定）
+xcodebuild -exportArchive -archivePath build/ios/archive/RunnerDev.xcarchive -exportPath build/ios/ipa \
+  -exportOptionsPlist <signingStyle=manual, provisioningProfiles: com.km.boulderingapp.dev → "Bouldering App Dev AppStore">
+xcrun altool --upload-app --type ios -f build/ios/ipa/bouldering_app.ipa --apiKey B5TW9QHTS7 --apiIssuer <issuer>
+```
+
+- prod は scheme "Runner Prod" / configuration "Release-Runner Prod"、プロファイル「Bouldering App Distribution v2」（証明書が変わるたびに ASC API で再作成）
+- 証明書・鍵の所在と更新手順は `.local/credentials-locations.md` と自動メモリ `apple-signing-certificates`
+
 ### バックエンドのローカル起動（必要なときだけ）
 
 ```bash

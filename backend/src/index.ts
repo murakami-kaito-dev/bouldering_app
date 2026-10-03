@@ -21,6 +21,7 @@ import blockRoutes from './routes/blocks';
 import { tweetCommentsRouter, commentsRouter } from './routes/comments';
 import notificationRoutes from './routes/notifications';
 import announcementRoutes from './routes/announcements';
+import competitionRoutes from './routes/competitions';
 import internalTasksRoutes from './routes/internal_tasks';
 
 // Validate environment variables
@@ -76,6 +77,8 @@ app.use('/api/comments', commentsRouter);
 // 通知（Issue #81）: /api/users/:user_id/notifications…（routes/users.ts に無いパスなので後段で受ける）と /api/announcements
 app.use('/api/users', notificationRoutes);
 app.use('/api/announcements', announcementRoutes);
+// コンペティション（デモ機能・dev 先行）: /api/competitions…
+app.use('/api/competitions', competitionRoutes);
 
 // Internal task routes (for Cloud Tasks workers)
 app.use('/internal/tasks', internalTasksRoutes);

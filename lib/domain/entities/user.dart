@@ -14,6 +14,12 @@ class User {
   final DateTime? boulStartDate;
   final int? homeGymId;
 
+  /// 管理しているジムの ID（ジム管理者のみ。一般ユーザーは null）
+  ///
+  /// 登録は運営が DB（users.managed_gym_id）を直接更新する運用。アプリからは変更できない。
+  /// コンペの「開催する」ボタンはこの値がある人にだけ表示する
+  final int? managedGymId;
+
   const User({
     required this.id,
     required this.userName,
@@ -25,6 +31,7 @@ class User {
     this.birthday,
     this.boulStartDate,
     this.homeGymId,
+    this.managedGymId,
   });
 
   User copyWith({
@@ -38,6 +45,7 @@ class User {
     DateTime? birthday,
     DateTime? boulStartDate,
     int? homeGymId,
+    int? managedGymId,
     bool clearEmail = false, // true でメールアドレスを未登録に戻す
   }) {
     return User(
@@ -51,8 +59,12 @@ class User {
       birthday: birthday ?? this.birthday,
       boulStartDate: boulStartDate ?? this.boulStartDate,
       homeGymId: homeGymId ?? this.homeGymId,
+      managedGymId: managedGymId ?? this.managedGymId,
     );
   }
+
+  /// ジム管理者か（コンペを開催できるか）
+  bool get isGymManager => managedGymId != null;
 
   bool get hasProfile => userIntroduce != null && userIntroduce!.isNotEmpty;
   
